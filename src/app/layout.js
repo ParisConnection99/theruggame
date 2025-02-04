@@ -3,6 +3,8 @@ import "./globals.css";
 import Image from "next/image";
 import Link from "next/link";
 
+import { FaTelegram, FaTwitter, FaInstagram } from "react-icons/fa";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,7 +26,6 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900`}
       >
-        {/* Header */}
         <header className="w-full">
           {/* Top Banner */}
           <div className="w-[calc(100%-2rem)] h-10 bg-blue-300 flex items-center justify-center rounded-lg ml-4 mt-4 mr-4 gap-4 px-4">
@@ -43,12 +44,46 @@ export default function RootLayout({ children }) {
 
           {/* Navigation Menu */}
           <div className="flex justify-between items-center w-full px-5 mt-5">
-            <div className="flex gap-6">
-              <button className="text-white text-md hover:scale-105 hover:underline">{`<how it works>`}</button>
-              <button className="text-white text-md hover:scale-105 hover:underline">{`<support>`}</button>
+            {/* Left Section: Buttons and Social Media */}
+            <div className="flex flex-col items-start gap-2">
+              {/* Buttons Row */}
+              <div className="flex gap-6">
+                <Link href="/how-it-works" 
+                className="text-white text-md hover:scale-105 hover:underline">{`<how it works>`}</Link>
+                <button className="text-white text-md hover:scale-105 hover:underline">{`<support>`}</button>
+              </div>
+
+              {/* Social Media Row */}
+              <div className="flex space-x-4 mt-2">
+                <a
+                  href="https://telegram.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-500"
+                >
+                  <FaTelegram className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400"
+                >
+                  <FaTwitter className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400"
+                >
+                  <FaInstagram className="w-6 h-6" />
+                </a>
+              </div>
             </div>
 
-            <button className="absolute-right text-white text-md hover:scale-105 hover:underline">
+            {/* Right Section: Connect Wallet */}
+            <button className="text-white text-md hover:scale-105 hover:underline">
               {`<connect wallet>`}
             </button>
           </div>

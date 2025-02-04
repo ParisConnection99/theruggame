@@ -33,7 +33,7 @@ export default function Home() {
 
           {/* Hoverable Section (Smaller & Centered) */}
           <div
-            className="flex gap-4 items-center mt-5 p-4 rounded-lg hover:border-4 hover:border-white transition-all duration-200 cursor-pointer w-[20%] max-w-sm mx-auto"
+            className="flex gap-4 items-center mt-5 p-4 rounded-lg hover:border-4 hover:border-white transition-all duration-200 cursor-pointer w-[40%] max-w-sm mx-auto"
             onClick={() => alert("Navigate to market details!")} // Example click action
           >
             <Image
