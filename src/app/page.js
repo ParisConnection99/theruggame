@@ -88,7 +88,7 @@ export default function Home() {
           <DropdownButton onClick={onSortButtonClick} />
         </div>
 
-        <div className="grid grid-cols md:grid-cols-3 gap-3 items-center justify-center mt-10">
+        <div className="grid grid-cols md:grid-cols-3 gap-20 md:gap-3 md:px-20 ml-1 mt-10">
           <MarketView />
           <MarketView />
           <MarketView />
