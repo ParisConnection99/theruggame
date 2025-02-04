@@ -25,7 +25,7 @@ export default function DropdownButton( { onClick }) {
       onClick={() => {
         setIsOpen(!isOpen);
       }}
-        className="h-10 bg-blue-300 border border-white text-black px-4 rounded-md hover:bg-white focus:outline-none"
+        className="h-10 bg-blue-300 border border-white text-black px-4 rounded-md hover:bg-blue-400 focus:outline-none"
       >
         sort: featured ▼
       </button>
