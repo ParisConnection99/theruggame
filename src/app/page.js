@@ -111,7 +111,7 @@ function MarketView() {
           height={30}
           priority
         />
-        <h1 className="py-2">Will $TRUMP Rug in the next 20 mins?</h1>
+        <h1 className="py-2 text-sm">Will $TRUMP Rug in the next 20 mins?</h1>
       </div>
       <div className="flex gap-4 mt-5">
         <button className="bg-green-500 w-1/2 h-10 rounded-md">Yes</button>
