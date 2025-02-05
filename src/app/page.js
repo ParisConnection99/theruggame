@@ -24,33 +24,44 @@ export default function Home() {
   return (
     <div>
       <main >
-        { /* King Of the Trenches*/}
-        <div className="flex flex-col items-center justify-center mt-20">
+        <div className="flex flex-col items-center justify-center mt-10">
           {/* King of the Trenches Title */}
-          <h1 className={`${alfaSlabOne.className} text-3xl text-orange-500 !important mb-4`}>
+          <h1
+            className={`${alfaSlabOne.className} text-4xl text-orange-500 uppercase tracking-wide mb-6 text-center`}
+          >
             King of the Trenches
           </h1>
 
-          {/* Hoverable Section (Smaller & Centered) */}
+          {/* Featured Market Section */}
           <div
-            className="flex gap-4 items-center mt-5 p-4 rounded-lg hover:border-4 hover:border-white transition-all duration-200 cursor-pointer w-[40%] max-w-sm mx-auto"
+            className="flex items-center gap-4 p-4 rounded-lg bg-gray-800 shadow-md w-[90%] sm:w-[80%] max-w-lg mx-auto border border-gray-700 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
             onClick={() => alert("Navigate to market details!")} // Example click action
           >
+            {/* Market Image */}
             <Image
               className="rounded-md"
               src="/images/eth.webp"
               alt="market_image"
-              width={45}
-              height={45}
+              width={60}
+              height={60}
               priority
             />
-            <ol className="text-xs">
-              <li className="text-blue-300 font-bold mb-1">Will $Eth Coin Pump in 10 Mins?</li>
-              <li className="text-[10px] text-gray-400 mb-1">Minutes left: 4 mins 🔥🔥</li>
-              <li className="text-xs font-bold">Amount wagered: 50 SOL ($10k)</li>
-            </ol>
+
+            {/* Market Details */}
+            <div className="flex flex-col">
+              <p className="text-white text-lg font-semibold mb-1">
+                Will $Eth Coin Pump in 10 Mins?
+              </p>
+              <p className="text-gray-400 text-sm mb-2">
+                Minutes left: <span className="text-red-400">4 mins 🔥🔥</span>
+              </p>
+              <p className="text-green-400 font-bold text-md">
+                Amount wagered: 50 SOL ($10k)
+              </p>
+            </div>
           </div>
         </div>
+
 
         {/* Search Market */}
         <div className="flex gap-2 items-center justify-center mt-10">
