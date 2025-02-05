@@ -1,13 +1,21 @@
 "use client"; // Required for hooks in the App Router
 
+import { useState } from "react"; // Import useState for managing state
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-
 export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
   const id = pathname.split("/").pop(); // Extract the market ID
+
+  // Use state to manage the active state of the buttons
+  const [isPumpActive, setIsPumpActive] = useState(true); // Default is 'Pump' active
+
+  // Toggle function to switch between buttons
+  const handleButtonClick = (isPump) => {
+    setIsPumpActive(isPump);
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-gray-900 text-white">
@@ -22,7 +30,7 @@ export default function MarketPage() {
             height={50}
             className="rounded-full"
           />
-          <h1 className="text-2xl font-bold">PEPE rugs in 10 mins?</h1>
+          <h1 className="text-2xl font-bold">Will PEPE Pump or Rug in the next 10 mins?</h1>
         </div>
         {/* Copy Link Button */}
         <button className="bg-gray-700 px-4 py-1 rounded-md hover:bg-gray-600">
@@ -41,10 +49,9 @@ export default function MarketPage() {
 
       {/* Market Details */}
       <div className="mt-10 flex gap-8 text-gray-400">
-        <p className="text-green-500 font-semibold">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/}
+        <p className="text-green-500 font-semibold">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/ }
         <p>market closes in 5 minutes</p>
       </div>
-
 
       {/* Main Section: Chart and Buy/Sell */}
       <div className="flex flex-col lg:flex-row mt-6 gap-6">
@@ -57,11 +64,15 @@ export default function MarketPage() {
         <div className="w-full lg:w-96 bg-gray-800 rounded-md p-4">
           {/* Buy/Sell Toggle */}
           <div className="flex justify-between gap-3">
-            <button className="flex-1 bg-green-500 text-black py-2 rounded-md hover:bg-green-400">
-              yes
+            <button 
+              onClick={() => handleButtonClick(true)} 
+              className={`flex-1 py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black' : 'bg-gray-700 text-white'} hover:bg-green-400`}>
+              pump
             </button>
-            <button className="flex-1 bg-gray-700 text-white py-2 rounded-md hover:bg-gray-600">
-              no
+            <button 
+              onClick={() => handleButtonClick(false)} 
+              className={`flex-1 py-2 rounded-md ${!isPumpActive ? 'bg-red-500 text-white' : 'bg-gray-700 text-white'} hover:bg-red-600`}>
+              rug
             </button>
           </div>
 
@@ -127,11 +138,11 @@ export default function MarketPage() {
               </p>
             </div>
 
-
             {/* Place Trade Button */}
-            <button className="mt-4 w-full bg-green-500 text-black py-2 rounded-md hover:bg-green-400">
+            <button className={`mt-4 w-full py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black hover:bg-green-400' : 'bg-red-500 text-white hover:bg-red-600'}`}>
               place trade
             </button>
+
             {/* Disclaimer */}
             <p className="mt-2 text-center text-sm text-gray-400">
               By trading, you agree to the{" "}
@@ -145,7 +156,7 @@ export default function MarketPage() {
 
       {/* Pump vs Rug Split */}
       <div className="mt-6 w-full bg-gray-800 p-4 rounded-md">
-        <p className="text-2xl  font-semibold text-white">Percentage of users betting on each outcome</p>
+        <p className="text-2xl font-semibold text-white">Percentage of users betting on each outcome</p>
         <p className="text-green-500 mt-2 font-semibold">Pump: 72% | Rug: 28%</p>
       </div>
 
