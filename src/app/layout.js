@@ -62,9 +62,14 @@ export default function RootLayout({ children }) {
                 <Link href="/how-it-works" className="text-white text-md hover:scale-105 hover:underline">
                   {`<how it works>`}
                 </Link>
-                <button className="text-white text-md hover:scale-105 hover:underline">
+                <a
+                  href="https://t.me/theruggamegroup"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white text-md hover:scale-105 hover:underline"
+                >
                   {`<support>`}
-                </button>
+                </a>
               </div>
 
               {/* Social Media Row - Properly Centered */}
