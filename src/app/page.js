@@ -7,7 +7,10 @@ import DropdownButton from "@/components/DropdownButton";
 import markets from "@/Utils/data";
 import { useState } from "react";
 
-const alfaSlabOne = Alfa_Slab_One({ weight: "400" });
+const alfaSlabOne = Alfa_Slab_One({ 
+  subsets: ['latin'],
+  weight: "400"
+});
 
 
 export default function Home() {
@@ -24,43 +27,43 @@ export default function Home() {
   return (
     <div>
       <main >
-        <div className="flex flex-col items-center justify-center mt-10">
-          {/* King of the Trenches Title */}
-          <h1
-            className={`${alfaSlabOne.className} text-4xl text-orange-500 uppercase tracking-wide mb-6 text-center`}
-          >
-            King of the Trenches
-          </h1>
+      <div className="flex flex-col items-center justify-center mt-10">
+  {/* King of the Trenches Title */}
+  <h1
+    className={`${alfaSlabOne.className} text-4xl text-orange-500 uppercase tracking-wide mb-6 text-center`}
+  >
+    King of the Trenches
+  </h1>
 
-          {/* Featured Market Section */}
-          <div
-            className="flex items-center gap-4 p-4 rounded-lg bg-gray-800 shadow-md w-[90%] sm:w-[80%] max-w-lg mx-auto border border-gray-700 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-            onClick={() => alert("Navigate to market details!")} // Example click action
-          >
-            {/* Market Image */}
-            <Image
-              className="rounded-md"
-              src="/images/eth.webp"
-              alt="market_image"
-              width={60}
-              height={60}
-              priority
-            />
+  {/* Featured Market Section */}
+  <div
+    className="flex items-center gap-4 p-4 rounded-lg bg-gray-800 shadow-md w-[90%] sm:w-[80%] max-w-lg mx-auto border border-gray-700 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+    onClick={() => alert("Navigate to market details!")} // Example click action
+  >
+    {/* Market Image */}
+    <Image
+      className="rounded-md"
+      src="/images/eth.webp"
+      alt="market_image"
+      width={60}
+      height={60}
+      priority
+    />
 
-            {/* Market Details */}
-            <div className="flex flex-col">
-              <p className="text-white text-lg font-semibold mb-1">
-                Will $Eth Coin Pump in 10 Mins?
-              </p>
-              <p className="text-gray-400 text-sm mb-2">
-                Minutes left: <span className="text-red-400">4 mins 🔥🔥</span>
-              </p>
-              <p className="text-green-400 font-bold text-md">
-                Amount wagered: 50 SOL ($10k)
-              </p>
-            </div>
-          </div>
-        </div>
+    {/* Market Details */}
+    <div className="flex flex-col">
+      <p className="text-white text-lg font-semibold mb-1">
+        Will $Eth Coin Pump in 10 Mins?
+      </p>
+      <p className="text-gray-400 text-sm mb-2">
+        Minutes left: <span className="text-red-400">4 mins 🔥🔥</span>
+      </p>
+      <p className="text-green-400 font-bold text-md">
+        Amount wagered: 50 SOL ($10k)
+      </p>
+    </div>
+  </div>
+</div>
 
 
         {/* Search Market */}
