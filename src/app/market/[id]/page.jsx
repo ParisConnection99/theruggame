@@ -30,12 +30,6 @@ export default function MarketPage() {
         </button>
       </div>
 
-      {/* Market Details */}
-      <div className="mt-6 flex gap-8 text-gray-400">
-        <p className="text-green-500">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/}
-        <p>market closes in 5 minutes</p>
-      </div>
-
       {/* Current Price + Liquidity */}
       <div className="mt-8 text-2xl font-semibold text-white">
         Current Price: <span className="text-green-400">0.0023 SOL</span>
@@ -44,6 +38,13 @@ export default function MarketPage() {
       <div className="text-lg text-gray-400 mt-2">
         Liquidity: <span className="text-white">$85,000</span>
       </div>
+
+      {/* Market Details */}
+      <div className="mt-10 flex gap-8 text-gray-400">
+        <p className="text-green-500 font-semibold">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/}
+        <p>market closes in 5 minutes</p>
+      </div>
+
 
       {/* Main Section: Chart and Buy/Sell */}
       <div className="flex flex-col lg:flex-row mt-6 gap-6">
@@ -141,9 +142,16 @@ export default function MarketPage() {
           </div>
         </div>
       </div>
-       {/* Market Information Section */}
-       <div className="mt-6 w-full bg-gray-800 p-4 rounded-md border border-gray-600">
-        <h2 className="text-2xl font-bold text-white">Market Information</h2>
+
+      {/* Pump vs Rug Split */}
+      <div className="mt-6 w-full bg-gray-800 p-4 rounded-md">
+        <p className="text-2xl  font-semibold text-white">Percentage of users betting on each outcome</p>
+        <p className="text-green-500 mt-2 font-semibold">Pump: 72% | Rug: 28%</p>
+      </div>
+
+      {/* Coin Information Section */}
+      <div className="mt-6 w-full bg-gray-800 p-4 rounded-md border border-gray-600">
+        <h2 className="text-2xl font-bold text-white">Memecoin Information</h2>
         <div className="mt-2 text-gray-400 text-sm">
           <p><strong>Full Coin Name:</strong> PEPE Coin</p>
           <p><strong>Contract Address:</strong> 0x1234...abcd</p>
