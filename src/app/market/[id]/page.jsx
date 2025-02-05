@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+
 
 export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
@@ -12,7 +14,7 @@ export default function MarketPage() {
       {/* Market Header */}
       <div className="flex items-center justify-between">
         {/* Title and Image */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 mt-8">
           <Image
             src="/images/eth.webp" // Update this path to your actual image file
             alt="Market Image"
@@ -29,9 +31,18 @@ export default function MarketPage() {
       </div>
 
       {/* Market Details */}
-      <div className="mt-2 flex gap-8 text-gray-400">
-        <p className="text-green-500">volume: $11,725,259</p>
+      <div className="mt-6 flex gap-8 text-gray-400">
+        <p className="text-green-500">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/}
         <p>market closes in 5 minutes</p>
+      </div>
+
+      {/* Current Price + Liquidity */}
+      <div className="mt-8 text-2xl font-semibold text-white">
+        Current Price: <span className="text-green-400">0.0023 SOL</span>
+      </div>
+
+      <div className="text-lg text-gray-400 mt-2">
+        Liquidity: <span className="text-white">$85,000</span>
       </div>
 
       {/* Main Section: Chart and Buy/Sell */}
@@ -46,10 +57,10 @@ export default function MarketPage() {
           {/* Buy/Sell Toggle */}
           <div className="flex justify-between gap-3">
             <button className="flex-1 bg-green-500 text-black py-2 rounded-md hover:bg-green-400">
-              buy
+              yes
             </button>
             <button className="flex-1 bg-gray-700 text-white py-2 rounded-md hover:bg-gray-600">
-              sell
+              no
             </button>
           </div>
 
@@ -85,29 +96,62 @@ export default function MarketPage() {
             </div>
 
             {/* Quick Amount Buttons */}
-            <div className="mt-4 flex justify-between text-sm gap-2">
-              <button className="bg-gray-700 px-4 py-2 rounded-md hover:bg-gray-600">
-                Reset
+            <div className="mt-4 flex justify-between gap-1 text-xs">
+              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
+                reset
               </button>
-              <button className="bg-gray-700 px-4 py-2 rounded-md hover:bg-gray-600">
+              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
                 0.1 SOL
               </button>
-              <button className="bg-gray-700 px-4 py-2 rounded-md hover:bg-gray-600">
+              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
                 0.5 SOL
               </button>
-              <button className="bg-gray-700 px-4 py-2 rounded-md hover:bg-gray-600">
+              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
                 1 SOL
               </button>
-              <button className="bg-gray-700 px-4 py-2 rounded-md hover:bg-gray-600">
-                Max
+              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
+                max
               </button>
             </div>
+
+            {/* Potential Returns Breakdown */}
+            <div className="mt-4 p-3 text-sm text-gray-400">
+              <p className="flex justify-between">
+                <span>House fee:</span>
+                <span className="text-white">$0.00</span>
+              </p>
+              <p className="flex justify-between mt-1">
+                <span>Potential return:</span>
+                <span className="text-green-500">$0.00 (0.00%)</span>
+              </p>
+            </div>
+
 
             {/* Place Trade Button */}
             <button className="mt-4 w-full bg-green-500 text-black py-2 rounded-md hover:bg-green-400">
               place trade
             </button>
+            {/* Disclaimer */}
+            <p className="mt-2 text-center text-sm text-gray-400">
+              By trading, you agree to the{" "}
+              <Link href="/docs/terms-of-service" className="text-blue-400 underline hover:text-blue-300">
+                Terms of Use
+              </Link>.
+            </p>
           </div>
+        </div>
+      </div>
+       {/* Market Information Section */}
+       <div className="mt-6 w-full bg-gray-800 p-4 rounded-md border border-gray-600">
+        <h2 className="text-2xl font-bold text-white">Market Information</h2>
+        <div className="mt-2 text-gray-400 text-sm">
+          <p><strong>Full Coin Name:</strong> PEPE Coin</p>
+          <p><strong>Contract Address:</strong> 0x1234...abcd</p>
+          <p><strong>Trading Volume:</strong> $11,725,259</p>
+          <p><strong>Coin Creation Date:</strong> Jan 1, 2024</p>
+          <a href="" className="text-blue-500 underline hover:text-blue-300">
+            <strong>Dex Screener Link: https://dexscreener.com/solana/4mqmvnghpmkqns6yrnbfv61ntufkghhbxqvicycknqmz</strong>
+          </a>
         </div>
       </div>
     </div>

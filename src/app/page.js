@@ -32,7 +32,7 @@ export default function Home() {
           <h1
             className={`${alfaSlabOne.className} text-4xl text-orange-500 uppercase tracking-wide mb-6 text-center`}
           >
-            King of the Trenches
+            Most Bet-on Market
           </h1>
 
           {/* Featured Market Section */}
@@ -131,10 +131,10 @@ function MarketCard({ question, volume, imageSrc }) {
       {/* Buttons */}
       <div className="flex gap-4 mt-2">
         <button className="bg-green-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-green-600">
-          Buy Yes
+          pump (yes)
         </button>
         <button className="bg-red-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-red-600">
-          Buy No
+          rug (no)
         </button>
       </div>
 
