@@ -49,7 +49,7 @@ export default function MarketPage() {
 
       {/* Market Details */}
       <div className="mt-10 flex gap-8 text-gray-400">
-        <p className="text-green-500 font-semibold">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/ }
+        <p className="text-green-500 font-semibold">SOL Wagered: 100 SOL ($20,000)</p> { /* This is how much sol wagered*/}
         <p>market closes in 5 minutes</p>
       </div>
 
@@ -64,13 +64,13 @@ export default function MarketPage() {
         <div className="w-full lg:w-96 bg-gray-800 rounded-md p-4">
           {/* Buy/Sell Toggle */}
           <div className="flex justify-between gap-3">
-            <button 
-              onClick={() => handleButtonClick(true)} 
+            <button
+              onClick={() => handleButtonClick(true)}
               className={`flex-1 py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black' : 'bg-gray-700 text-white'} hover:bg-green-400`}>
               pump
             </button>
-            <button 
-              onClick={() => handleButtonClick(false)} 
+            <button
+              onClick={() => handleButtonClick(false)}
               className={`flex-1 py-2 rounded-md ${!isPumpActive ? 'bg-red-500 text-white' : 'bg-gray-700 text-white'} hover:bg-red-600`}>
               rug
             </button>

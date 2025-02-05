@@ -2,6 +2,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
+import { WalletProviderComponent } from '@/components/WalletProvider';
+import { ClientWalletLayout } from '@/components/ClientWalletLayout';
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 import { FaTelegram, FaTwitter, FaInstagram } from "react-icons/fa";
 
@@ -22,10 +26,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
+    
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900`}
       >
+        <WalletProviderComponent>
         <header className="w-full">
           {/* Top Banner */}
           <div className="w-[calc(100%-2rem)] h-10 bg-blue-300 flex items-center justify-center rounded-lg ml-4 mt-4 mr-4 gap-4 px-4">
@@ -102,14 +108,13 @@ export default function RootLayout({ children }) {
             </div>
 
             {/* Right Section: Connect Wallet */}
-            <button className="text-white text-md hover:scale-105 hover:underline">
-              {`<connect wallet>`}
-            </button>
+            <ClientWalletLayout className="text-white text-md hover:scale-105 hover:underline">
+              {'<connect wallet>'}
+            </ClientWalletLayout>
           </div>
         </header>
-
         {children}
-
+        
         {/* Footer */}
         <footer className="bg-gray-900 text-gray-400 text-sm flex items-center p-4 w-full relative">
           {/* Absolute Left: Copyright */}
@@ -133,8 +138,7 @@ export default function RootLayout({ children }) {
           </div>
         </footer>
 
-
-
+        </WalletProviderComponent>
 
       </body>
     </html>
