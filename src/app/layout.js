@@ -23,16 +23,15 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    
+
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900`}
       >
         <WalletProviderComponent>
-        <Header />
-        {children}
-        
-        <Footer />
+          <Header />
+          {children}
+          <Footer />
         </WalletProviderComponent>
 
       </body>
