@@ -1,10 +1,18 @@
-"use client";
+'use client';
 
+import React, { useState, useEffect } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
 
 export const WalletConnectButton = () => {
   const { publicKey, connected } = useWallet();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true); // Ensure this component only renders on the client
+  }, []);
+
+  if (!isClient) return null; // Avoid rendering during SSR
 
   return (
     <div className="flex items-center space-x-4">
@@ -20,8 +28,8 @@ export const WalletConnectButton = () => {
           </span>
         </div>
       ) : null}
-      {/* Custom Wallet Button */}
-      <WalletMultiButton className="text-white text-md hover:scale-105 hover:underline font-medium !pl-3 !pr-3 !bg-transparent !border-none">{'<connect wallet>'}</WalletMultiButton>
+      {/* WalletMultiButton */}
+      <WalletMultiButton className="text-white text-md hover:scale-105 hover:underline font-medium !pl-3 !pr-3 !bg-transparent !border-none" />
     </div>
   );
 };
