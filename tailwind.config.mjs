@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'], // Default Tailwind font
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

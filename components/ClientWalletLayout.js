@@ -2,9 +2,9 @@
 
 import { WalletConnectButton } from './WalletConnectButton';
 
-export const ClientWalletLayout = ( { className }) => {
+export const ClientWalletLayout = () => {
   return (
-    <div className={className}>
+    <div>
       <WalletConnectButton />
     </div>
   );
