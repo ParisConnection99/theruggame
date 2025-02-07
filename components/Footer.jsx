@@ -1,28 +1,52 @@
-"use client";
+'use client';
 
 import Link from "next/link";
-
+import { FaTelegram, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
     return (
-        <footer className="bg-gray-900 text-gray-400 text-sm flex items-center p-4 w-full relative">
-            {/* Absolute Left: Copyright */}
-            <div className="absolute left-4">© theruggame 2025</div>
+        <footer className="bg-gray-900 text-gray-400 text-sm p-4 w-full relative">
+            {/* Responsive Container */}
+            <div className="relative flex flex-col items-center md:flex-row md:items-center w-full">
+                {/* Copyright - Absolutely positioned on larger screens */}
+                <div className="hidden md:block absolute left-4">
+                    © theruggame 2025
+                </div>
 
-            {/* Centered Links */}
-            <div className="flex justify-center w-full">
-                <div className="flex space-x-4">
-                    <Link href="/docs/privacy-policy" className="hover:underline">
-                        privacy policy
-                    </Link>
-                    <span>|</span>
-                    <Link href="/docs/terms-of-service" className="hover:underline">
-                        terms of service
-                    </Link>
-                    <span>|</span>
-                    <Link href="/docs/fees" className="hover:underline">
-                        fees
-                    </Link>
+                {/* Mobile Copyright */}
+                <div className="md:hidden text-center mb-4">
+                    © theruggame 2025
+                </div>
+
+                {/* Centered Content Container */}
+                <div className="flex flex-col items-center w-full">
+                    {/* Footer Links */}
+                    <div className="flex space-x-4 mb-4">
+                        <Link href="/docs/privacy-policy" className="hover:underline">
+                            privacy policy
+                        </Link>
+                        <span>|</span>
+                        <Link href="/docs/terms-of-service" className="hover:underline">
+                            terms of service
+                        </Link>
+                        <span>|</span>
+                        <Link href="/docs/fees" className="hover:underline">
+                            fees
+                        </Link>
+                    </div>
+
+                    {/* Social Media Icons */}
+                    <div className="flex items-center justify-center gap-6">
+                        <a href="https://t.me/theruggamegroup" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
+                            <FaTelegram className="w-5 h-5" />
+                        </a>
+                        <a href="https://twitter.com/theruggame" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
+                            <FaTwitter className="w-5 h-5" />
+                        </a>
+                        <a href="https://instagram.com/theruggame" target="_blank" rel="noopener noreferrer" className="hover:text-pink-400">
+                            <FaInstagram className="w-5 h-5" />
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>

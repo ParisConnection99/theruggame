@@ -32,10 +32,6 @@ export default function MarketPage() {
           />
           <h1 className="text-2xl font-bold">Will PEPE Pump or Rug in the next 10 mins?</h1>
         </div>
-        {/* Copy Link Button */}
-        <button className="bg-gray-700 px-4 py-1 rounded-md hover:bg-gray-600">
-          Copy Link
-        </button>
       </div>
 
       {/* Current Price + Liquidity */}

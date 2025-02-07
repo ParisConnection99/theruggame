@@ -8,7 +8,7 @@ export default function HowItWorksPage() {
         <strong>The Rug Game</strong> allows you to predict and bet on the performance of memecoins
         in the crypto market.
       </p>
-      <p className="mb-6">
+      <p className="mb-6 text-center mt">
         Our platform is built for transparency and engagement, ensuring fair play for all users.
       </p>
 
