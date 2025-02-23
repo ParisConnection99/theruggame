@@ -7,6 +7,14 @@ const PostgresDatabase = require('../services/PostgresDatabase');
 const BetUnitService = require('../services/BetUnitService');
 const StatusUpdateService = require('../services/StatusUpdateService');
 const UserService = require('../services/UserService');
+const ExpiryService = require('../services/MarketExpiryService');
+const MarketResolveService = require('../services/MarketResolveService');
+const RefundService = require('../services/RefundService');
+const MarketCreationService = require('../services/MarketCreationService');
+const TokenService = require('../services/TokenService');
+const PayoutService = require('../services/PayoutService');
+const MatchingService = require('../services/MatchingFunnel');
+
 const { pool } = require('../tests/utils/db-config');
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(
@@ -44,10 +52,15 @@ describe('Market Realtime Service Tests', () => {
     let statusUpdateService;
     let eventEmitter;
     let userService;
+    let expiryService;
+    let marketResolveService;
+    let refundService;
+    let marketCreationService;
+    let tokenService;
+    let payoutService;
+
 
     beforeAll(async () => {
-        marketService = new MarketService(supabase, pool);
-
         db = new PostgresDatabase(pool);
         const config = {
             precisionThreshold: 0.000001,
@@ -74,11 +87,37 @@ describe('Market Realtime Service Tests', () => {
             matchingCutoffPercent: 50
         }, marketService, statusUpdateService, betUnitService);
 
+        userService = new UserService(supabase);
+
+        marketResolveService = new MarketResolveService(supabase);
+
+        tokenService = new TokenService(supabase);
+
+        payoutService = new PayoutService(supabase, userService);
+
+        refundService = new RefundService(supabase, {
+            maxAttempts: 3,
+            minRefundAmount: 0.00000001
+        }, userService);
+
+        expiryService = new ExpiryService(supabase,
+            refundService,
+            db,
+            marketResolveService,
+            payoutService);
+
+        marketService = new MarketService(supabase, pool, expiryService);
+
+        marketCreationService = new MarketCreationService(tokenService, marketService, {}, supabase);
+
+        expiryService.setMarketCreationService(marketCreationService);
+
+        matchingService = new MatchingService(db, {}, marketService, statusUpdateService, betUnitService);
+
         bettingService = new BettingService({
             platformFee: 0.01,
         }, matchingService, oddsService, supabase, betUnitService, db, marketService);
 
-        userService = new UserService(supabase);
     });
 
     beforeEach(async () => {
@@ -93,27 +132,27 @@ describe('Market Realtime Service Tests', () => {
                 console.log('Market update received:', marketData);
                 marketUpdates.push(marketData);
             };
-            
+
             // Start the listener
             const subscription = listenToMarkets(callback);
-            
+
             let market;
             let pumpBet;
             const user = await userService.createUser(userTestData);
-        
+
             await withTransaction(async (client) => {
                 market = await marketService.createMarket({
                     tokenAddress: `0x${uuidv4().replace(/-/g, '')}`,
                     startTime: new Date()
                 });
-        
+
                 pumpBet = await bettingService.placeBet(market.id, {
                     userId: user.user_id,
                     amount: 10,
                     betType: 'PUMP'
                 });
             });
-            
+
             // Check if we've received any updates
             console.log('Updates received:', marketUpdates);
 
@@ -124,7 +163,7 @@ describe('Market Realtime Service Tests', () => {
             } else {
                 console.log('No market updates received during test execution');
             }
-            
+
             let rugBet;
             const user2 = await userService.createUser(userTestData2);
 
@@ -154,7 +193,7 @@ describe('Market Realtime Service Tests', () => {
                 console.log('Market update received:', marketData);
                 marketInserts.push(marketData);
             };
-            
+
             // Start the listener
             const subscription = listenToMarkets(callback);
 
@@ -163,7 +202,7 @@ describe('Market Realtime Service Tests', () => {
             await withTransaction(async (client) => {
                 market = await marketService.createMarket({
                     tokenAddress: `0x${uuidv4().replace(/-/g, '')}`,
-                    startTime: new Date() 
+                    startTime: new Date()
                 });
             });
 
@@ -178,7 +217,7 @@ describe('Market Realtime Service Tests', () => {
                 console.log('No market inserts received during test execution');
             }
 
-            if(subscription) {
+            if (subscription) {
                 await subscription.unsubscribe();
             }
         });

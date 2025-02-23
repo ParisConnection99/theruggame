@@ -4,6 +4,12 @@ const MatchingFunnel = require('../services/MatchingFunnel');
 const MarketService = require('../services/MarketService');
 const BetUnitService = require('../services/BetUnitService');
 const StatusUpdateService = require('../services/StatusUpdateService');
+const ExpiryService = require('../services/MarketExpiryService');
+const UserService = require('../services/UserService');
+const PayoutService = require('../services/PayoutService');
+const RefundService = require('../services/RefundService');
+const MarketResolveService = require('../services/MarketResolveService');
+
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -28,10 +34,33 @@ describe('Matching Funnel Tests', () => {
   let statusUpdateService;
   let eventEmitter;
 
+  let expiryService;
+  let userService;
+  let marketResolveService;
+  let payoutService;
+  let refundService;
+
   beforeAll(async () => {
     db = new PostgresDatabase(pool);
 
-    marketService = new MarketService(supabase, pool);
+    userService = new UserService(supabase);
+
+    refundService = new RefundService(supabase, {
+      maxAttempts: 3,
+      minRefundAmount: 0.00000001
+    }, userService);
+
+    marketResolveService = new MarketResolveService(supabase);
+
+    payoutService = new PayoutService(supabase, userService);
+
+    expiryService = new ExpiryService(supabase,
+      refundService,
+      db,
+      marketResolveService,
+      payoutService);
+
+      marketService = new MarketService(supabase, pool, expiryService);
 
     const config = {
       precisionThreshold: 0.000001,

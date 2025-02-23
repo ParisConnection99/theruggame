@@ -110,6 +110,7 @@ class MarketCreationService {
 
             // Save remaining tokens in reserve (LOCKED)
             if(tokens.length > 0) {
+                console.log('Remaining Tokens: ',tokens);
                 await this.saveReserveTokens(tokens);
             }
             

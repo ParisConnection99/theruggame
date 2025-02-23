@@ -1,12 +1,15 @@
 
 
 class ExpiryService {
-    constructor(supabase, refundService, db, marketResolveService, payoutService, marketCreationService) {
+    constructor(supabase, refundService, db, marketResolveService, payoutService) {
       this.supabase = supabase;
       this.refundService = refundService;
       this.db = db;
       this.marketResolveService = marketResolveService;
       this.payoutService = payoutService;
+    }
+
+    setMarketCreationService(marketCreationService) {
       this.marketCreationService = marketCreationService;
     }
   

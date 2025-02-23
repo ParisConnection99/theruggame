@@ -31,9 +31,9 @@ describe('Market Service Tests', () => {
     beforeAll(async () => {
         db = new PostgresDatabase(pool);
         refundService = new RefundService(supabase);
-        marketService = new MarketService(supabase, pool);
         marketResolveService = new MarketResolveService(supabase);
         expiryService = new MarketExpiryService(supabase, refundService, db, marketResolveService);
+        marketService = new MarketService(supabase, pool, expiryService);
         tokenService = new TokenService(supabase, pool);
     });
 

@@ -66,21 +66,24 @@ describe('ExpiryService', () => {
       minRefundAmount: 0.00000001
     }, userService);
 
-    marketService = new MarketService(supabase, pool);
-
     marketResolveService = new MarketResolveService(supabase);
 
     payoutService = new PayoutService(supabase, userService);
 
     tokenService = new TokenService(supabase);
 
-    marketCreationService = new MarketCreationService(tokenService, marketService, {}, supabase);
-
     expiryService = new ExpiryService(supabase,
       refundService,
       db,
       marketResolveService,
-      payoutService, marketCreationService);
+      payoutService);
+
+    marketService = new MarketService(supabase, pool, expiryService);
+
+    marketCreationService = new MarketCreationService(tokenService, marketService, {}, supabase);
+
+    
+    expiryService.setMarketCreationService(marketCreationService);
 
     const config = {
       precisionThreshold: 0.000001,
