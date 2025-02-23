@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import { WalletProviderComponent } from '@/components/WalletProvider';
+import { FirebaseProvider } from "@/components/FirebaseProvider";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -28,12 +29,13 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-900`}
       >
+        <FirebaseProvider>
         <WalletProviderComponent>
           <Header />
           {children}
           <Footer />
         </WalletProviderComponent>
-
+        </FirebaseProvider>
       </body>
     </html>
   );
