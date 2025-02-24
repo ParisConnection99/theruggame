@@ -10,12 +10,6 @@ import UserService from '@/services/UserService';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
-import { Alfa_Slab_One } from "next/font/google";
-
-const alfaSlabOne = Alfa_Slab_One({
-  subsets: ['latin'],
-  weight: "400"
-});
 
 const userService = new UserService(supabase);
 
@@ -83,7 +77,7 @@ export default function Header() {
                             closeMenu(); // Close the burger menu
                             setShowWalletConnectionModal(true);
                         }}
-                        className={`${alfaSlabOne.className} text-white text-md hover:scale-105 hover:underline cursor-pointer`}
+                        className="text-white text-md hover:scale-105 hover:underline cursor-pointer"
                     >
                         CONNECT WALLET
                     </div>
@@ -115,7 +109,7 @@ export default function Header() {
             <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
                 <Link 
                     href="/how-it-works" 
-                    className={`${alfaSlabOne.className} text-white text-md hover:scale-105 hover:underline`}
+                    className="text-white text-md hover:scale-105 hover:underline"
                     onClick={closeMenu}
                 >
                     HOW IT WORKS
@@ -124,7 +118,7 @@ export default function Header() {
                     href="https://t.me/theruggamegroup"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${alfaSlabOne.className} text-white text-md hover:scale-105 hover:underline`}
+                    className="text-white text-md hover:scale-105 hover:underline"
                     onClick={closeMenu}
                 >
                     SUPPORT
@@ -181,14 +175,14 @@ export default function Header() {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-6">
-                    <Link href="/how-it-works" className={`${alfaSlabOne.className} text-white text-md hover:scale-105 hover:underline`}>
+                    <Link href="/how-it-works" className="text-white text-md hover:scale-105 hover:underline">
                         HOW IT WORKS
                     </Link>
                     <a
                         href="https://t.me/theruggamegroup"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`${alfaSlabOne.className} text-white text-md hover:scale-105 hover:underline`}
+                        className="text-white text-md hover:scale-105 hover:underline"
                     >
                         SUPPORT
                     </a>

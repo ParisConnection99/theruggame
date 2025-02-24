@@ -72,6 +72,21 @@ class BettingService {
         throw new Error(`Error creating Bet units: ${error.message}`);
       }
     }
+
+    async fetchBetsBy(userId) {
+      if(userId) {
+        throw new Error('Error processing Bets');
+      }
+
+      const { data, error } = await this.supabase
+        .from('bets')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+    }
   
     // Subscribe to market updates
     subscribeToMarket(marketId, callback) {
