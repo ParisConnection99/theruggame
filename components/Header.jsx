@@ -32,21 +32,6 @@ export default function Header() {
             console.log("Starting wallet connection process");
             if (!publicKey) return;
     
-            // Check if Firebase is initialized
-            const { getApps } = await import('firebase/app');
-            
-            // Try up to 5 times with 1 second intervals to wait for Firebase
-            let attempts = 0;
-            while (getApps().length === 0 && attempts < 5) {
-                console.log(`Firebase not initialized yet, waiting... (Attempt ${attempts + 1}/5)`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                attempts++;
-            }
-            
-            if (getApps().length === 0) {
-                throw new Error("Firebase failed to initialize after multiple attempts");
-            }
-    
             // Get Firebase custom token
             console.log("Getting Firebase token for:", publicKey.toString());
             const response = await fetch('/api/auth', {
@@ -70,34 +55,6 @@ export default function Header() {
             console.error('Error during authentication:', error);
         }
     };
-    // const handleWalletConnection = async () => {
-    //     try {
-    //         console.log("Starting wallet connection process");
-    //         if (!publicKey) return;
-    
-    //         // Get Firebase custom token
-    //         console.log("Getting Firebase token for:", publicKey.toString());
-    //         const response = await fetch('/api/auth', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ publicKey: publicKey.toString() })
-    //         });
-    
-    //         const data = await response.json();
-    //         console.log("Response from auth endpoint:", data);
-    
-    //         if (data.error) {
-    //             throw new Error(data.error);
-    //         }
-    
-    //         console.log("Signing in with custom token...");
-    //         await signInWithCustomToken(auth, data.token);
-    //         console.log("Firebase sign in successful");
-    
-    //     } catch (error) {
-    //         console.error('Error during authentication:', error);
-    //     }
-    // };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
