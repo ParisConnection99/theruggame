@@ -6,11 +6,55 @@ import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
 import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
+import UserService from '@/services/UserService';
+import { supabase } from '@/lib/supabaseClient';
+import { useAuth } from './FirebaseProvider';
+import { signInWithCustomToken } from 'firebase/auth';
+
+const userService = new UserService(supabase);
 
 export default function Header() {
     const { publicKey, connected, wallet } = useWallet();
+    const { auth } = useAuth(); 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
+    const [userProfile, setUserProfile] = useState(null);
+
+    useEffect(() => {
+        if (connected && publicKey) {
+            console.log("Wallet connected:", publicKey.toString());
+            handleWalletConnection();
+        }
+    }, [connected, publicKey]);
+
+    const handleWalletConnection = async () => {
+        try {
+            console.log("Starting wallet connection process");
+            if (!publicKey) return;
+    
+            // Get Firebase custom token
+            console.log("Getting Firebase token for:", publicKey.toString());
+            const response = await fetch('/api/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publicKey: publicKey.toString() })
+            });
+    
+            const data = await response.json();
+            console.log("Response from auth endpoint:", data);
+    
+            if (data.error) {
+                throw new Error(data.error);
+            }
+    
+            console.log("Signing in with custom token...");
+            await signInWithCustomToken(auth, data.token);
+            console.log("Firebase sign in successful");
+    
+        } catch (error) {
+            console.error('Error during authentication:', error);
+        }
+    };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
