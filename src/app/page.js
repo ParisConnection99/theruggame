@@ -4,16 +4,52 @@ import Image from "next/image";
 import Link from "next/link";
 import { Alfa_Slab_One } from "next/font/google";
 import DropdownButton from "@/components/DropdownButton";
-import markets from "@/Utils/data";
-import { useState } from "react";
+//import markets from "@/Utils/data";
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import HomePageService from '@/services/HomePageService';
 
 const alfaSlabOne = Alfa_Slab_One({
   subsets: ['latin'],
   weight: "400"
 });
 
+const homePageService = new HomePageService(supabase);
 
 export default function Home() {
+  const [markets, setMarkets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchMarketsData = async () => {
+      try {
+        setLoading(true);
+
+        const marketsData = await homePageService.fetchActiveMarkets();
+
+        console.log(`Markets: ${marketsData}`);
+        if (marketsData && marketsData.length > 0) {
+          const sortedMarkets = marketsData.sort((a, b) => {
+            return new Date(b.created_at) - new Date(a.created_at);
+          });
+
+          setMarkets(sortedMarkets);
+        } else {
+          console.log("No Markets found or empty data returned");
+        }
+      } catch (error) {
+        console.error("Error fetching markets: ", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMarketsData();
+  }, []);
+
+
+
   function onSortButtonClick(identifier) {
     {/* 0 is Trending, 1 is creation date*/ }
     console.log(`${identifier}`);
@@ -131,10 +167,10 @@ function MarketCard({ question, volume, imageSrc }) {
       {/* Buttons */}
       <div className="flex gap-4 mt-2">
         <button className="bg-green-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-green-600">
-          pump (yes)
+          PUMP (yes)
         </button>
         <button className="bg-red-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-red-600">
-          rug (no)
+          RUG (no)
         </button>
       </div>
 
