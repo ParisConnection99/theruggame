@@ -5,19 +5,24 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import UserService from '@/services/UserService';
+import CashoutService from '@/services/CashoutService';
 import UserProfileService from '@/services/UserProfileService';
 import { supabase } from '@/lib/supabaseClient';
 import { useState, useEffect } from 'react';
 import UsernameChangePopup from '@/components/UsernameChangePopup';
+import CashoutModal from '@/components/CashoutModal';
 
 const userService = new UserService(supabase);
 const userProfileService = new UserProfileService(supabase);
+const cashoutService = new CashoutService(supabase, userService);
 
 export default function ProfilePage() {
     const { disconnect } = useWallet();
     const { user: authUser, auth } = useAuth();
     const [userData, setUserData] = useState(null);
     const [bets, setBets] = useState([]);
+    const [cashouts, setCashouts] = useState([]);
+    const [isCashoutModalOpen, setIsCashoutModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -56,9 +61,14 @@ export default function ProfilePage() {
                     setLoading(true);
 
                     const betsData = await userProfileService.fetchBetsBy(userData.user_id);
+
                     console.log(`Bets: ${betsData}`);
                     if (betsData) {
-                        setBets(betsData);
+                        const sortedBets = betsData.sort((a, b) => {
+                            return new Date(b.created_at) - new Date(a.created_at);
+                        });
+
+                        setBets(sortedBets);
                     }
                 } catch (error) {
                     console.error('Error fetching bets:', error);
@@ -72,6 +82,32 @@ export default function ProfilePage() {
         fetchBets();
     }, [userData]);
 
+    // Fetch the users cashouts
+    useEffect(() => {
+        const fetchCashouts = async () => {
+            if (userData && userData.user_id) {
+                try {
+                    setLoading(true);
+
+                    const cashoutsData = await userProfileService.fetchCashoutsBy(userData.user_id);
+                    if (cashoutsData) {
+                        const sortedCashouts = cashoutsData.sort((a, b) => {
+                            return new Date(b.created_at) - new Date(a.created_at);
+                        });
+
+                        setCashouts(sortedCashouts);
+                    }
+                } catch (error) {
+                    console.error('Error fetching users cashouts: ', error);
+                } finally {
+                    setLoading(false)
+                }
+            }
+        };
+
+        fetchCashouts();
+    }, [userData]);
+
     const handleSignOut = async () => {
         try {
             await signOut(auth);
@@ -83,7 +119,12 @@ export default function ProfilePage() {
     };
 
     const handleCashOut = async () => {
-        alert('Never we are keeping all your money!.');
+        if (!userData || userData.balance <= 0) {
+            alert(`You do not have enough funds to cash out.`)
+            return
+        }
+
+        setIsCashoutModalOpen(true);
     };
 
     const handleEditProfile = async () => {
@@ -93,7 +134,7 @@ export default function ProfilePage() {
             const currentDate = new Date();
             const differenceInTime = currentDate - createdAt;
             const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-            
+
             if (differenceInDays < 7) {
                 // Username was changed less than 7 days ago
                 const daysRemaining = Math.ceil(7 - differenceInDays);
@@ -101,7 +142,7 @@ export default function ProfilePage() {
                 return;
             }
         }
-        
+
         // If username_created_at is null or if it's been more than 7 days, allow editing
         setIsPopupOpen(true);
     };
@@ -110,7 +151,7 @@ export default function ProfilePage() {
         if (!userData || !userData.user_id) {
             throw new Error("User data not available");
         }
-        
+
         try {
             // Update username in your database
             const updatedData = {
@@ -119,13 +160,13 @@ export default function ProfilePage() {
             };
 
             await userService.updateUser(userData.user_id, updatedData);
-            
+
             // Update local state
             setUserData({
                 ...userData,
                 username: newUsername
             });
-            
+
             return true;
         } catch (error) {
             console.error("Error updating username:", error);
@@ -133,9 +174,32 @@ export default function ProfilePage() {
         }
     };
 
+    const handleCashoutSubmit = async ({ walletAddress, amount }) => {
+        try {
+            const newCashout = await cashoutService.createCashout(userData.user_id, amount, walletAddress);
+
+            // // Update the user's balance
+            const updatedBalance = userData.balance - amount;
+
+            // Update local state
+            setUserData({
+                ...userData,
+                balance: updatedBalance
+            });
+
+            // Add the new cashout to the cashouts list
+            setCashouts([newCashout, ...cashouts]);
+
+            alert('Your cashout request has been submitted and is pending approval.');
+        } catch (error) {
+            console.error('Error processing cashout:', error);
+            throw new Error('Failed to process your cashout. Please try again.');
+        }
+    };
+
     return (
         <div className="flex flex-col items-center gap-4 p-4">
-            <h1 className="text-center">Welcome to the Profile Page!</h1>
+            <h1 className="text-center text-sm font-bold">Welcome {userData ? `${userData.username}` : ""}</h1>
 
             <div className="flex justify-center">
                 <div className="flex flex-col items-center">
@@ -148,11 +212,43 @@ export default function ProfilePage() {
                         priority
                     />
 
-                    <h1 className="text-white mt-3 font-bold text-m">Wallet Ca: {userData ? `${userData.wallet_ca.substring(0, 10)}...` : "-"}</h1>
-                    <h2 className="font-bold text-m">Balance: {userData ? `${userData.balance} SOL` : "-"}</h2>
+                    <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData ? `${userData.wallet_ca.substring(0, 10)}...` : "-"}</h1>
+                    <h2 className="font-bold text-sm">Balance: {userData ? `${userData.balance} SOL` : "-"}</h2>
                     <button
                         className="text-m mt-3 mb-3 cursor-pointer hover:scale-105"
                         onClick={handleEditProfile}>[Edit Profile]</button>
+
+                    { /* --- List of cashouts --- */}
+                    <div className="mt-6 w-full max-w-md">
+                        <h3 className="text-l font-bold mb-2 text-center">Cashout History</h3>
+                        {cashouts.length > 0 ? (
+                            <div className="bg-gray-800 rounded-lg p-3 w-full">
+                                <div className="grid grid-cols-3 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
+                                    <div className="col-span-1">Date</div>
+                                    <div className="col-span-1">Amount</div>
+                                    <div className="col-span-1">Status</div>
+                                </div>
+
+                                {cashouts.map((cashout) => (
+                                    <div key={cashout.id} className="grid grid-cols-3 gap-x-4 text-sm py-2 border-t border-gray-700">
+                                        <div>{new Date(cashout.created_at).toLocaleDateString()}</div>
+                                        <div>{cashout.amount} SOL</div>
+                                        <div className={
+                                            cashout.status === 'completed'
+                                                ? 'text-green-500'
+                                                : 'text-red-500'
+                                        }>
+                                            {cashout.status}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 bg-gray-800 rounded-lg">
+
+                            </div>
+                        )}
+                    </div>
 
                     {/* --- List Of Bets --- */}
                     <div className="mt-6 w-full max-w-md">
@@ -197,7 +293,7 @@ export default function ProfilePage() {
                             </div>
                         ) : (
                             <div className="text-center py-4 bg-gray-800 rounded-lg">
-                                
+
                             </div>
                         )}
                     </div>
@@ -207,14 +303,14 @@ export default function ProfilePage() {
             <div>
                 <button
                     onClick={handleSignOut}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
                 >
                     Sign Out
                 </button>
 
                 <button
                     onClick={handleCashOut}
-                    className="bg-green-600 hover:bg-green-400 text-white px-4 py-2 rounded ml-5">
+                    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded ml-5 cursor-pointer">
                     Cash Out
                 </button>
             </div>
@@ -225,6 +321,15 @@ export default function ProfilePage() {
                 onClose={() => setIsPopupOpen(false)}
                 onSave={handleSaveUsername}
                 currentUsername={userData?.username || ""}
+            />
+
+            {/* Cashout Modal */}
+            <CashoutModal
+                isOpen={isCashoutModalOpen}
+                onClose={() => setIsCashoutModalOpen(false)}
+                onSubmit={handleCashoutSubmit}
+                maxAmount={userData?.balance || 0}
+                defaultWallet={userData?.wallet_ca || ""}
             />
         </div>
     );

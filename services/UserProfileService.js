@@ -17,6 +17,20 @@ class UserProfileService {
         return data || []; // Return empty array if no data
     }
 
+    async fetchCashoutsBy(userId) {
+      if(!userId) {
+        throw new Error(`User ID is required to fetch cashouts`);
+      }
+
+      const { data, error } = await this.supabase
+        .from('cashouts')
+        .select('*')
+        .eq('userId', userId);
+      
+      if(error) throw error;
+      return data || [];
+    }
+
     async createMockMarket(supabase) {
         // Current timestamp
         const now = new Date();
@@ -185,6 +199,73 @@ class UserProfileService {
           return data;
         } catch (error) {
           console.error("Failed to create bets:", error);
+          throw error;
+        }
+      }
+
+      async createMockCashouts(supabase, userId) {
+        if(!userId) {
+          throw new Error('UserID needed for cashouts');
+        }
+
+        const now = new Date();
+        
+        // Sample bet data with different statuses and types
+        const mockCashouts = [
+          {
+            userId: userId,
+            amount: 0.5,
+            wallet_ca: 'asfasf435234345',
+            status: "completed",
+            created_at: new Date(now.getTime() - 86400000).toISOString(), // 1 day ago
+            paid_at: new Date(now.getTime() - 85800000).toISOString(), // 10 minutes after creation
+          },
+          {
+            userId: userId,
+            amount: 2,
+            wallet_ca: 'asfasf435234345',
+            status: "pending",
+            created_at: new Date(now.getTime() - 86400000).toISOString(), // 1 day ago
+          },
+          {
+            userId: userId,
+            amount: 1.5,
+            wallet_ca: 'asfasf435234345',
+            status: "cancelled",
+            created_at: new Date(now.getTime() - 86400000).toISOString(), // 1 day ago
+          },
+          {
+            userId: userId,
+            amount: 1.2,
+            wallet_ca: 'asfasf435234345',
+            status: "completed",
+            created_at: new Date(now.getTime() - 86400000).toISOString(), // 1 day ago
+            paid_at: new Date(now.getTime() - 85800000).toISOString(),
+          },
+          {
+            userId: userId,
+            amount: 0.9,
+            wallet_ca: 'asfasf435234345',
+            status: "pending",
+            created_at: new Date(now.getTime() - 86400000).toISOString(), // 1 day ago
+          }
+        ];
+
+        try {
+          const { data, error } = await supabase
+            .from('cashouts')
+            .insert(mockCashouts)
+            .select();
+          
+          if (error) {
+            console.error("Error creating cashouts:", error);
+            throw error;
+          }
+          
+          console.log("Cashouts created successfully:", data);
+          return data;
+        } catch (error) {
+          console.error("Failed to create cashouts:", error);
           throw error;
         }
       }
