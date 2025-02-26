@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 
-function MarketCard({ name, imageSrc, start_time, end_time, duration }) {
+function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketClick }) {
   // Format the question with no spaces in market name
   const tokenNameNoSpaces = name ? name.replace(/\s+/g, "") : "UnknownToken";
   const question = `Will ${tokenNameNoSpaces} Pump or Rug in 10 mins?`;
@@ -77,14 +77,14 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration }) {
         const formattedSeconds = String(seconds).padStart(2, '0');
 
         // 👇 Added console log for debugging
-        console.log("Timer values:", {
-          now: now.toISOString(),
-          lastBetTime: lastBetTime.toISOString(),
-          timeTillLastBet,
-          minutes,
-          seconds,
-          formatted: `${formattedMinutes}:${formattedSeconds}`
-        });
+        // console.log("Timer values:", {
+        //   now: now.toISOString(),
+        //   lastBetTime: lastBetTime.toISOString(),
+        //   timeTillLastBet,
+        //   minutes,
+        //   seconds,
+        //   formatted: `${formattedMinutes}:${formattedSeconds}`
+        // });
 
         setTimeLeft(`${formattedMinutes}:${formattedSeconds}`);
       } catch (error) {
@@ -105,7 +105,8 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration }) {
   }, [start_time, end_time, duration]);
 
   return (
-    <div className="bg-gray-600 p-4 rounded-lg shadow-md text-white flex flex-col gap-4 hover:border-2 hover:border-white">
+    <div className="bg-gray-600 p-4 rounded-lg shadow-md text-white flex flex-col gap-4 hover:border-2 hover:border-white"
+    onClick={onMarketClick}>
       {/* Image and Question */}
       <div className="flex gap-4 items-center">
         <Image

@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabaseClient';
 import HomePageService from '@/services/HomePageService';
 import MarketCard from '@/components/MarketCard';
 import FeaturedMarket from '@/components/FeaturedMarket';
+import { listenToMarkets } from '@/services/MarketRealtimeService';
 
 
 const homePageService = new HomePageService(supabase);
@@ -17,13 +18,32 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [featuredMarket, setFeaturedMarket] = useState(null);
 
+   // Helper function defined outside of any useEffect
+   const updateFeaturedMarket = (marketsList) => {
+    if (!marketsList || marketsList.length === 0) return;
+    
+    // Find market with highest total amount wagered
+    const newFeaturedMarket = marketsList.reduce((featured, current) => {
+      const featuredTotal = (featured.total_pump_amount || 0) + (featured.total_rug_amount || 0);
+      const currentTotal = (current.total_pump_amount || 0) + (current.total_rug_amount || 0);
+      
+      return currentTotal > featuredTotal ? current : featured;
+    }, marketsList[0]);
+    
+    setFeaturedMarket(newFeaturedMarket);
+  };
 
+
+  // Fetching the active markets
   useEffect(() => {
     const fetchMarketsData = async () => {
       try {
         setLoading(true);
 
         //await homePageService.createMockMarkets(supabase);
+
+        //await homePageService.createMockMarket(supabase, 1);
+        //await homePageService.createMockMarket(supabase, 2);
 
         const marketsData = await homePageService.fetchActiveMarkets();
 
@@ -34,6 +54,8 @@ export default function Home() {
           });
 
           setMarkets(sortedMarkets);
+
+          updateFeaturedMarket(sortedMarkets);
         } else {
           console.log("No Markets found or empty data returned");
         }
@@ -47,6 +69,46 @@ export default function Home() {
     fetchMarketsData();
   }, []);
 
+  // Listening for updates on the market
+  useEffect(() => {
+    const handleMarketUpdate = (updatedMarket) => {
+      switch (updatedMarket.type) {
+        case 'NEW MARKET':
+          const newMarkets = [...markets, updatedMarket.payload];
+          newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          setMarkets(newMarkets);
+          break;
+        
+        case 'PUMP VS RUG SPLIT UPDATE':
+          // We should update the Featured Market.
+          setMarkets(currentMarkets => {
+            const updatedMarkets = currentMarkets.map(market => 
+              market.id === updatedMarket.payload.id ? updatedMarket.payload : market
+            );
+            
+            // Recalculate featured market
+            updateFeaturedMarket(updatedMarkets);
+            
+            return updatedMarkets;
+          });
+          break;
+      }
+    }
+
+    const subscription = listenToMarkets(handleMarketUpdate);
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [markets]);
+
+  async function onMarketClick() {
+    console.log('Market clicked function called');
+    await homePageService.createMockMarket(supabase, 3);
+    //alert('Market clicked');
+  }
 
   // Function to handle featured market click
   const handleFeaturedMarketClick = () => {
@@ -72,13 +134,13 @@ export default function Home() {
             start_time={featuredMarket.start_time}
             end_time={featuredMarket.end_time}
             duration={featuredMarket.duration}
-            amountWagered={`${featuredMarket.amount_wagered || 50} SOL (${featuredMarket.amount_wagered_usd || '10k'})`}
+            amountWagered={`${featuredMarket.total_pump_amount + featuredMarket.total_rug_amount} SOL`}
             imageSrc={featuredMarket.imageSrc || "/images/eth.webp"}
             onMarketClick={handleFeaturedMarketClick}
           />
         ) : (
           // Fallback for when no featured market is available
-          <FeaturedMarket 
+          <FeaturedMarket
             start_time={new Date(Date.now() - 5 * 60000).toISOString()} // 5 minutes ago
             end_time={new Date(Date.now() + 10 * 60000).toISOString()} // 10 minutes from now
             duration={15} // 15 minutes total duration
@@ -95,6 +157,7 @@ export default function Home() {
                 start_time={market.start_time}
                 end_time={market.end_time}
                 duration={market.duration}
+                onMarketClick={onMarketClick}
               />
             ))}
           </div>
@@ -132,10 +195,9 @@ export default function Home() {
         </div>*/}
 
 
-        {/*  
+{/*  
         <div className="flex mt-10 ml-5">
           <DropdownButton onClick={onSortButtonClick} />
         </div>
         */}
 
-       

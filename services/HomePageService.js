@@ -49,7 +49,7 @@ class HomePageService {
                 // Current timestamp for start time
                 const now = new Date();
                 const startTime = now;
-                
+
                 // End time is exactly 10 minutes from now
                 const endTime = new Date(now);
                 endTime.setMinutes(endTime.getMinutes() + durationMinutes);
@@ -129,6 +129,124 @@ class HomePageService {
             throw error;
         }
     }
+
+
+    async createMockMarket(supabase, marketId) {
+        // Current timestamp
+        const now = new Date();
+
+        // Create start time 1 hour from now
+        const startTime = new Date(now);
+        startTime.setHours(startTime.getHours() + 1);
+
+        // Create end time (10 min duration)
+        const endTime = new Date(startTime);
+        endTime.setMinutes(endTime.getMinutes() + 10);
+
+        // Market variations based on marketId
+        const marketVariations = [
+            {
+                token_address: "0xabcdef1234567890abcdef1234567890abcdef01",
+                initial_coin_price: 0.000025,
+                initial_market_cap: 20000,
+                initial_liquidity: 4000,
+                initial_buy_txns: 30,
+                initial_sell_txns: 10,
+                total_pump_amount: 1200,
+                total_rug_amount: 800,
+                name: "Pepe Coin",
+                website_url: "https://pepecoin.io",
+                icon_url: "https://pepecoin.io/logo.png",
+                dex_screener_url: "https://dexscreener.com/solana/pepe-address"
+            },
+            {
+                token_address: "0x123456abcdef7890abcdef1234567890abcdef02",
+                initial_coin_price: 0.000035,
+                initial_market_cap: 30000,
+                initial_liquidity: 6000,
+                initial_buy_txns: 50,
+                initial_sell_txns: 15,
+                total_pump_amount: 2000,
+                total_rug_amount: 1500,
+                name: "Shiba Coin",
+                website_url: "https://shibacoin.io",
+                icon_url: "https://shibacoin.io/logo.png",
+                dex_screener_url: "https://dexscreener.com/solana/shiba-address"
+            },
+            {
+                token_address: "0x7890abcdef123456abcdef1234567890abcdef03",
+                initial_coin_price: 0.000045,
+                initial_market_cap: 40000,
+                initial_liquidity: 8000,
+                initial_buy_txns: 70,
+                initial_sell_txns: 20,
+                total_pump_amount: 5000,
+                total_rug_amount: 3000,
+                name: "Floki Coin",
+                website_url: "https://flokicoin.io",
+                icon_url: "https://flokicoin.io/logo.png",
+                dex_screener_url: "https://dexscreener.com/solana/floki-address"
+            }
+        ];
+
+        // Select market variation based on input marketId
+        const selectedMarket = marketVariations[marketId % marketVariations.length];
+
+        // Sample socials data
+        const socials = {
+            telegram: `https://t.me/${selectedMarket.name.toLowerCase().replace(" ", "")}`,
+            twitter: `https://twitter.com/${selectedMarket.name.toLowerCase().replace(" ", "")}`,
+            discord: null,
+            website: selectedMarket.website_url
+        };
+
+        // Market data
+        const marketData = {
+            token_address: selectedMarket.token_address,
+            start_time: startTime.toISOString(),
+            end_time: endTime.toISOString(),
+            duration: 10, // minutes
+            status: "OPEN", // pending, active, closed
+            phase: "BETTING", // pre-launch, live, resolved
+            outcome: null, // will be 'pump' or 'rug' after resolution
+            total_pump_amount: selectedMarket.total_pump_amount,
+            total_rug_amount: selectedMarket.total_rug_amount,
+            current_pump_odds: 2.0,
+            current_rug_odds: 2.0,
+            initial_coin_price: selectedMarket.initial_coin_price,
+            initial_market_cap: selectedMarket.initial_market_cap,
+            initial_liquidity: selectedMarket.initial_liquidity,
+            initial_buy_txns: selectedMarket.initial_buy_txns,
+            initial_sell_txns: selectedMarket.initial_sell_txns,
+            dex_screener_url: selectedMarket.dex_screener_url,
+            dex_id: "solana_raydium",
+            website_url: selectedMarket.website_url,
+            icon_url: selectedMarket.icon_url,
+            coin_description: `${selectedMarket.name} is a trending memecoin on Solana with a strong community.`,
+            socials: socials,
+            name: selectedMarket.name
+        };
+
+        try {
+            const { data, error } = await supabase
+                .from('markets')
+                .insert([marketData])
+                .select();
+
+            if (error) {
+                console.error("Error creating market:", error);
+                throw error;
+            }
+
+            console.log("Market created successfully:", data);
+            return data[0];
+        } catch (error) {
+            console.error("Failed to create market:", error);
+            throw error;
+        }
+    }
+
+
 }
 
 module.exports = HomePageService;
