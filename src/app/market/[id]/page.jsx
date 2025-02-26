@@ -18,7 +18,7 @@ export default function MarketPage() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gray-900 text-white">
+    <div className="p-6 max-w-7xl mx-auto bg-blue-900 text-white">
       {/* Market Header */}
       <div className="flex items-center justify-between">
         {/* Title and Image */}

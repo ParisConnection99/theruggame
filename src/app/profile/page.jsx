@@ -1,3 +1,339 @@
+// 'use client';
+// import { useWallet } from '@solana/wallet-adapter-react';
+// import { useAuth } from '@/components/FirebaseProvider';
+// import { signOut } from 'firebase/auth';
+// import { useRouter } from 'next/navigation';
+// import Image from 'next/image';
+// import UserService from '@/services/UserService';
+// import CashoutService from '@/services/CashoutService';
+// import UserProfileService from '@/services/UserProfileService';
+// import { supabase } from '@/lib/supabaseClient';
+// import { useState, useEffect } from 'react';
+// import UsernameChangePopup from '@/components/UsernameChangePopup';
+// import CashoutModal from '@/components/CashoutModal';
+
+// const userService = new UserService(supabase);
+// const userProfileService = new UserProfileService(supabase);
+// const cashoutService = new CashoutService(supabase, userService);
+
+// export default function ProfilePage() {
+//     const { disconnect } = useWallet();
+//     const { user: authUser, auth } = useAuth();
+//     const [userData, setUserData] = useState(null);
+//     const [bets, setBets] = useState([]);
+//     const [cashouts, setCashouts] = useState([]);
+//     const [isCashoutModalOpen, setIsCashoutModalOpen] = useState(false);
+//     const [loading, setLoading] = useState(true);
+//     const router = useRouter();
+
+//     // Popup state
+//     const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+//     // Fetch user data when user auth changes
+//     useEffect(() => {
+//         const fetchUserData = async () => {
+//             if (authUser && authUser.uid) {
+//                 try {
+//                     setLoading(true);
+//                     // Fetch user data from your database using authUser.uid
+//                     const dbUser = await userService.getUserByWallet(authUser.uid);
+//                     setUserData(dbUser);
+//                 } catch (error) {
+//                     console.error("Error fetching user data:", error);
+//                 } finally {
+//                     setLoading(false);
+//                 }
+//             } else {
+//                 setLoading(false);
+//                 setUserData(null);
+//             }
+//         };
+
+//         fetchUserData();
+//     }, [authUser]);
+
+//     // Fetch the users bet history
+//     useEffect(() => {
+//         const fetchBets = async () => {
+//             // Only proceed if we have valid userData with an ID
+//             if (userData && userData.user_id) {
+//                 try {
+//                     setLoading(true);
+
+//                     const betsData = await userProfileService.fetchBetsBy(userData.user_id);
+
+//                     console.log(`Bets: ${betsData}`);
+//                     if (betsData) {
+//                         const sortedBets = betsData.sort((a, b) => {
+//                             return new Date(b.created_at) - new Date(a.created_at);
+//                         });
+
+//                         setBets(sortedBets);
+//                     }
+//                 } catch (error) {
+//                     console.error('Error fetching bets:', error);
+//                     // Keep showing sample data or empty state on error
+//                 } finally {
+//                     setLoading(false);
+//                 }
+//             }
+//         };
+
+//         fetchBets();
+//     }, [userData]);
+
+//     // Fetch the users cashouts
+//     useEffect(() => {
+//         const fetchCashouts = async () => {
+//             if (userData && userData.user_id) {
+//                 try {
+//                     setLoading(true);
+
+//                     const cashoutsData = await userProfileService.fetchCashoutsBy(userData.user_id);
+//                     if (cashoutsData) {
+//                         const sortedCashouts = cashoutsData.sort((a, b) => {
+//                             return new Date(b.created_at) - new Date(a.created_at);
+//                         });
+
+//                         setCashouts(sortedCashouts);
+//                     }
+//                 } catch (error) {
+//                     console.error('Error fetching users cashouts: ', error);
+//                 } finally {
+//                     setLoading(false)
+//                 }
+//             }
+//         };
+
+//         fetchCashouts();
+//     }, [userData]);
+
+//     const handleSignOut = async () => {
+//         try {
+//             await signOut(auth);
+//             await disconnect();
+//             router.push('/');
+//         } catch (error) {
+//             console.error('Error signing out:', error);
+//         }
+//     };
+
+//     const handleCashOut = async () => {
+//         if (!userData || userData.balance <= 0) {
+//             alert(`You do not have enough funds to cash out.`)
+//             return
+//         }
+
+//         setIsCashoutModalOpen(true);
+//     };
+
+//     const handleEditProfile = async () => {
+//         // Check if username was created in the last 7 days
+//         if (userData.username_changed_at) {
+//             const createdAt = new Date(userData.username_changed_at);
+//             const currentDate = new Date();
+//             const differenceInTime = currentDate - createdAt;
+//             const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+
+//             if (differenceInDays < 7) {
+//                 // Username was changed less than 7 days ago
+//                 const daysRemaining = Math.ceil(7 - differenceInDays);
+//                 alert(`You can only change your username once per week. Please try again in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}.`);
+//                 return;
+//             }
+//         }
+
+//         // If username_created_at is null or if it's been more than 7 days, allow editing
+//         setIsPopupOpen(true);
+//     };
+
+//     const handleSaveUsername = async (newUsername) => {
+//         if (!userData || !userData.user_id) {
+//             throw new Error("User data not available");
+//         }
+
+//         try {
+//             // Update username in your database
+//             const updatedData = {
+//                 username: newUsername,
+//                 username_changed_at: new Date().toISOString(),
+//             };
+
+//             await userService.updateUser(userData.user_id, updatedData);
+
+//             // Update local state
+//             setUserData({
+//                 ...userData,
+//                 username: newUsername
+//             });
+
+//             return true;
+//         } catch (error) {
+//             console.error("Error updating username:", error);
+//             throw new Error("Failed to update username");
+//         }
+//     };
+
+//     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
+//         try {
+//             const newCashout = await cashoutService.createCashout(userData.user_id, amount, walletAddress);
+
+//             // // Update the user's balance
+//             const updatedBalance = userData.balance - amount;
+
+//             // Update local state
+//             setUserData({
+//                 ...userData,
+//                 balance: updatedBalance
+//             });
+
+//             // Add the new cashout to the cashouts list
+//             setCashouts([newCashout, ...cashouts]);
+
+//             alert('Your cashout request has been submitted and is pending approval.');
+//         } catch (error) {
+//             console.error('Error processing cashout:', error);
+//             throw new Error('Failed to process your cashout. Please try again.');
+//         }
+//     };
+
+//     return (
+//         <div className="flex flex-col items-center gap-4 p-4">
+//             <h1 className="text-center text-sm font-bold">Welcome {userData ? `${userData.username}` : ""}</h1>
+
+//             <div className="flex justify-center">
+//                 <div className="flex flex-col items-center">
+//                     <Image
+//                         className="rounded-full"
+//                         src="/images/pepe.webp"
+//                         alt="profile picture"
+//                         width={75}
+//                         height={75}
+//                         priority
+//                     />
+
+//                     <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData ? `${userData.wallet_ca.substring(0, 10)}...` : "-"}</h1>
+//                     <h2 className="font-bold text-sm">Balance: {userData ? `${userData.balance} SOL` : "-"}</h2>
+//                     <button
+//                         className="text-m mt-3 mb-3 cursor-pointer hover:scale-105"
+//                         onClick={handleEditProfile}>[Edit Profile]</button>
+
+//                     { /* --- List of cashouts --- */}
+//                     <div className="mt-6 w-full max-w-md">
+//                         <h3 className="text-l font-bold mb-2 text-center">Cashout History</h3>
+//                         {cashouts.length > 0 ? (
+//                             <div className="bg-gray-800 rounded-lg p-3 w-full">
+//                                 <div className="grid grid-cols-3 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
+//                                     <div className="col-span-1">Date</div>
+//                                     <div className="col-span-1">Amount</div>
+//                                     <div className="col-span-1">Status</div>
+//                                 </div>
+
+//                                 {cashouts.map((cashout) => (
+//                                     <div key={cashout.id} className="grid grid-cols-3 gap-x-4 text-sm py-2 border-t border-gray-700">
+//                                         <div>{new Date(cashout.created_at).toLocaleDateString()}</div>
+//                                         <div>{cashout.amount} SOL</div>
+//                                         <div className={
+//                                             cashout.status === 'completed'
+//                                                 ? 'text-green-500'
+//                                                 : 'text-red-500'
+//                                         }>
+//                                             {cashout.status}
+//                                         </div>
+//                                     </div>
+//                                 ))}
+//                             </div>
+//                         ) : (
+//                             <div className="text-center py-4 bg-gray-800 rounded-lg">
+
+//                             </div>
+//                         )}
+//                     </div>
+
+//                     {/* --- List Of Bets --- */}
+//                     <div className="mt-6 w-full max-w-md">
+//                         <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
+//                         {bets.length > 0 ? (
+//                             <div className="bg-gray-800 rounded-lg p-3 w-full">
+//                                 <div className="grid grid-cols-4 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
+//                                     <div className="col-span-1">Date</div>
+//                                     <div className="col-span-1">Amount</div>
+//                                     <div className="col-span-1">Result</div>
+//                                     <div className="col-span-1">Profit</div>
+//                                 </div>
+
+//                                 {bets.map((bet) => (
+//                                     <div key={bet.id} className="grid grid-cols-4 gap-x-4 text-sm py-2 border-t border-gray-700">
+//                                         <div>{new Date(bet.created_at).toLocaleDateString()}</div>
+//                                         <div>{bet.matched_amount} SOL</div>
+//                                         <div className={
+//                                             bet.status === 'WON'
+//                                                 ? 'text-green-500'
+//                                                 : bet.status === 'LOST'
+//                                                     ? 'text-red-500'
+//                                                     : ''
+//                                         }>
+//                                             {bet.status === 'WON' || bet.status === 'LOST' ? bet.status : ''}
+//                                         </div>
+//                                         <div className={
+//                                             bet.status === 'WON'
+//                                                 ? 'text-green-500'
+//                                                 : bet.status === 'LOST'
+//                                                     ? 'text-red-500'
+//                                                     : ''
+//                                         }>
+//                                             {bet.status === 'WON'
+//                                                 ? `${bet.matched_amount} SOL`
+//                                                 : bet.status === 'LOST'
+//                                                     ? `-${bet.matched_amount} SOL`
+//                                                     : ''}
+//                                         </div>
+//                                     </div>
+//                                 ))}
+//                             </div>
+//                         ) : (
+//                             <div className="text-center py-4 bg-gray-800 rounded-lg">
+
+//                             </div>
+//                         )}
+//                     </div>
+//                     <h4 className="text-gray-500 text-sm mt-4">JOINED AT: 12/01/2025</h4>
+//                 </div>
+//             </div>
+//             <div>
+//                 <button
+//                     onClick={handleSignOut}
+//                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
+//                 >
+//                     Sign Out
+//                 </button>
+
+//                 <button
+//                     onClick={handleCashOut}
+//                     className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded ml-5 cursor-pointer">
+//                     Cash Out
+//                 </button>
+//             </div>
+
+//             {/* Username Change Popup */}
+//             <UsernameChangePopup
+//                 isOpen={isPopupOpen}
+//                 onClose={() => setIsPopupOpen(false)}
+//                 onSave={handleSaveUsername}
+//                 currentUsername={userData?.username || ""}
+//             />
+
+//             {/* Cashout Modal */}
+//             <CashoutModal
+//                 isOpen={isCashoutModalOpen}
+//                 onClose={() => setIsCashoutModalOpen(false)}
+//                 onSubmit={handleCashoutSubmit}
+//                 maxAmount={userData?.balance || 0}
+//                 defaultWallet={userData?.wallet_ca || ""}
+//             />
+//         </div>
+//     );
+// }
 'use client';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from '@/components/FirebaseProvider';
@@ -23,7 +359,15 @@ export default function ProfilePage() {
     const [bets, setBets] = useState([]);
     const [cashouts, setCashouts] = useState([]);
     const [isCashoutModalOpen, setIsCashoutModalOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+
+    // Separate loading states for each data type
+    const [userLoading, setUserLoading] = useState(true);
+    const [betsLoading, setBetsLoading] = useState(false);
+    const [cashoutsLoading, setCashoutsLoading] = useState(false);
+
+    // Computed overall loading state
+    const isLoading = userLoading || betsLoading || cashoutsLoading;
+
     const router = useRouter();
 
     // Popup state
@@ -32,76 +376,83 @@ export default function ProfilePage() {
     // Fetch user data when user auth changes
     useEffect(() => {
         const fetchUserData = async () => {
-            if (authUser && authUser.uid) {
-                try {
-                    setLoading(true);
-                    // Fetch user data from your database using authUser.uid
-                    const dbUser = await userService.getUserByWallet(authUser.uid);
-                    setUserData(dbUser);
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
+            if (!authUser || !authUser.uid) {
+                setUserLoading(false);
                 setUserData(null);
+                return;
+            }
+
+            try {
+                setUserLoading(true);
+                const dbUser = await userService.getUserByWallet(authUser.uid);
+                setUserData(dbUser);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                setUserData(null);
+            } finally {
+                setUserLoading(false);
             }
         };
 
         fetchUserData();
     }, [authUser]);
 
-    // Fetch the users bet history
+    // Fetch the users bet history - only runs when userData is available
     useEffect(() => {
         const fetchBets = async () => {
-            // Only proceed if we have valid userData with an ID
-            if (userData && userData.user_id) {
-                try {
-                    setLoading(true);
+            if (!userData || !userData.user_id) {
+                return;
+            }
 
-                    const betsData = await userProfileService.fetchBetsBy(userData.user_id);
+            try {
+                setBetsLoading(true);
+                const betsData = await userProfileService.fetchBetsBy(userData.user_id);
 
-                    console.log(`Bets: ${betsData}`);
-                    if (betsData) {
-                        const sortedBets = betsData.sort((a, b) => {
-                            return new Date(b.created_at) - new Date(a.created_at);
-                        });
+                if (betsData) {
+                    const sortedBets = betsData.sort((a, b) => {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
 
-                        setBets(sortedBets);
-                    }
-                } catch (error) {
-                    console.error('Error fetching bets:', error);
-                    // Keep showing sample data or empty state on error
-                } finally {
-                    setLoading(false);
+                    setBets(sortedBets);
+                } else {
+                    setBets([]);
                 }
+            } catch (error) {
+                console.error('Error fetching bets:', error);
+                setBets([]);
+            } finally {
+                setBetsLoading(false);
             }
         };
 
         fetchBets();
     }, [userData]);
 
-    // Fetch the users cashouts
+    // Fetch the users cashouts - only runs when userData is available
     useEffect(() => {
         const fetchCashouts = async () => {
-            if (userData && userData.user_id) {
-                try {
-                    setLoading(true);
+            if (!userData || !userData.user_id) {
+                return;
+            }
 
-                    const cashoutsData = await userProfileService.fetchCashoutsBy(userData.user_id);
-                    if (cashoutsData) {
-                        const sortedCashouts = cashoutsData.sort((a, b) => {
-                            return new Date(b.created_at) - new Date(a.created_at);
-                        });
+            try {
+                setCashoutsLoading(true);
+                const cashoutsData = await userProfileService.fetchCashoutsBy(userData.user_id);
 
-                        setCashouts(sortedCashouts);
-                    }
-                } catch (error) {
-                    console.error('Error fetching users cashouts: ', error);
-                } finally {
-                    setLoading(false)
+                if (cashoutsData) {
+                    const sortedCashouts = cashoutsData.sort((a, b) => {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
+
+                    setCashouts(sortedCashouts);
+                } else {
+                    setCashouts([]);
                 }
+            } catch (error) {
+                console.error('Error fetching users cashouts: ', error);
+                setCashouts([]);
+            } finally {
+                setCashoutsLoading(false);
             }
         };
 
@@ -120,8 +471,8 @@ export default function ProfilePage() {
 
     const handleCashOut = async () => {
         if (!userData || userData.balance <= 0) {
-            alert(`You do not have enough funds to cash out.`)
-            return
+            alert(`You do not have enough funds to cash out.`);
+            return;
         }
 
         setIsCashoutModalOpen(true);
@@ -164,7 +515,8 @@ export default function ProfilePage() {
             // Update local state
             setUserData({
                 ...userData,
-                username: newUsername
+                username: newUsername,
+                username_changed_at: new Date().toISOString()
             });
 
             return true;
@@ -178,7 +530,7 @@ export default function ProfilePage() {
         try {
             const newCashout = await cashoutService.createCashout(userData.user_id, amount, walletAddress);
 
-            // // Update the user's balance
+            // Update the user's balance
             const updatedBalance = userData.balance - amount;
 
             // Update local state
@@ -197,9 +549,37 @@ export default function ProfilePage() {
         }
     };
 
+    // Loading UI
+    if (userLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                    <div className="rounded-full bg-gray-700 h-20 w-20"></div>
+                    <div className="h-4 bg-gray-700 rounded w-48"></div>
+                    <div className="h-4 bg-gray-700 rounded w-32"></div>
+                </div>
+            </div>
+        );
+    }
+
+    // No user data
+    if (!userData) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <p className="text-center">Unable to load user profile. Please sign in again.</p>
+                <button
+                    onClick={() => router.push('/')}
+                    className="mt-4 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
+                >
+                    Return to Home
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col items-center gap-4 p-4">
-            <h1 className="text-center text-sm font-bold">Welcome {userData ? `${userData.username}` : ""}</h1>
+            <h1 className="text-center text-sm font-bold">Welcome {userData.username}</h1>
 
             <div className="flex justify-center">
                 <div className="flex flex-col items-center">
@@ -212,16 +592,22 @@ export default function ProfilePage() {
                         priority
                     />
 
-                    <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData ? `${userData.wallet_ca.substring(0, 10)}...` : "-"}</h1>
-                    <h2 className="font-bold text-sm">Balance: {userData ? `${userData.balance} SOL` : "-"}</h2>
+                    <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData.wallet_ca.substring(0, 10)}...</h1>
+                    <h2 className="font-bold text-sm">Balance: {userData.balance} SOL</h2>
                     <button
                         className="text-m mt-3 mb-3 cursor-pointer hover:scale-105"
                         onClick={handleEditProfile}>[Edit Profile]</button>
 
-                    { /* --- List of cashouts --- */}
+                    {/* --- List of cashouts --- */}
                     <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Cashout History</h3>
-                        {cashouts.length > 0 ? (
+                        {cashoutsLoading ? (
+                            <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full"></div>
+                            </div>
+                        ) : cashouts.length > 0 ? (
                             <div className="bg-gray-800 rounded-lg p-3 w-full">
                                 <div className="grid grid-cols-3 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
                                     <div className="col-span-1">Date</div>
@@ -245,7 +631,7 @@ export default function ProfilePage() {
                             </div>
                         ) : (
                             <div className="text-center py-4 bg-gray-800 rounded-lg">
-
+                                <p className="text-gray-400">No cashout history</p>
                             </div>
                         )}
                     </div>
@@ -253,7 +639,13 @@ export default function ProfilePage() {
                     {/* --- List Of Bets --- */}
                     <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
-                        {bets.length > 0 ? (
+                        {betsLoading ? (
+                            <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full"></div>
+                            </div>
+                        ) : bets.length > 0 ? (
                             <div className="bg-gray-800 rounded-lg p-3 w-full">
                                 <div className="grid grid-cols-4 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
                                     <div className="col-span-1">Date</div>
@@ -293,24 +685,27 @@ export default function ProfilePage() {
                             </div>
                         ) : (
                             <div className="text-center py-4 bg-gray-800 rounded-lg">
-
+                                <p className="text-gray-400">No bet history</p>
                             </div>
                         )}
                     </div>
-                    <h4 className="text-gray-500 text-sm mt-4">JOINED AT: 12/01/2025</h4>
+                    <h4 className="text-gray-500 text-sm mt-4">JOINED AT: {userData.created_at ? new Date(userData.created_at).toLocaleDateString() : "12/01/2025"}</h4>
                 </div>
             </div>
             <div>
                 <button
                     onClick={handleSignOut}
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
+                    disabled={isLoading}
                 >
                     Sign Out
                 </button>
 
                 <button
                     onClick={handleCashOut}
-                    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded ml-5 cursor-pointer">
+                    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded ml-5 cursor-pointer"
+                    disabled={isLoading || userData.balance <= 0}
+                >
                     Cash Out
                 </button>
             </div>

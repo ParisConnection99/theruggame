@@ -215,6 +215,7 @@ class MarketCreationService {
             website_url: (token.info?.websites && token.info.websites.length > 0) ? token.info.websites[0] : '',
             icon_url: token.imageUrl,
             coin_description: token.labels,
+            name: token.name,
             socials: { 
                 socials: token.socials
              }

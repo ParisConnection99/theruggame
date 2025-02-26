@@ -21,7 +21,8 @@ class MarketService {
       website_url = '',
       icon_url = '',
       coin_description = '',
-      socials = {}
+      socials = {},
+      name = ''
     }) {
       if (!tokenAddress || !startTime) {
         throw new Error('Error processing Market.');
@@ -65,12 +66,12 @@ class MarketService {
                   token_address, start_time, duration, end_time, status, phase, 
                   total_pump_amount, total_rug_amount, current_pump_odds, current_rug_odds, 
                   initial_coin_price, initial_market_cap, initial_liquidity, initial_buy_txns, initial_sell_txns,
-                  dex_screener_url, dex_id, website_url, icon_url, coin_description, socials
+                  dex_screener_url, dex_id, website_url, icon_url, coin_description, socials, name
               ) 
               VALUES ($1, $2, $3, $4, $5, $6, 
                       0, 0, 2.0, 2.0, 
                       $7, $8, $9, $10, $11, 
-                      $12, $13, $14, $15, $16, $17)
+                      $12, $13, $14, $15, $16, $17, $18)
               RETURNING *;
           `, [
           tokenAddress,
@@ -89,7 +90,8 @@ class MarketService {
           website_url,
           icon_url,
           coin_description,
-          socials
+          socials,
+          name
         ]);
   
         // 4️⃣ Update token status to "used"

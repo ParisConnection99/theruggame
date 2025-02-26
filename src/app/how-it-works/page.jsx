@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function HowItWorksPage() {
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white p-6">
+    <div className="flex flex-col items-center min-h-screen bg-blue-900 text-white p-6">
       <h1 className="text-2xl font-bold mb-4">How it Works</h1>
       <p className="text-center">
         <strong>The Rug Game</strong> allows you to predict and bet on the performance of memecoins

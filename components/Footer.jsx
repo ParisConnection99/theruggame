@@ -5,7 +5,7 @@ import { FaTelegram, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 export default function Footer() {
     return (
-        <footer className="bg-gray-900 text-gray-400 text-sm p-4 w-full relative">
+        <footer className="bg-blue-900 text-gray-400 text-sm p-4 w-full relative">
             {/* Responsive Container */}
             <div className="relative flex flex-col items-center md:flex-row md:items-center w-full">
                 {/* Copyright - Absolutely positioned on larger screens */}

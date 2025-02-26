@@ -2,29 +2,28 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Alfa_Slab_One } from "next/font/google";
 import DropdownButton from "@/components/DropdownButton";
-//import markets from "@/Utils/data";
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import HomePageService from '@/services/HomePageService';
+import MarketCard from '@/components/MarketCard';
+import FeaturedMarket from '@/components/FeaturedMarket';
 
-const alfaSlabOne = Alfa_Slab_One({
-  subsets: ['latin'],
-  weight: "400"
-});
 
 const homePageService = new HomePageService(supabase);
 
 export default function Home() {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [featuredMarket, setFeaturedMarket] = useState(null);
 
 
   useEffect(() => {
     const fetchMarketsData = async () => {
       try {
         setLoading(true);
+
+        await homePageService.createMockMarkets(supabase);
 
         const marketsData = await homePageService.fetchActiveMarkets();
 
@@ -49,11 +48,14 @@ export default function Home() {
   }, []);
 
 
-
-  function onSortButtonClick(identifier) {
-    {/* 0 is Trending, 1 is creation date*/ }
-    console.log(`${identifier}`);
-  }
+  // Function to handle featured market click
+  const handleFeaturedMarketClick = () => {
+    // Navigate to the market details page
+    // Replace with your actual navigation logic
+    if (featuredMarket && featuredMarket.id) {
+      router.push(`/markets/${featuredMarket.id}`);
+    }
+  };
 
   const [visibleMarkets, setVisibleMarkets] = useState(6); // Start with 6 markets
   const showMoreMarkets = () => {
@@ -63,71 +65,36 @@ export default function Home() {
   return (
     <div>
       <main >
-        <div className="flex flex-col items-center justify-center mt-10">
-          {/* King of the Trenches Title */}
-          <h1
-            className={`${alfaSlabOne.className} text-4xl text-orange-500 uppercase tracking-wide mb-6 text-center`}
-          >
-            Most Bet-on Market
-          </h1>
+        {/* Featured Market Component */}
+        {featuredMarket ? (
+          <FeaturedMarket
+            marketName={featuredMarket.name}
+            start_time={featuredMarket.start_time}
+            end_time={featuredMarket.end_time}
+            duration={featuredMarket.duration}
+            amountWagered={`${featuredMarket.amount_wagered || 50} SOL (${featuredMarket.amount_wagered_usd || '10k'})`}
+            imageSrc={featuredMarket.imageSrc || "/images/eth.webp"}
+            onMarketClick={handleFeaturedMarketClick}
+          />
+        ) : (
+          // Fallback for when no featured market is available
+          <FeaturedMarket 
+            start_time={new Date(Date.now() - 5 * 60000).toISOString()} // 5 minutes ago
+            end_time={new Date(Date.now() + 10 * 60000).toISOString()} // 10 minutes from now
+            duration={15} // 15 minutes total duration
+          />
+        )}
 
-          {/* Featured Market Section */}
-          <div
-            className="flex items-center gap-4 p-4 rounded-lg bg-gray-800 shadow-md w-[90%] sm:w-[80%] max-w-lg mx-auto border border-gray-700 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
-            onClick={() => alert("Navigate to market details!")} // Example click action
-          >
-            {/* Market Image */}
-            <Image
-              className="rounded-md"
-              src="/images/eth.webp"
-              alt="market_image"
-              width={60}
-              height={60}
-              priority
-            />
-
-            {/* Market Details */}
-            <div className="flex flex-col">
-              <p className="text-white text-lg font-semibold mb-1">
-                Will $Eth Coin Pump in 10 Mins?
-              </p>
-              <p className="text-gray-400 text-sm mb-2">
-                Minutes left: <span className="text-red-400">4 mins 🔥🔥</span>
-              </p>
-              <p className="text-green-400 font-bold text-md">
-                Amount wagered: 50 SOL ($10k)
-              </p>
-            </div>
-          </div>
-        </div>
-
-
-        {/* Search Market */}
-        <div className="flex gap-2 items-center justify-center mt-10">
-          <input type="text"
-            className="w-full sm:w-1/3 bg-blue-300 text-white rounded-md h-10 p-2 ml-4 placeholder-gray-500 focus:border-white"
-            placeholder="search markets">
-          </input>
-
-          <button className="bg-blue-300 text-black hover:bg-blue-500 w-20 h-10 rounded-md mr-4">
-            search
-          </button>
-
-        </div>
-
-        { /* Sorting Button*/}
-        <div className="flex mt-10 ml-5">
-          <DropdownButton onClick={onSortButtonClick} />
-        </div>
-
-        <div className="p-4">
+        <div className="p-4 mt-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {markets.slice(0, visibleMarkets).map((market, index) => (
               <MarketCard
                 key={index}
-                question={market.question}
-                volume={market.volume}
+                name={market.name}
                 imageSrc={market.imageSrc}
+                start_time={market.start_time}
+                end_time={market.end_time}
+                duration={market.duration}
               />
             ))}
           </div>
@@ -149,35 +116,26 @@ export default function Home() {
   );
 }
 
-function MarketCard({ question, volume, imageSrc }) {
-  return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-md text-white flex flex-col gap-4 hover:border-2 hover:border-white">
-      {/* Image and Question */}
-      <div className="flex gap-4 items-center">
-        <Image
-          src="/images/eth.webp"
-          alt="Market Image"
-          width={40}
-          height={40}
-          className="rounded-md"
-        />
-        <h1 className="text-md font-semibold">{question}</h1>
-      </div>
 
-      {/* Buttons */}
-      <div className="flex gap-4 mt-2">
-        <button className="bg-green-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-green-600">
-          PUMP (yes)
-        </button>
-        <button className="bg-red-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-red-600">
-          RUG (no)
-        </button>
-      </div>
 
-      {/* Volume */}
-      <div className="text-sm text-gray-400 mt-2">
-        <span>${volume} Vol.</span>
-      </div>
-    </div>
-  );
-}
+{/* Search Market 
+        <div className="flex gap-2 items-center justify-center mt-10 mb-10">
+          <input type="text"
+            className="w-full sm:w-1/3 bg-blue-300 text-white rounded-md h-10 p-2 ml-4 placeholder-gray-500 focus:border-white"
+            placeholder="search markets">
+          </input>
+
+          <button className="bg-blue-300 text-black hover:bg-blue-500 w-20 h-10 rounded-md mr-4">
+            search
+          </button>
+
+        </div>*/}
+
+
+        {/*  
+        <div className="flex mt-10 ml-5">
+          <DropdownButton onClick={onSortButtonClick} />
+        </div>
+        */}
+
+       
