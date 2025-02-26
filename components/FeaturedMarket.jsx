@@ -21,6 +21,8 @@ const FeaturedMarket = ({
   const [isBettingClosed, setIsBettingClosed] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
 
+  const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "UnknownToken";
+
   // Calculate and update countdown - using the same logic as MarketCard
   useEffect(() => {
     // Function to calculate time difference and format it
@@ -143,7 +145,7 @@ const FeaturedMarket = ({
             className="rounded-md"
             priority
           />
-          <h1 className="text-lg md:text-l font-semibold">Will {marketName} Pump or Rug in 10 mins?</h1>
+          <h1 className="text-lg md:text-l font-semibold">Will {tokenNameNoSpaces} Pump or Rug in 10 mins?</h1>
         </div>
 
         {/* Countdown Timer & Amount Wagered - larger text */}
