@@ -585,7 +585,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center">
                     <Image
                         className="rounded-full"
-                        src="/images/pepe.webp"
+                        src="/images/cool_ruggy.svg"
                         alt="profile picture"
                         width={75}
                         height={75}

@@ -115,15 +115,15 @@ export default function Header() {
                         className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer border border-white hover:scale-105"
                     >
                         <Image
-                            src="/images/pepe.webp"
+                            src="/images/cool_ruggy.svg"
                             alt="Profile"
                             width={20}
                             height={20}
                             className="rounded-full"
                         />
-                        <span className="text-white text-sm">
+                        {/* <span className="text-white text-sm">
                             {getDefaultUsername()}
-                        </span>
+                        </span> */}
                     </Link>
                 )}
             </>
@@ -165,7 +165,7 @@ export default function Header() {
             <div className="w-[calc(100%-2rem)] h-10 bg-blue-300 flex items-center justify-center rounded-lg ml-4 mt-4 mr-4 gap-4 px-4">
                 <Image
                     className="rounded-full"
-                    src="/images/pepe.webp"
+                    src="/images/ruggy_money.svg"
                     alt="banner"
                     width={25}
                     height={25}
