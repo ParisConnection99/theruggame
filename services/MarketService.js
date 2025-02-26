@@ -246,19 +246,35 @@ class MarketService {
     // Fetch Market count
     async getMarketCount() {
       try {
-        const { data, error } = await this.supabase
+        const { count, error } = await this.supabase
           .from(this.tableName)
-          .select('id')
-          .in('phase', ['BETTING', 'OBSERVATION']);
-  
+          .select('*', { count: 'exact', head: true })
+          .eq('phase', 'BETTING');
+    
         if (error) throw error;
-        return data.length;
-  
+        return count; // count contains the number of matching rows
+    
       } catch (error) {
         console.error('Error getting the market count:', error);
         throw error;
       }
     }
+    
+    // async getMarketCount() {
+    //   try {
+    //     const { data, error } = await this.supabase
+    //       .from(this.tableName)
+    //       .select('id')
+    //       .eq('phase','BETTING');
+  
+    //     if (error) throw error;
+    //     return data.length;
+  
+    //   } catch (error) {
+    //     console.error('Error getting the market count:', error);
+    //     throw error;
+    //   }
+    // }
   }
   
   module.exports = MarketService;

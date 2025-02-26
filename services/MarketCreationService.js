@@ -146,48 +146,7 @@ class MarketCreationService {
             throw error; // Re-throw to allow caller to handle the error
         }
     }
-
-    // Purpose: Creating the Market + Saving The Reserve Tokens
-    // async handleMarketCreation(token, tokens, activeMarketCount) {
-    //     // Fetching the amount of markets needed to be created
-    //     const marketsNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
-
-    //      // Creating the remaining markets
-    //     for(let i = 0; i < marketsNeeded; i++) {
-    //         let insideToken; // Name changed to avoid confusion with argument
-    //         if (i == 0) {
-    //             insideToken = token;
-    //         } else {
-    //             insideToken = tokens.shift();
-    //         }
-
-    //         try {
-    //             await this.createMarket(insideToken);
-    //         } catch (error) {
-    //             console.error(`Error creating Market.`);
-    //         }
-    //     }
-    //     try {
-    //         // Create market (LOCKED)
-    //         //await this.createMarket(token);
-
-    //         // Save remaining tokens in reserve (LOCKED)
-
-    //         // Check the number of active markets needed 
-    //         // might have to loop through and create many markets
-    //         if(tokens.length > 0) {
-    //             console.log('Remaining Tokens: ',tokens);
-    //             await this.saveReserveTokens(tokens);
-    //         }
-            
-    //         // Remove expired tokens (LOCKED)
-    //         await this.tokenService.removeExpiredTokens();
-
-    //     } catch (error) {
-    //         console.log('Error handling market creation');
-    //     }
-    // }
-
+    
     // Purpose: Create a new Market
     async createMarket(token) {
         if (!token.address || !token.priceUsd || !token.marketCap || !token.liquidity ||
