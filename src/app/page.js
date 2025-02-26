@@ -1,14 +1,12 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
-import DropdownButton from "@/components/DropdownButton";
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import HomePageService from '@/services/HomePageService';
 import MarketCard from '@/components/MarketCard';
 import FeaturedMarket from '@/components/FeaturedMarket';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
+import { useRouter } from 'next/navigation';
 
 
 const homePageService = new HomePageService(supabase);
@@ -17,6 +15,7 @@ export default function Home() {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [featuredMarket, setFeaturedMarket] = useState(null);
+  const router = useRouter();
 
    // Helper function defined outside of any useEffect
    const updateFeaturedMarket = (marketsList) => {
@@ -40,11 +39,9 @@ export default function Home() {
       try {
         setLoading(true);
 
-        //await homePageService.createMockMarkets(supabase);
-
-        //await homePageService.createMockMarket(supabase, 1);
-        //await homePageService.createMockMarket(supabase, 2);
-
+      // await homePageService.createMockMarket(supabase, 1);
+     // await homePageService.createMockMarket(supabase, 2);
+      // await homePageService.createMockMarket(supabase, 3);
         const marketsData = await homePageService.fetchActiveMarkets();
 
         console.log(`Markets: ${marketsData}`);
@@ -104,9 +101,11 @@ export default function Home() {
     };
   }, [markets]);
 
-  async function onMarketClick() {
-    console.log('Market clicked function called');
-    await homePageService.createMockMarket(supabase, 3);
+  async function onMarketClick(marketId) {
+    console.log(`Market index ${marketId}`);
+
+    router.push(`/market/${marketId}`);
+   //wait homePageService.createMockMarket(supabase, 3);
     //alert('Market clicked');
   }
 
@@ -115,7 +114,7 @@ export default function Home() {
     // Navigate to the market details page
     // Replace with your actual navigation logic
     if (featuredMarket && featuredMarket.id) {
-      router.push(`/markets/${featuredMarket.id}`);
+      router.push(`/market/${featuredMarket.id}`);
     }
   };
 
@@ -157,7 +156,7 @@ export default function Home() {
                 start_time={market.start_time}
                 end_time={market.end_time}
                 duration={market.duration}
-                onMarketClick={onMarketClick}
+                onMarketClick={() => onMarketClick(market.id)}
               />
             ))}
           </div>
@@ -178,26 +177,3 @@ export default function Home() {
     </div>
   );
 }
-
-
-
-{/* Search Market 
-        <div className="flex gap-2 items-center justify-center mt-10 mb-10">
-          <input type="text"
-            className="w-full sm:w-1/3 bg-blue-300 text-white rounded-md h-10 p-2 ml-4 placeholder-gray-500 focus:border-white"
-            placeholder="search markets">
-          </input>
-
-          <button className="bg-blue-300 text-black hover:bg-blue-500 w-20 h-10 rounded-md mr-4">
-            search
-          </button>
-
-        </div>*/}
-
-
-{/*  
-        <div className="flex mt-10 ml-5">
-          <DropdownButton onClick={onSortButtonClick} />
-        </div>
-        */}
-
