@@ -319,21 +319,31 @@ export default function MarketPage() {
         return;
       }
 
-      // Place bet logic here - implement as needed for your application
+       // Calculate total bet amount including fees
+      const betWithFees = betAmount + betAmount * PLATFORM_FEE;
 
-      // Example of what might go here:
-      // await marketPageService.placeBet({
-      //   marketId: market.id,
-      //   userId: authUser.uid,
-      //   amount: betAmount,
-      //   position: isPumpActive ? 'PUMP' : 'RUG'
-      // });
+      if (balance >= betWithFees) {
+        // Handle Bet
 
+        const updatedBalance = balance - betWithFees;
+
+        setUserBalance(updatedBalance);
+
+        // PlaceBetLogic
+
+
+        // Update User balance
+        await userService.updateBalance(dbUser.user_id, -betWithFees);
+        console.log(`Bet successfully completed!`);
+
+        
+      } else {
+        // Check solana balance
+        alert('Need to fetch more money from wallet');
+      }
       // Optionally refresh user balance after bet
       // const updatedUser = await userService.getUserByWallet(authUser.uid);
       // setUserBalance(updatedUser.balance);
-
-      alert('Bet placed successfully!');
 
     } catch (error) {
       console.error('Error placing bets: ', error);
