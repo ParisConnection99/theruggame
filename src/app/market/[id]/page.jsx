@@ -1,252 +1,33 @@
-// "use client"; // Required for hooks in the App Router
-
-// import { useState, useEffect } from 'react'; // Import useState for managing state
-// import { usePathname } from "next/navigation";
-// import Image from "next/image";
-// import Link from "next/link";
-// import MarketPageService from '@/services/MarketPageService';
-// import { supabase } from '@/lib/supabaseClient';
-
-// const marketPageService = new MarketPageService(supabase);
-
-// export default function MarketPage() {
-//   const pathname = usePathname(); // Get the dynamic market ID from the URL
-//   const id = pathname.split("/").pop(); // Extract the market ID
-//   const [loading, setLoading] = useState(true);
-//   const [market, setMarket] = useState(null);
-
-//   console.log(`Market id: ${id}`);
-
-//   useEffect(() => {
-//     const fetchMarketData = async () => {
-//       try {
-//         setLoading(true);
-
-//         const marketData = await marketPageService.fetchMarketWith(id);
-
-//         if (marketData) {
-//           console.log(`Market: ${marketData}`);
-//           setMarket(marketData);
-//         } else {
-//           console.log('No Markets found.');
-//         }
-//       } catch (error) {
-//         console.error('Error fetching market data.');
-//       } finally {
-//         setLoading(false);
-//       }
-//     }
-
-//     fetchMarketData();
-//   }, [id]);
-
-//   const tokenNameNoSpaces = market?.name ? market.name.replace(/\s+/g, "") : "UnknownToken";
-//   const question = `Will ${tokenNameNoSpaces} Pump or Rug in 10 mins?`;
-
-//   // Use state to manage the active state of the buttons
-//   const [isPumpActive, setIsPumpActive] = useState(true); // Default is 'Pump' active
-
-//   const stats = calculatePumpRugPercentages(market?.total_pump_amount || 0, market?.total_rug_amount || 0);
-
-//   // Toggle function to switch between buttons
-//   const handleButtonClick = (isPump) => {
-//     setIsPumpActive(isPump);
-//   };
-
-//   function calculatePumpRugPercentages(totalPumpAmount, totalRugAmount) {
-//     // Calculate total
-//     const totalAmount = totalPumpAmount + totalRugAmount;
-
-//     // Calculate percentages (handle division by zero)
-//     const pumpPercentage = totalAmount > 0 ? (totalPumpAmount / totalAmount) * 100 : 0;
-//     const rugPercentage = totalAmount > 0 ? (totalRugAmount / totalAmount) * 100 : 0;
-
-//     // Format to display with whole numbers (rounding to nearest integer)
-//     const formattedPumpPercentage = Math.round(pumpPercentage);
-//     const formattedRugPercentage = Math.round(rugPercentage);
-
-//     return {
-//       pumpPercentage: formattedPumpPercentage,
-//       rugPercentage: formattedRugPercentage,
-//       formattedText: `Pump: ${formattedPumpPercentage}% Rug: ${formattedRugPercentage}%`
-//     };
-//   }
-
-//   return (
-//     <div className="p-6 max-w-7xl mx-auto bg-blue-900 text-white">
-//       {/* Market Header */}
-//       <div className="flex items-center justify-between">
-//         {/* Title and Image */}
-//         <div className="flex items-center gap-4 mt-8">
-//           <Image
-//             src="/images/eth.webp" // Update this path to your actual image file
-//             alt="Market Image"
-//             width={50}
-//             height={50}
-//             className="rounded-full"
-//           />
-//           <h1 className="text-2xl font-semibold">{question}</h1>
-//         </div>
-//       </div>
-
-//       {/* Current Price + Liquidity */}
-//       <div className="mt-8 text-lg font-semibold text-white">
-//         Current Price: <span className="text-green-400">{market?.initial_coin_price || "0.00"} SOL</span>
-//       </div>
-
-//       <div className="text-lg text-gray-400 mt-2">
-//         Liquidity: <span className="text-white">${market?.initial_liquidity || "0"}</span>
-//       </div>
-
-//       {/* Market Details */}
-//       <div className="mt-10 flex gap-8 text-gray-400">
-//         <p className="text-green-500 font-semibold">SOL Wagered: {market?.total_pump_amount + market?.total_rug_amount} SOL ($20,000)</p> { /* This is how much sol wagered*/}
-//         <p>market closes in 5 minutes</p>
-//       </div>
-
-//       {/* Main Section: Chart and Buy/Sell */}
-//       <div className="flex flex-col lg:flex-row mt-6 gap-6">
-//         {/* Chart (Left Section) */}
-//         <div className="flex-1 bg-gray-800 rounded-md p-4 h-64">
-//           <p className="text-gray-500">[Chart Placeholder]</p>
-//         </div>
-
-//         {/* Buy/Sell Section (Right Section) */}
-//         <div className="w-full lg:w-96 bg-gray-800 rounded-md p-4">
-//           {/* Buy/Sell Toggle */}
-//           <div className="flex justify-between gap-3">
-//             <button
-//               onClick={() => handleButtonClick(true)}
-//               className={`flex-1 py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black' : 'bg-gray-700 text-white'} hover:bg-green-400`}>
-//               pump
-//             </button>
-//             <button
-//               onClick={() => handleButtonClick(false)}
-//               className={`flex-1 py-2 rounded-md ${!isPumpActive ? 'bg-red-500 text-white' : 'bg-gray-700 text-white'} hover:bg-red-600`}>
-//               rug
-//             </button>
-//           </div>
-
-//           {/* Input and Controls */}
-//           <div className="mt-4">
-//             {/* Label for Amount Input */}
-//             <label
-//               htmlFor="amount-input"
-//               className="text-sm text-white mb-2 block"
-//             >
-//               amount (SOL)
-//             </label>
-
-//             {/* Amount Input */}
-//             <div className="relative bg-gray-900 border border-gray-700 rounded-md p-3 focus-within:border-2 focus-within:border-white">
-//               <input
-//                 id="amount-input"
-//                 type="number"
-//                 placeholder="0.00"
-//                 className="bg-transparent w-full text-white focus:outline-none text-lg pr-16"
-//               />
-//               {/* SOL and Logo Inside Input */}
-//               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-//                 <span className="text-white">SOL</span>
-//                 <Image
-//                   className="rounded-full"
-//                   src="/images/solana_image.webp" // Update with your actual logo path
-//                   alt="Solana Logo"
-//                   width={24}
-//                   height={24}
-//                 />
-//               </div>
-//             </div>
-
-//             {/* Quick Amount Buttons */}
-//             <div className="mt-4 flex justify-between gap-1 text-xs">
-//               <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
-//                 reset
-//               </button>
-//               <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
-//                 0.1 SOL
-//               </button>
-//               <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
-//                 0.5 SOL
-//               </button>
-//               <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
-//                 1 SOL
-//               </button>
-//               <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
-//                 max
-//               </button>
-//             </div>
-
-//             {/* Potential Returns Breakdown */}
-//             <div className="mt-4 p-3 text-sm text-gray-400">
-//               <p className="flex justify-between">
-//                 <span>House fee:</span>
-//                 <span className="text-white">$0.00</span>
-//               </p>
-//               <p className="flex justify-between mt-1">
-//                 <span>Potential return:</span>
-//                 <span className="text-green-500">$0.00 (0.00%)</span>
-//               </p>
-//             </div>
-
-//             {/* Place Trade Button */}
-//             <button className={`mt-4 w-full py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black hover:bg-green-400' : 'bg-red-500 text-white hover:bg-red-600'}`}>
-//               place trade
-//             </button>
-
-//             {/* Disclaimer */}
-//             <p className="mt-2 text-center text-sm text-gray-400">
-//               By trading, you agree to the{" "}
-//               <Link href="/docs/terms-of-service" className="text-blue-400 underline hover:text-blue-300">
-//                 Terms of Use
-//               </Link>.
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Pump vs Rug Split */}
-//       <div className="mt-6 w-full bg-gray-800 p-4 rounded-md">
-//         <p className="text-2xl font-semibold text-white">Percentage of Bets</p>
-//         <p className="text-green-500 mt-2 font-semibold">{stats.formattedText}</p>
-//       </div>
-
-//       {/* Coin Information Section */}
-//       <div className="mt-6 w-full bg-gray-800 p-4 rounded-md border border-gray-600">
-//         <h2 className="text-2xl font-semibold text-white">Memecoin Information</h2>
-//         <div className="mt-2 text-gray-400 text-sm">
-//           <p><strong>name:</strong> {market?.name || ""}</p>
-//           <p><strong>ca:</strong> {market?.token_address || ""}</p>
-//           <a href="" target="_blank" className="text-blue-500 underline hover:text-blue-300">
-//             <strong>{market?.dex_screener_url || ""}</strong>
-//           </a>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
 "use client"; // Required for hooks in the App Router
 
-import { useState, useEffect } from 'react'; // Import useState for managing state
+import { useState, useEffect, useRef } from 'react'; // Added useRef
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import MarketPageService from '@/services/MarketPageService';
 import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
+import UserService from '@/services/UserService';
+import { useAuth } from '@/components/FirebaseProvider';
+import OddsService from '@/services/OddsService';
 
 const marketPageService = new MarketPageService(supabase);
+const userService = new UserService(supabase);
+const oddsService = new OddsService(supabase);
 
 export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
   const id = pathname ? pathname.split("/").pop() : null;
+  const PLATFORM_FEE = 0.02;
+  const inputRef = useRef(null); // Add ref for the input element
 
-if (!id) {
-  console.error("Market ID is missing from URL.");
-}
+  if (!id) {
+    console.error("Market ID is missing from URL.");
+  }
 
-
+  const { user: authUser, auth } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [userLoading, setUserLoading] = useState(true);
   const [market, setMarket] = useState(null);
 
   // State for countdown timer (added from MarketCard)
@@ -254,6 +35,12 @@ if (!id) {
   const [isBettingClosed, setIsBettingClosed] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
   const [timerLabel, setTimerLabel] = useState('Market closes in:');
+  const [userBalance, setUserBalance] = useState(0);
+
+  // Added state for bet calculations
+  const [betAmount, setBetAmount] = useState(0);
+  const [houseFee, setHouseFee] = useState(0);
+  const [potentialReturn, setPotentialReturn] = useState({ amount: 0, percentage: 0 });
 
   console.log(`Market id: ${id}`);
 
@@ -283,11 +70,37 @@ if (!id) {
   }, [id]);
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      if (!authUser || !authUser.uid) {
+        setUserLoading(false);
+        setUserBalance(0);
+        return;
+      }
+
+      try {
+        setUserLoading(true);
+        console.log(`Auth user uid: ${authUser.uid}`);
+        const dbUser = await userService.getUserByWallet(authUser.uid);
+        setUserBalance(dbUser.balance);
+
+        console.log(`Fetched user balance: ${dbUser.balance}`);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setUserBalance(0);
+      } finally {
+        setUserLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [authUser]);
+
+  useEffect(() => {
     // Skip if market is not yet loaded
     if (!market?.id) return;
-    
+
     const handleMarketUpdate = (updatedMarket) => {
-      switch(updatedMarket.type) {
+      switch (updatedMarket.type) {
         case 'PUMP VS RUG SPLIT UPDATE':
           if (updatedMarket.payload.id === market.id) {
             // Use functional update to avoid dependency on market itself
@@ -299,9 +112,9 @@ if (!id) {
           break;
       }
     }
-  
+
     const subscription = listenToMarkets(handleMarketUpdate);
-  
+
     return () => {
       if (subscription) {
         subscription.unsubscribe();
@@ -401,7 +214,7 @@ if (!id) {
 
     // Cleanup interval on component unmount
     return () => clearInterval(interval);
-  }, [market?.duration,market?.start_time, market?.end_time]);
+  }, [market?.duration, market?.start_time, market?.end_time]);
 
   const tokenNameNoSpaces = market?.name ? market.name.replace(/\s+/g, "") : "UnknownToken";
   const question = `Will ${tokenNameNoSpaces} Pump or Rug in 10 mins?`;
@@ -411,9 +224,123 @@ if (!id) {
 
   const stats = calculatePumpRugPercentages(market?.total_pump_amount || 0, market?.total_rug_amount || 0);
 
-  // Toggle function to switch between buttons
+  // Constants for betting
+  const MIN_BET_AMOUNT = 0.05;
+  const MAX_BET_AMOUNT = 100;
+
+  // Modified function to handle amount changes and calculate returns
+  const handleAmountChange = async (value) => {
+    const amount = parseFloat(value) || 0;
+    setBetAmount(amount);
+
+    // Update the input field value directly using the ref
+    if (inputRef.current) {
+      inputRef.current.value = amount > 0 ? amount.toString() : "";
+    }
+
+    // Calculate fee based on platform fee
+    const fee = amount * PLATFORM_FEE;
+    setHouseFee(fee);
+
+    if (amount > 0 && market?.id) {
+      try {
+        // Get current odds based on selection
+        const currentOdds = await oddsService.getCurrentOdds(
+          market.id,
+          isPumpActive ? 'PUMP' : 'RUG'
+        );
+
+        console.log(`Current odds: ${currentOdds}`)
+
+        // Calculate potential return amount and percentage
+        const returnAmount = amount * currentOdds;
+        const returnPercentage = ((returnAmount - amount) / amount) * 100;
+
+        setPotentialReturn({
+          amount: returnAmount,
+          percentage: returnPercentage
+        });
+      } catch (error) {
+        console.error('Error calculating odds:', error);
+        setPotentialReturn({ amount: 0, percentage: 0 });
+      }
+    } else {
+      setPotentialReturn({ amount: 0, percentage: 0 });
+    }
+  };
+
+  // Updated to recalculate when changing bet type
   const handleButtonClick = (isPump) => {
     setIsPumpActive(isPump);
+
+    // Recalculate with new bet type if there's a bet amount
+    if (betAmount > 0) {
+      handleAmountChange(betAmount);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    handleAmountChange(e.target.value);
+  };
+
+  const handleBetClick = async () => {
+    console.log('PLACE BET!');
+    setLoading(true);
+
+    if (!authUser || !authUser.uid) {
+      alert('Please log in to place a bet');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      console.log(`Fetching user`);
+
+      const dbUser = await userService.getUserByWallet(authUser.uid);
+      const balance = dbUser.balance;
+
+      // Check if bet meets minimum requirement
+      if (betAmount < MIN_BET_AMOUNT) {
+        alert(`Minimum bet amount is ${MIN_BET_AMOUNT} SOL`);
+        return;
+      }
+
+      // Check maximum bet limit
+      if (betAmount > MAX_BET_AMOUNT) {
+        alert(`Maximum bet amount is ${MAX_BET_AMOUNT} SOL`);
+        return;
+      }
+
+      // If user doesn't have enough balance, they'll be able to use their wallet
+
+      // Check if market is still open for betting
+      if (isBettingClosed || isExpired) {
+        alert('This market is no longer accepting bets');
+        return;
+      }
+
+      // Place bet logic here - implement as needed for your application
+
+      // Example of what might go here:
+      // await marketPageService.placeBet({
+      //   marketId: market.id,
+      //   userId: authUser.uid,
+      //   amount: betAmount,
+      //   position: isPumpActive ? 'PUMP' : 'RUG'
+      // });
+
+      // Optionally refresh user balance after bet
+      // const updatedUser = await userService.getUserByWallet(authUser.uid);
+      // setUserBalance(updatedUser.balance);
+
+      alert('Bet placed successfully!');
+
+    } catch (error) {
+      console.error('Error placing bets: ', error);
+      alert('Error placing bet. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   function calculatePumpRugPercentages(totalPumpAmount, totalRugAmount) {
@@ -434,6 +361,10 @@ if (!id) {
       formattedText: `Pump: ${formattedPumpPercentage}% Rug: ${formattedRugPercentage}%`
     };
   }
+
+  // Calculate total amount wagered and format for display
+  const totalAmountWagered = (market?.total_pump_amount || 0) + (market?.total_rug_amount || 0);
+  const formattedTotalWagered = totalAmountWagered.toFixed(2);
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-blue-900 text-white">
@@ -463,15 +394,15 @@ if (!id) {
 
       {/* Market Details */}
       <div className="mt-10 flex gap-8 text-gray-400">
-        <p className="text-green-500 font-semibold">SOL Wagered: {market?.total_pump_amount + market?.total_rug_amount} SOL ($20,000)</p>
+        <p className="text-green-500 font-semibold">SOL Wagered: {formattedTotalWagered} SOL</p>
         {/* Countdown Timer - Replaced static text with dynamic countdown */}
         <div className="text-sm flex items-center">
           <span className="mr-2">⏱️ {timerLabel}</span>
           <span className={`font-bold ${isExpired
-              ? 'text-red-500'
-              : isBettingClosed
-                ? 'text-orange-400'
-                : 'text-yellow-400 animate-pulse'
+            ? 'text-red-500'
+            : isBettingClosed
+              ? 'text-orange-400'
+              : 'text-yellow-400 animate-pulse'
             }`}>
             {timeLeft}
           </span>
@@ -491,33 +422,49 @@ if (!id) {
           <div className="flex justify-between gap-3">
             <button
               onClick={() => handleButtonClick(true)}
-              className={`flex-1 py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black' : 'bg-gray-700 text-white'} hover:bg-green-400`}>
+              disabled={isBettingClosed || isExpired}
+              className={`flex-1 py-2 rounded-md ${isPumpActive
+                  ? 'bg-green-500 text-black'
+                  : 'bg-gray-700 text-white'
+                } ${(isBettingClosed || isExpired)
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-green-400'
+                }`}>
               pump
             </button>
             <button
               onClick={() => handleButtonClick(false)}
-              className={`flex-1 py-2 rounded-md ${!isPumpActive ? 'bg-red-500 text-white' : 'bg-gray-700 text-white'} hover:bg-red-600`}>
+              disabled={isBettingClosed || isExpired}
+              className={`flex-1 py-2 rounded-md ${!isPumpActive
+                  ? 'bg-red-500 text-white'
+                  : 'bg-gray-700 text-white'
+                } ${(isBettingClosed || isExpired)
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-red-600'
+                }`}>
               rug
             </button>
           </div>
 
           {/* Input and Controls */}
           <div className="mt-4">
-            {/* Label for Amount Input */}
-            <label
-              htmlFor="amount-input"
-              className="text-sm text-white mb-2 block"
-            >
-              amount (SOL)
-            </label>
+            {/* Label for Amount Input with Balance Display */}
+            <div className="flex justify-between text-sm text-white mb-2">
+              <label htmlFor="amount-input">amount (SOL)</label>
+              <span>Balance: {userBalance.toFixed(2)} SOL</span>
+            </div>
 
             {/* Amount Input */}
             <div className="relative bg-gray-900 border border-gray-700 rounded-md p-3 focus-within:border-2 focus-within:border-white">
               <input
                 id="amount-input"
+                ref={inputRef}
                 type="number"
                 placeholder="0.00"
-                className="bg-transparent w-full text-white focus:outline-none text-lg pr-16"
+                onChange={handleInputChange}
+                disabled={isBettingClosed || isExpired}
+                className={`bg-transparent w-full text-white focus:outline-none text-lg pr-16 ${(isBettingClosed || isExpired) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
               />
               {/* SOL and Logo Inside Input */}
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
@@ -534,43 +481,84 @@ if (!id) {
 
             {/* Quick Amount Buttons */}
             <div className="mt-4 flex justify-between gap-1 text-xs">
-              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
+              <button
+                onClick={() => handleAmountChange(0)}
+                disabled={isBettingClosed || isExpired}
+                className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-600'
+                  }`}>
                 reset
               </button>
-              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
-                0.1 SOL
+              <button
+                onClick={() => handleAmountChange(MIN_BET_AMOUNT)}
+                disabled={isBettingClosed || isExpired}
+                className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-600'
+                  }`}>
+                {MIN_BET_AMOUNT} SOL
               </button>
-              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
+              <button
+                onClick={() => handleAmountChange(0.5)}
+                disabled={isBettingClosed || isExpired}
+                className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-600'
+                  }`}>
                 0.5 SOL
               </button>
-              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
+              <button
+                onClick={() => handleAmountChange(1)}
+                disabled={isBettingClosed || isExpired}
+                className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-600'
+                  }`}>
                 1 SOL
               </button>
-              <button className="bg-gray-700 px-3 py-1 rounded-md hover:bg-gray-600">
+              <button
+                onClick={() => handleAmountChange(userBalance)}
+                disabled={isBettingClosed || isExpired || userBalance <= 0}
+                className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired || userBalance <= 0)
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-gray-600'
+                  }`}>
                 max
               </button>
             </div>
 
             {/* Potential Returns Breakdown */}
-            <div className="mt-4 p-3 text-sm text-gray-400">
+            <div className="mt-4 p-3 text-sm text-gray-400 bg-gray-900 rounded-md">
               <p className="flex justify-between">
-                <span>House fee:</span>
-                <span className="text-white">$0.00</span>
+                <span>House fee ({(PLATFORM_FEE * 100).toFixed(0)}%):</span>
+                <span className="text-white">{houseFee.toFixed(3)} SOL</span>
               </p>
               <p className="flex justify-between mt-1">
                 <span>Potential return:</span>
-                <span className="text-green-500">$0.00 (0.00%)</span>
+                <span className="text-green-500">
+                  {potentialReturn.amount.toFixed(2)} SOL ({potentialReturn.percentage.toFixed(0)}%)
+                </span>
               </p>
             </div>
 
             {/* Place Trade Button */}
-            <button className={`mt-4 w-full py-2 rounded-md ${isPumpActive ? 'bg-green-500 text-black hover:bg-green-400' : 'bg-red-500 text-white hover:bg-red-600'}`}>
-              place trade
+            <button
+              onClick={handleBetClick}
+              disabled={isBettingClosed || isExpired || betAmount <= 0}
+              className={`mt-4 w-full py-2 rounded-md ${isPumpActive
+                  ? 'bg-green-500 text-black hover:bg-green-400'
+                  : 'bg-red-500 text-white hover:bg-red-600'
+                } ${(isBettingClosed || isExpired || betAmount <= 0 || betAmount >= MAX_BET_AMOUNT)
+                  ? 'opacity-50 cursor-not-allowed'
+                  : ''
+                }`}>
+              place bet
             </button>
 
             {/* Disclaimer */}
             <p className="mt-2 text-center text-sm text-gray-400">
-              By trading, you agree to the{" "}
+              By betting, you agree to the{" "}
               <Link href="/docs/terms-of-service" className="text-blue-400 underline hover:text-blue-300">
                 Terms of Use
               </Link>.
@@ -581,8 +569,20 @@ if (!id) {
 
       {/* Pump vs Rug Split */}
       <div className="mt-6 w-full bg-gray-800 p-4 rounded-md">
-        <p className="text-2xl font-semibold text-white">Percentage of Bets</p>
-        <p className="text-green-500 mt-2 font-semibold">{stats.formattedText}</p>
+        <p className="text-2xl font-semibold text-white">Market Activity</p>
+        <div className="flex mt-2 font-semibold">
+          <p className="text-green-500">Pump: {stats.pumpPercentage}%</p>
+          <p className="mx-2 text-white">|</p>
+          <p className="text-red-500">Rug: {stats.rugPercentage}%</p>
+        </div>
+
+        {/* Visual representation of split */}
+        <div className="mt-3 w-full h-6 bg-red-600 rounded-md overflow-hidden">
+          <div
+            className="h-full bg-green-500"
+            style={{ width: `${stats.pumpPercentage}%` }}
+          ></div>
+        </div>
       </div>
 
       {/* Coin Information Section */}
