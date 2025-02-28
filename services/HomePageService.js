@@ -245,8 +245,6 @@ class HomePageService {
             throw error;
         }
     }
-
-
 }
 
 module.exports = HomePageService;

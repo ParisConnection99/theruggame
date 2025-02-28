@@ -4,17 +4,9 @@ import { useAuth } from '@/components/FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
-import UserService from '@/services/UserService';
-import CashoutService from '@/services/CashoutService';
-import UserProfileService from '@/services/UserProfileService';
 import UsernameChangePopup from '@/components/UsernameChangePopup';
 import CashoutModal from '@/components/CashoutModal';
-
-const userService = new UserService(supabase);
-const userProfileService = new UserProfileService(supabase);
-const cashoutService = new CashoutService(supabase, userService);
 
 export default function ProfilePage() {
     const { disconnect } = useWallet();
@@ -48,7 +40,13 @@ export default function ProfilePage() {
 
             try {
                 setUserLoading(true);
-                const dbUser = await userService.getUserByWallet(authUser.uid);
+                const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const dbUser = await response.json();
                 setUserData(dbUser);
             } catch (error) {
                 console.error("Error fetching user data:", error);
@@ -70,7 +68,14 @@ export default function ProfilePage() {
 
             try {
                 setBetsLoading(true);
-                const betsData = await userProfileService.fetchBetsBy(userData.user_id);
+                const response = await fetch(`/api/betting/user/${userData.user_id}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch bets');
+                }
+
+                const betsData = await response.json();
 
                 if (betsData) {
                     const sortedBets = betsData.sort((a, b) => {
@@ -101,7 +106,14 @@ export default function ProfilePage() {
 
             try {
                 setCashoutsLoading(true);
-                const cashoutsData = await userProfileService.fetchCashoutsBy(userData.user_id);
+                const response = await fetch(`/api/cashouts/users/${userData.user_id}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch bets');
+                }
+
+                const cashoutsData = await response.json();
 
                 if (cashoutsData) {
                     const sortedCashouts = cashoutsData.sort((a, b) => {
@@ -174,7 +186,17 @@ export default function ProfilePage() {
                 username_changed_at: new Date().toISOString(),
             };
 
-            await userService.updateUser(userData.user_id, updatedData);
+            await fetch('/api/users', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userData.user_id,
+                    ...updatedData
+                }),
+            });
+
 
             // Update local state
             setUserData({
@@ -192,7 +214,25 @@ export default function ProfilePage() {
 
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
         try {
-            const newCashout = await cashoutService.createCashout(userData.user_id, amount, walletAddress);
+
+            const response = await fetch('/api/cashouts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userData.user_id,
+                    amount: amount,
+                    wallet_ca: walletAddress
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create cashout');
+            }
+
+            const newCashout = await response.json();
 
             // Update the user's balance
             const updatedBalance = userData.balance - amount;

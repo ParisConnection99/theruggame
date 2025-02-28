@@ -19,6 +19,8 @@ class MarketPageService {
             throw error;
           }
     }
+
+    async placeBet() {}
 }
 
 module.exports = MarketPageService;

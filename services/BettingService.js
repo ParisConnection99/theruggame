@@ -75,10 +75,6 @@ class BettingService {
     }
 
     async fetchBetsBy(userId) {
-      if(userId) {
-        throw new Error('Error processing Bets');
-      }
-
       const { data, error } = await this.supabase
         .from('bets')
         .select('*')

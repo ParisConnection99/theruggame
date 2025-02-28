@@ -7,12 +7,10 @@ import Link from "next/link";
 import MarketPageService from '@/services/MarketPageService';
 import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
-import UserService from '@/services/UserService';
 import { useAuth } from '@/components/FirebaseProvider';
 import OddsService from '@/services/OddsService';
 
 const marketPageService = new MarketPageService(supabase);
-const userService = new UserService(supabase);
 const oddsService = new OddsService(supabase);
 
 export default function MarketPage() {
@@ -42,7 +40,7 @@ export default function MarketPage() {
   const [houseFee, setHouseFee] = useState(0);
   const [potentialReturn, setPotentialReturn] = useState({ amount: 0, percentage: 0 });
 
-  console.log(`Market id: ${id}`);
+  //console.log(`Market id: ${id}`);
 
   useEffect(() => {
     if (!id) return;
@@ -80,7 +78,14 @@ export default function MarketPage() {
       try {
         setUserLoading(true);
         console.log(`Auth user uid: ${authUser.uid}`);
-        const dbUser = await userService.getUserByWallet(authUser.uid);
+        const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
+        }
+
+        const dbUser = await response.json();
+
         setUserBalance(dbUser.balance);
 
         console.log(`Fetched user balance: ${dbUser.balance}`);
@@ -228,6 +233,8 @@ export default function MarketPage() {
   const MIN_BET_AMOUNT = 0.05;
   const MAX_BET_AMOUNT = 100;
 
+  const [isBetting, setIsBetting] = useState(false);
+
   // Modified function to handle amount changes and calculate returns
   const handleAmountChange = async (value) => {
     const amount = parseFloat(value) || 0;
@@ -285,73 +292,199 @@ export default function MarketPage() {
 
   const handleBetClick = async () => {
     console.log('PLACE BET!');
+    
+    // Prevent multiple clicks while processing
+    if (isBetting) {
+      console.log('Bet already in progress');
+      return;
+    }
+    
+    setIsBetting(true);
     setLoading(true);
-
+  
     if (!authUser || !authUser.uid) {
       alert('Please log in to place a bet');
+      setIsBetting(false);
       setLoading(false);
       return;
     }
-
+  
     try {
       console.log(`Fetching user`);
-
-      const dbUser = await userService.getUserByWallet(authUser.uid);
+  
+      const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
+      }
+  
+      const dbUser = await response.json();
       const balance = dbUser.balance;
-
+  
       // Check if bet meets minimum requirement
       if (betAmount < MIN_BET_AMOUNT) {
         alert(`Minimum bet amount is ${MIN_BET_AMOUNT} SOL`);
+        setIsBetting(false);
         return;
       }
-
+  
       // Check maximum bet limit
       if (betAmount > MAX_BET_AMOUNT) {
         alert(`Maximum bet amount is ${MAX_BET_AMOUNT} SOL`);
+        setIsBetting(false);
         return;
       }
-
-      // If user doesn't have enough balance, they'll be able to use their wallet
-
+  
       // Check if market is still open for betting
       if (isBettingClosed || isExpired) {
         alert('This market is no longer accepting bets');
+        setIsBetting(false);
         return;
       }
-
-       // Calculate total bet amount including fees
+  
+      // Calculate total bet amount including fees
       const betWithFees = betAmount + betAmount * PLATFORM_FEE;
-
+  
       if (balance >= betWithFees) {
         // Handle Bet
-
-        const updatedBalance = balance - betWithFees;
-
-        setUserBalance(updatedBalance);
-
-        // PlaceBetLogic
-
-
-        // Update User balance
-        await userService.updateBalance(dbUser.user_id, -betWithFees);
-        console.log(`Bet successfully completed!`);
-
+        const betType = isPumpActive ? 'PUMP' : 'RUG';
+  
+        console.log(`Bet data: ${market.id}, ${dbUser.user_id}, ${betAmount}, ${betType}`);
+  
+        const response = await fetch(`/api/betting`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            marketId: market.id,
+            userId: dbUser.user_id,
+            amount: betAmount,
+            betType: betType
+          })
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || errorData.error || 'Error placing bet');
+        }
+  
+        const bet = await response.json();
+        setUserBalance(balance - betWithFees);
+        
+        // Reset bet amount after successful bet
+        setBetAmount(0);
+        setHouseFee(0);
+        setPotentialReturn({ amount: 0, percentage: 0 });
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
         
       } else {
         // Check solana balance
         alert('Need to fetch more money from wallet');
       }
-      // Optionally refresh user balance after bet
-      // const updatedUser = await userService.getUserByWallet(authUser.uid);
-      // setUserBalance(updatedUser.balance);
-
+  
     } catch (error) {
       console.error('Error placing bets: ', error);
-      alert('Error placing bet. Please try again.');
+      alert(`Error placing bet: ${error.message}`);
     } finally {
+      setIsBetting(false);
       setLoading(false);
     }
   };
+
+  // const handleBetClick = async () => {
+  //   console.log('PLACE BET!');
+  //   setLoading(true);
+
+  //   if (!authUser || !authUser.uid) {
+  //     alert('Please log in to place a bet');
+  //     setLoading(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log(`Fetching user`);
+
+  //     const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+
+  //     if (!response.ok) {
+  //       throw new Error('Failed to fetch user data');
+  //     }
+
+  //     const dbUser = await response.json();
+
+  //     const balance = dbUser.balance;
+
+  //     // Check if bet meets minimum requirement
+  //     if (betAmount < MIN_BET_AMOUNT) {
+  //       alert(`Minimum bet amount is ${MIN_BET_AMOUNT} SOL`);
+  //       return;
+  //     }
+
+  //     // Check maximum bet limit
+  //     if (betAmount > MAX_BET_AMOUNT) {
+  //       alert(`Maximum bet amount is ${MAX_BET_AMOUNT} SOL`);
+  //       return;
+  //     }
+
+  //     // If user doesn't have enough balance, they'll be able to use their wallet
+
+  //     // Check if market is still open for betting
+  //     if (isBettingClosed || isExpired) {
+  //       alert('This market is no longer accepting bets');
+  //       return;
+  //     }
+
+  //     // Calculate total bet amount including fees
+  //     const betWithFees = betAmount + betAmount * PLATFORM_FEE;
+
+  //     if (balance >= betWithFees) {
+  //       // Handle Bet
+
+  //       const updatedBalance = balance - betWithFees;
+
+  //       const betType = isPumpActive ? 'PUMP' : 'RUG';
+
+  //       console.log(`Bet data: ${market.id}, ${dbUser.user_id}, ${betAmount}, ${betType}`);
+
+  //       const response = await fetch(`/api/betting`, {
+  //           method: 'POST',
+  //           headers: {
+  //               'Content-Type': 'application/json',
+  //           },
+  //           body: JSON.stringify({
+  //             marketId: market.id,
+  //             userId: dbUser.user_id,
+  //             amount: betAmount,
+  //             betType: betType
+  //           })
+  //       });
+
+  //       if (!response.ok) {
+  //         const errorData = await response.json();
+  //         throw new Error(errorData.message || errorData.error || 'Error placing bet');
+  //       }
+
+  //       const bet = await response.json();
+
+  //       setUserBalance(updatedBalance);
+  //     } else {
+  //       // Check solana balance
+  //       alert('Need to fetch more money from wallet');
+  //     }
+  //     // Optionally refresh user balance after bet
+  //     // const updatedUser = await userService.getUserByWallet(authUser.uid);
+  //     // setUserBalance(updatedUser.balance);
+
+  //   } catch (error) {
+  //     console.error('Error placing bets: ', error);
+  //     alert('Error placing bet. Please try again.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   function calculatePumpRugPercentages(totalPumpAmount, totalRugAmount) {
     // Calculate total
@@ -434,8 +567,8 @@ export default function MarketPage() {
               onClick={() => handleButtonClick(true)}
               disabled={isBettingClosed || isExpired}
               className={`flex-1 py-2 rounded-md ${isPumpActive
-                  ? 'bg-green-500 text-black'
-                  : 'bg-gray-700 text-white'
+                ? 'bg-green-500 text-black'
+                : 'bg-gray-700 text-white'
                 } ${(isBettingClosed || isExpired)
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-green-400'
@@ -446,8 +579,8 @@ export default function MarketPage() {
               onClick={() => handleButtonClick(false)}
               disabled={isBettingClosed || isExpired}
               className={`flex-1 py-2 rounded-md ${!isPumpActive
-                  ? 'bg-red-500 text-white'
-                  : 'bg-gray-700 text-white'
+                ? 'bg-red-500 text-white'
+                : 'bg-gray-700 text-white'
                 } ${(isBettingClosed || isExpired)
                   ? 'opacity-50 cursor-not-allowed'
                   : 'hover:bg-red-600'
@@ -495,8 +628,8 @@ export default function MarketPage() {
                 onClick={() => handleAmountChange(0)}
                 disabled={isBettingClosed || isExpired}
                 className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-600'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-gray-600'
                   }`}>
                 reset
               </button>
@@ -504,8 +637,8 @@ export default function MarketPage() {
                 onClick={() => handleAmountChange(MIN_BET_AMOUNT)}
                 disabled={isBettingClosed || isExpired}
                 className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-600'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-gray-600'
                   }`}>
                 {MIN_BET_AMOUNT} SOL
               </button>
@@ -513,8 +646,8 @@ export default function MarketPage() {
                 onClick={() => handleAmountChange(0.5)}
                 disabled={isBettingClosed || isExpired}
                 className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-600'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-gray-600'
                   }`}>
                 0.5 SOL
               </button>
@@ -522,8 +655,8 @@ export default function MarketPage() {
                 onClick={() => handleAmountChange(1)}
                 disabled={isBettingClosed || isExpired}
                 className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-600'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-gray-600'
                   }`}>
                 1 SOL
               </button>
@@ -531,8 +664,8 @@ export default function MarketPage() {
                 onClick={() => handleAmountChange(userBalance)}
                 disabled={isBettingClosed || isExpired || userBalance <= 0}
                 className={`bg-gray-700 px-3 py-1 rounded-md ${(isBettingClosed || isExpired || userBalance <= 0)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:bg-gray-600'
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:bg-gray-600'
                   }`}>
                 max
               </button>
@@ -554,17 +687,29 @@ export default function MarketPage() {
 
             {/* Place Trade Button */}
             <button
+  onClick={handleBetClick}
+  disabled={isBettingClosed || isExpired || betAmount <= 0 || isBetting}
+  className={`mt-4 w-full py-2 rounded-md ${isPumpActive
+    ? 'bg-green-500 text-black hover:bg-green-400'
+    : 'bg-red-500 text-white hover:bg-red-600'
+    } ${(isBettingClosed || isExpired || betAmount <= 0 || betAmount >= MAX_BET_AMOUNT || isBetting)
+      ? 'opacity-50 cursor-not-allowed'
+      : ''
+    }`}>
+  {isBetting ? 'processing...' : 'place bet'}
+</button>
+            {/* <button
               onClick={handleBetClick}
               disabled={isBettingClosed || isExpired || betAmount <= 0}
               className={`mt-4 w-full py-2 rounded-md ${isPumpActive
-                  ? 'bg-green-500 text-black hover:bg-green-400'
-                  : 'bg-red-500 text-white hover:bg-red-600'
+                ? 'bg-green-500 text-black hover:bg-green-400'
+                : 'bg-red-500 text-white hover:bg-red-600'
                 } ${(isBettingClosed || isExpired || betAmount <= 0 || betAmount >= MAX_BET_AMOUNT)
                   ? 'opacity-50 cursor-not-allowed'
                   : ''
                 }`}>
               place bet
-            </button>
+            </button> */}
 
             {/* Disclaimer */}
             <p className="mt-2 text-center text-sm text-gray-400">

@@ -100,66 +100,6 @@ class ExpiryService {
       }
     }
     
-    // async processCutoff(marketId) {
-    //   try {
-    //     // Update market phase
-  
-    //     if (!marketId) {
-    //       throw new Error('Market Id is needed!');
-    //     }
-  
-    //     try {
-  
-    //       await this.supabase
-    //         .from('markets')
-    //         .update({
-    //           phase: 'CUTOFF',
-    //           status: 'MATCHING'
-    //         })
-    //         .eq('id', marketId);
-  
-    //     } catch (error) {
-    //       console.log('Error updating market.')
-    //       throw error;
-    //     }
-  
-    //     // here we need to update status as locked
-  
-    //     // Get all unmatched and partially matched bets
-    //     const { data: bets, error } = await this.supabase
-    //       .from('bets')
-    //       .select('*')
-    //       .eq('market_id', marketId)
-    //       .in('status', ['PENDING', 'PARTIALLY_MATCHED']);
-  
-  
-    //     if (error) throw error;
-  
-    //     // Process each bet
-    //     for (const bet of bets) {
-    //       await this.processBetExpiry(bet);
-    //     }
-  
-    //     // Update market to observation phase
-    //     await this.supabase
-    //       .from('markets')
-    //       .update({
-    //         phase: 'OBSERVATION',
-    //         status: 'LOCKED'
-    //       })
-    //       .eq('id', marketId);
-  
-    //     return bets;
-  
-    //   } catch (error) {
-    //     console.error('Error processing cutoff:', error);
-    //     throw error;
-    //   }
-
-
-    //   // SO this is where we should fetch new markets|||
-    // }
-  
     // Process expiry for a single bet
     async processBetExpiry(bet) {
       if (!bet.id) {
@@ -430,6 +370,7 @@ class ExpiryService {
   
     // Validate bet placement against market phase
     async validateBetPlacement(marketId) {
+      console.log(`Validate bet placement.`);
       if (!marketId) {
         throw new Error('Error processing Market.');
       }
@@ -447,6 +388,8 @@ class ExpiryService {
         market.duration
       );
   
+      console.log(`Market phase: ${market.phase}`);
+
       if (phase !== 'BETTING') {
         throw new Error('Market is not accepting bets at this time');
       }

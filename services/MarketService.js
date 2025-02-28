@@ -143,6 +143,8 @@ class MarketService {
       if (betData.potentialPayout <= 0) {
         throw new Error('Potential payout must be positive.');
       }
+
+      console.log(`Before market expiry service.`);
   
       try {
         // Validate market is in betting phase
@@ -259,22 +261,6 @@ class MarketService {
         throw error;
       }
     }
-    
-    // async getMarketCount() {
-    //   try {
-    //     const { data, error } = await this.supabase
-    //       .from(this.tableName)
-    //       .select('id')
-    //       .eq('phase','BETTING');
-  
-    //     if (error) throw error;
-    //     return data.length;
-  
-    //   } catch (error) {
-    //     console.error('Error getting the market count:', error);
-    //     throw error;
-    //   }
-    // }
   }
   
   module.exports = MarketService;

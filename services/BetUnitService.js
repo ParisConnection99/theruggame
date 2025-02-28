@@ -5,7 +5,7 @@ const { Decimal } = require('decimal.js');
 * Splitting only happens if the bet is over 1 SOL
 */
 class BetUnitService {
-    constructor(db, config) {
+    constructor(db, config = {}) {
         this.db = db;
         this.config = config;
 
