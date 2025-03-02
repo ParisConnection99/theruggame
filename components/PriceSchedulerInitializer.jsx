@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { startPriceScheduler, stopPriceScheduler } from '@/lib/priceScheduler'; // Update the path as needed
+import { startPriceScheduler, stopPriceScheduler } from '@/services/PricesScheduler'; // Update the path as needed
 
 export default function PriceSchedulerInitializer() {
   const [isInitialized, setIsInitialized] = useState(false);

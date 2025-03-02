@@ -1,16 +1,17 @@
 // components/ClientProviders.jsx
-'use client';
+"use client";
 
-import React from 'react';
-import { FirebaseProvider } from '@/context/firebase'; // Adjust import path as needed
-import WalletProviderComponent from '@/components/WalletProviderComponent'; // Adjust import path as needed
-import PriceSchedulerInitializer from './PriceSchedulerInitializer';
+import React from "react";
+import { FirebaseProvider } from "@/components/FirebaseProvider";
+import { WalletProviderComponent } from '@/components/WalletProvider';
+import PriceSchedulerInitializer from '@/components/PriceSchedulerInitializer';
+
 
 export default function ClientProviders({ children }) {
   return (
     <FirebaseProvider>
       <WalletProviderComponent>
-        <PriceSchedulerInitializer />
+      <PriceSchedulerInitializer />
         {children}
       </WalletProviderComponent>
     </FirebaseProvider>
