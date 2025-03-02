@@ -1,8 +1,9 @@
-const { createClient } = require('@supabase/supabase-js');
+
 const axios = require('axios');
 
 // Initialize Supabase Client
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+import { supabase } from '@/lib/supabaseClient';
+
 
 let lastPrices = {}; // Store last known prices to avoid redundant updates
 let schedulerInterval = 5000; // Default interval: 5 seconds
@@ -14,7 +15,7 @@ const getActiveMarkets = async () => {
         const { data, error } = await supabase
             .from('markets')
             .select('token_address')
-            .eq('status', 'BETTING')
+            .eq('phase', 'BETTING') 
             .limit(10); // Ensure only 10 markets max
 
         if (error) throw error;
@@ -25,6 +26,35 @@ const getActiveMarkets = async () => {
         return [];
     }
 };
+
+// Function to get current price for a single token
+export const getTokenPrice = async (tokenAddress) => {
+    try {
+      // If we have the price in memory, return it
+      if (lastPrices[tokenAddress]) {
+        return lastPrices[tokenAddress];
+      }
+      
+      // Otherwise fetch using existing function
+      const priceData = await fetchPricesFromDexScreener([tokenAddress]);
+
+      console.log(`Price data: ${priceData}`);
+      
+      if (priceData && priceData.length > 0) {
+        const price = priceData[0].price;
+        
+        // Update lastPrices regardless of volatility
+        lastPrices[tokenAddress] = price;
+        
+        return price;
+      }
+      
+      return null; // No price available
+    } catch (error) {
+      console.error('Error fetching token price:', error);
+      return null;
+    }
+  };
 
 // Function to fetch token prices from DexScreener
 const fetchPricesFromDexScreener = async (tokenAddresses) => {
@@ -51,7 +81,7 @@ const fetchPricesFromDexScreener = async (tokenAddresses) => {
 
         const data = await response.json();
         
-        return data.pairs.map(pair => ({
+        return data.map(pair => ({
             tokenAddress: pair.pairAddress,
             price: parseFloat(pair.priceUsd)
         }));
@@ -75,7 +105,7 @@ const pushPriceUpdates = async (priceUpdates) => {
 };
 
 // Function to start the price scheduler
-const startPriceScheduler = () => {
+export const startPriceScheduler = () => {
     if (scheduler) {
         console.log('⚠️ Scheduler is already running.');
         return;
@@ -94,6 +124,8 @@ const startPriceScheduler = () => {
 
         console.log('📡 Fetching prices from DexScreener...');
         const newPrices = await fetchPricesFromDexScreener(activeMarkets);
+
+        //console.log(`Prices: ${JSON.stringify(newPrices, null, 2)}`);
 
         if (!newPrices || newPrices.length === 0) {
             console.log('⚠️ No price updates received. Skipping...');
@@ -119,7 +151,7 @@ const startPriceScheduler = () => {
 };
 
 // Function to stop the scheduler
-const stopPriceScheduler = () => {
+export const stopPriceScheduler = () => {
     if (!scheduler) {
         console.log('⚠️ Scheduler is not running.');
         return;
@@ -146,4 +178,4 @@ const setSchedulerInterval = (newInterval) => {
     }
 };
 
-module.exports = { startPriceScheduler, stopPriceScheduler, setSchedulerInterval };
+//module.exports = { startPriceScheduler, stopPriceScheduler, setSchedulerInterval };

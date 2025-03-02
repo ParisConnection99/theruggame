@@ -11,6 +11,7 @@ import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { checkSufficientBalance, placeBet } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
+import { startPriceScheduler, stopPriceScheduler, getTokenPrice } from '@/services/PricesScheduler';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
@@ -43,7 +44,8 @@ export default function MarketPage() {
   const [houseFee, setHouseFee] = useState(0);
   const [potentialReturn, setPotentialReturn] = useState({ amount: 0, percentage: 0 });
 
-  //console.log(`Market id: ${id}`);
+  // Added state for token price updates
+  const [currentPrice, setCurrentPrice] = useState(0);
 
   useEffect(() => {
     if (!id) return;
@@ -57,6 +59,14 @@ export default function MarketPage() {
         if (marketData) {
           console.log(`Market: ${marketData}`);
           setMarket(marketData);
+
+          // Set initial price using the scheduler's function
+          if (marketData.token_address) {
+            const price = await getTokenPrice(marketData.token_address);
+            console.log(`Current price: ${price}`);
+            if (price) setCurrentPrice(price);
+          }
+
         } else {
           console.log('No Markets found.');
         }
@@ -129,6 +139,41 @@ export default function MarketPage() {
       }
     }
   }, [market?.id]); // Only depend on the ID, not the entire market object
+
+  // Add this useEffect to subscribe to real-time price updates
+  useEffect(() => {
+    if (!market?.token_address) return;
+
+    // Subscribe to price updates for this specific token
+    const priceChannel = supabase
+      .channel('realtime_prices')
+      .on('broadcast', { event: 'price_update' }, (payload) => {
+        // Check if this update is for our token
+        if (payload.payload.token_address === market.token_address) {
+          console.log(`Price: payload.payload.current_price`);
+          setCurrentPrice(payload.payload.current_price);
+        }
+      })
+      .subscribe();
+
+    // Cleanup subscription when component unmounts
+    return () => {
+      supabase.removeChannel(priceChannel);
+    };
+  }, [market?.token_address]);
+
+  useEffect(() => {
+    // Start the scheduler when the component mounts
+    console.log('Starting price scheduler for testing...');
+    startPriceScheduler();
+
+    // Stop the scheduler when the component unmounts
+    return () => {
+      console.log('Stopping price scheduler...');
+      stopPriceScheduler();
+    };
+  }, []);
+
 
   // Add the countdown timer effect from MarketCard
   useEffect(() => {
@@ -518,7 +563,9 @@ export default function MarketPage() {
 
       {/* Current Price + Liquidity */}
       <div className="mt-8 text-lg font-semibold text-white">
-        Current Price: <span className="text-green-400">{market?.initial_coin_price || "0.00"} SOL</span>
+        Current Price: <span className="text-green-400">
+          {currentPrice ? currentPrice.toFixed(8) : "0.00"}
+        </span>
       </div>
 
       <div className="text-lg text-gray-400 mt-2">
@@ -688,18 +735,6 @@ export default function MarketPage() {
                 }`}>
               {isBetting ? 'processing...' : 'place bet'}
             </button>
-            {/* <button
-              onClick={handleBetClick}
-              disabled={isBettingClosed || isExpired || betAmount <= 0}
-              className={`mt-4 w-full py-2 rounded-md ${isPumpActive
-                ? 'bg-green-500 text-black hover:bg-green-400'
-                : 'bg-red-500 text-white hover:bg-red-600'
-                } ${(isBettingClosed || isExpired || betAmount <= 0 || betAmount >= MAX_BET_AMOUNT)
-                  ? 'opacity-50 cursor-not-allowed'
-                  : ''
-                }`}>
-              place bet
-            </button> */}
 
             {/* Disclaimer */}
             <p className="mt-2 text-center text-sm text-gray-400">
