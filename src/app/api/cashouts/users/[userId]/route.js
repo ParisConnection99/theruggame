@@ -1,5 +1,5 @@
 // app/api/cashouts/users/[userId]/route.js
-import serviceRepo from '@/services/ServiceRepository';
+import { serviceRepo } from '@/services/ServiceRepository';
 
 export async function GET(request, { params }) {
   try {

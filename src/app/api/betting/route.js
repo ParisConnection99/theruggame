@@ -1,4 +1,4 @@
-import serviceRepo from '@/services/ServiceRepository';
+import { serviceRepo } from '@/services/ServiceRepository';
 
 export async function POST(request) {
   console.log(`Just entered the place bet route.`);

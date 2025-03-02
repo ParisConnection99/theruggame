@@ -1,4 +1,4 @@
-import serviceRepo from '@/services/ServiceRepository';
+import { serviceRepo } from '@/services/ServiceRepository';
 
 export async function GET(request) {
   const url = new URL(request.url);

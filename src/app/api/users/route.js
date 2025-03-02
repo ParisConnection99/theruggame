@@ -1,4 +1,4 @@
-import serviceRepo from '@/services/ServiceRepository';
+import { serviceRepo } from '@/services/ServiceRepository';
 
 export async function GET(request) {
   const url = new URL(request.url);
@@ -27,6 +27,7 @@ export async function GET(request) {
       const wallet = url.searchParams.get('wallet');
       const user = await serviceRepo.userService.getUserByWallet(wallet);
    
+      console.log(`Fetched user: ${user}`);
       if (!user) {
         return new Response(JSON.stringify({ error: 'User not found' }), {
           status: 404,

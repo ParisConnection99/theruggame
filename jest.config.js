@@ -23,5 +23,8 @@ module.exports = {
           ['@babel/preset-react', { runtime: 'automatic' }]
         ]
       }]
+    },
+    moduleNameMapper: {
+      "^@/(.*)$": "<rootDir>/$1"
     }
   }

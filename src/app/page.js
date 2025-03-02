@@ -41,7 +41,7 @@ export default function Home() {
 
      // await homePageService.createMockMarket(supabase, 1);
     //await homePageService.createMockMarket(supabase, 2);
-      //await homePageService.createMockMarket(supabase, 3);
+    // await homePageService.createMockMarket(supabase, 3);
         const marketsData = await homePageService.fetchActiveMarkets();
 
         console.log(`Markets: ${marketsData}`);

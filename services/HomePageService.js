@@ -137,7 +137,7 @@ class HomePageService {
 
         // Create start time 1 hour from now
         const startTime = new Date(now);
-        startTime.setHours(startTime.getHours() + 1);
+        //startTime.setHours(startTime.getHours() + 1);
 
         // Create end time (10 min duration)
         const endTime = new Date(startTime);

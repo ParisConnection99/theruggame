@@ -44,6 +44,7 @@ class ServiceRepository {
     // First level dependent services
     this.register('refundService', new RefundService(
       this.get('supabase'), 
+      {},
       this.get('userService')
     ));
     this.register('payoutService', new PayoutService(
@@ -81,6 +82,7 @@ class ServiceRepository {
     // Fourth level dependent services
     this.register('matchingService', new MatchingService(
       this.get('db'),
+      {},
       this.get('marketService'),
       this.get('statusUpdateService'),
       this.get('betUnitService')
@@ -89,6 +91,7 @@ class ServiceRepository {
     this.register('marketCreationService', new MarketCreationService(
       this.get('tokenService'),
       this.get('marketService'),
+      {},
       this.get('supabase')
     ));
     
@@ -133,4 +136,8 @@ class ServiceRepository {
 
 // Create and export a singleton instance
 const serviceRepo = new ServiceRepository().initialize();
-module.exports = serviceRepo;
+
+module.exports = {
+  ServiceRepository,
+  serviceRepo
+}
