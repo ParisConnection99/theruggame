@@ -17,18 +17,18 @@ export default function Home() {
   const [featuredMarket, setFeaturedMarket] = useState(null);
   const router = useRouter();
 
-   // Helper function defined outside of any useEffect
-   const updateFeaturedMarket = (marketsList) => {
+  // Helper function defined outside of any useEffect
+  const updateFeaturedMarket = (marketsList) => {
     if (!marketsList || marketsList.length === 0) return;
-    
+
     // Find market with highest total amount wagered
     const newFeaturedMarket = marketsList.reduce((featured, current) => {
       const featuredTotal = (featured.total_pump_amount || 0) + (featured.total_rug_amount || 0);
       const currentTotal = (current.total_pump_amount || 0) + (current.total_rug_amount || 0);
-      
+
       return currentTotal > featuredTotal ? current : featured;
     }, marketsList[0]);
-    
+
     setFeaturedMarket(newFeaturedMarket);
   };
 
@@ -39,12 +39,18 @@ export default function Home() {
       try {
         setLoading(true);
 
-     // await homePageService.createMockMarket(supabase, 1);
-    //await homePageService.createMockMarket(supabase, 2);
-   //await homePageService.createMockMarket(supabase, 3);
+        // const response = await fetch(`/api/setup/markets`);
+
+        // if (!response.ok) {
+        //   const errorData = await response.json();
+        //   throw new Error(errorData.error || 'Failed to set up markets');
+        // }
+
+        // await homePageService.createMockMarket(supabase, 1);
+        //await homePageService.createMockMarket(supabase, 2);
+        //await homePageService.createMockMarket(supabase, 3);
         const marketsData = await homePageService.fetchActiveMarkets();
 
-        console.log(`Markets: ${marketsData}`);
         if (marketsData && marketsData.length > 0) {
           const sortedMarkets = marketsData.sort((a, b) => {
             return new Date(b.created_at) - new Date(a.created_at);
@@ -75,17 +81,17 @@ export default function Home() {
           newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           setMarkets(newMarkets);
           break;
-        
+
         case 'PUMP VS RUG SPLIT UPDATE':
           // We should update the Featured Market.
           setMarkets(currentMarkets => {
-            const updatedMarkets = currentMarkets.map(market => 
+            const updatedMarkets = currentMarkets.map(market =>
               market.id === updatedMarket.payload.id ? updatedMarket.payload : market
             );
-            
+
             // Recalculate featured market
             updateFeaturedMarket(updatedMarkets);
-            
+
             return updatedMarkets;
           });
           break;
@@ -102,17 +108,12 @@ export default function Home() {
   }, [markets]);
 
   async function onMarketClick(marketId) {
-    console.log(`Market index ${marketId}`);
-
     router.push(`/market/${marketId}`);
-   //wait homePageService.createMockMarket(supabase, 3);
-    //alert('Market clicked');
   }
 
   // Function to handle featured market click
   const handleFeaturedMarketClick = () => {
     // Navigate to the market details page
-    // Replace with your actual navigation logic
     if (featuredMarket && featuredMarket.id) {
       router.push(`/market/${featuredMarket.id}`);
     }
@@ -134,7 +135,7 @@ export default function Home() {
             end_time={featuredMarket.end_time}
             duration={featuredMarket.duration}
             amountWagered={`${featuredMarket.total_pump_amount + featuredMarket.total_rug_amount} SOL`}
-            imageSrc={featuredMarket.imageSrc || "/images/eth.webp"}
+            imageSrc={featuredMarket.icon_url}
             onMarketClick={handleFeaturedMarketClick}
           />
         ) : (
@@ -152,7 +153,7 @@ export default function Home() {
               <MarketCard
                 key={index}
                 name={market.name}
-                imageSrc={market.imageSrc}
+                imageSrc={market.icon_url}
                 start_time={market.start_time}
                 end_time={market.end_time}
                 duration={market.duration}

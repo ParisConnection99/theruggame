@@ -64,6 +64,7 @@ export default function MarketPage() {
 
         const marketData = await marketPageService.fetchMarketWith(id);
 
+        console.log(`MARKET ICON: ${marketData.icon_url}`);
         if (marketData) {
           setMarket(marketData);
 
@@ -535,7 +536,7 @@ export default function MarketPage() {
         {/* Title and Image */}
         <div className="flex items-center gap-4 mt-8">
           <Image
-            src="/images/eth.webp" // Update this path to your actual image file
+            src={market?.icon_url ? market.icon_url : "/images/ruggy_angry.svg"} // Update this path to your actual image file
             alt="Market Image"
             width={50}
             height={50}

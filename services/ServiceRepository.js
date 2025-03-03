@@ -15,7 +15,7 @@ const TokenService = require('./TokenService');
 const MarketCreationService = require('./MarketCreationService');
 const UserService = require('./UserService');
 const CashoutService = require('./CashoutService')
-const pool = require('@/utils/db-config');
+const dbConfig = require('@/utils/db-config');
 
 
 class ServiceRepository {
@@ -29,7 +29,7 @@ class ServiceRepository {
 
     // Database connections
     this.register('supabase', supabase);
-    this.register('pool', pool);
+    this.register('pool', dbConfig.pool);
     this.register('db', new PostgresDatabase());
 
     // Independent services (services with minimal dependencies)

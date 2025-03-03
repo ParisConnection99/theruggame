@@ -1,4 +1,4 @@
- const { pool } = require('../utils/db-config');
+const pool = require('@/utils/db-config');
 
 class PostgresDatabase {
     constructor() {

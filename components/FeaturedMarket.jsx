@@ -7,10 +7,10 @@ const alfaSlabOne = Alfa_Slab_One({
   weight: "400"
 });
 
-const FeaturedMarket = ({ 
-  marketName = "EthCoin", 
-  amountWagered = "50 SOL ($10k)",
-  imageSrc = "/images/eth.webp",
+const FeaturedMarket = ({
+  marketName = "",
+  amountWagered = "",
+  imageSrc = "/images/ruggy_smiley",
   start_time,
   end_time,
   duration,
@@ -21,7 +21,11 @@ const FeaturedMarket = ({
   const [isBettingClosed, setIsBettingClosed] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
 
+  //const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "";
+
   const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "UnknownToken";
+  const questionStart = "Will ";
+  const questionEnd = " Pump or Rug in 10 mins?";
 
   // Calculate and update countdown - using the same logic as MarketCard
   useEffect(() => {
@@ -112,7 +116,7 @@ const FeaturedMarket = ({
       >
         Most Bet-on Market
       </h1>
-      
+
       {/* Add custom keyframes for animations */}
       <style jsx global>{`
         @keyframes flash {
@@ -145,7 +149,11 @@ const FeaturedMarket = ({
             className="rounded-md"
             priority
           />
-          <h1 className="text-lg md:text-l font-semibold">Will {tokenNameNoSpaces} Pump or Rug in 10 mins?</h1>
+          <h1 className="text-lg md:text-l font-semibold">
+            {questionStart}
+            <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
+            {questionEnd}
+          </h1>
         </div>
 
         {/* Countdown Timer & Amount Wagered - larger text */}
@@ -155,7 +163,7 @@ const FeaturedMarket = ({
             {timeLeft}
           </span>
         </div>
-        
+
         <div className="text-base md:text-lg flex items-center">
           <span className="mr-2">💰 Amount wagered:</span>
           <span className="font-bold text-green-400">

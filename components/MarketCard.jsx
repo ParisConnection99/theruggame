@@ -4,7 +4,8 @@ import Image from "next/image";
 function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketClick }) {
   // Format the question with no spaces in market name
   const tokenNameNoSpaces = name ? name.replace(/\s+/g, "") : "UnknownToken";
-  const question = `Will ${tokenNameNoSpaces} Pump or Rug in 10 mins?`;
+  const questionStart = "Will ";
+  const questionEnd = " Pump or Rug in 10 mins?";
 
   // State for countdown
   const [timeLeft, setTimeLeft] = useState('');
@@ -61,16 +62,16 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
         if (timeTillLastBet <= 0 && timeTillEnd > 0) {
           setIsBettingClosed(true);
           setTimerLabel('Resolution in:');
-          
+
           // Format the remaining time until end
           const totalEndSeconds = Math.floor(timeTillEnd / 1000);
           const endMinutes = Math.floor(totalEndSeconds / 60);
           const endSeconds = totalEndSeconds % 60;
-          
+
           // Format with leading zeros
           const formattedEndMinutes = String(endMinutes).padStart(2, '0');
           const formattedEndSeconds = String(endSeconds).padStart(2, '0');
-          
+
           setTimeLeft(`${formattedEndMinutes}:${formattedEndSeconds}`);
           return;
         }
@@ -105,7 +106,7 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
 
   return (
     <div className="bg-gray-600 p-4 rounded-lg shadow-md text-white flex flex-col gap-4 hover:border-2 hover:border-white"
-    onClick={onMarketClick}>
+      onClick={onMarketClick}>
       {/* Image and Question */}
       <div className="flex gap-4 items-center">
         <Image
@@ -115,7 +116,11 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
           height={40}
           className="rounded-md"
         />
-        <h1 className="text-sm font-semibold">{question}</h1>
+        <h1 className="text-sm font-semibold">
+          {questionStart}
+          <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
+          {questionEnd}
+        </h1>
       </div>
 
       {/* Buttons */}
@@ -137,13 +142,12 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
       {/* Countdown Timer - now shows both betting close and resolution timers */}
       <div className="text-sm mt-2 flex items-center">
         <span className="mr-2">⏱️ {timerLabel}</span>
-        <span className={`font-bold ${
-          isExpired 
-            ? 'text-red-500' 
-            : isBettingClosed 
-              ? 'text-orange-400' 
+        <span className={`font-bold ${isExpired
+            ? 'text-red-500'
+            : isBettingClosed
+              ? 'text-orange-400'
               : 'text-yellow-400 animate-pulse'
-        }`}>
+          }`}>
           {timeLeft}
         </span>
       </div>
