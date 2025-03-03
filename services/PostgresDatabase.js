@@ -1,7 +1,5 @@
-const pool = require('@/utils/db-config');
-
 class PostgresDatabase {
-    constructor() {
+    constructor(pool) {
         this.pool = pool;
     }
 

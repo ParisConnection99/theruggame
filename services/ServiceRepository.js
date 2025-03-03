@@ -30,7 +30,7 @@ class ServiceRepository {
     // Database connections
     this.register('supabase', supabase);
     this.register('pool', dbConfig.pool);
-    this.register('db', new PostgresDatabase());
+    this.register('db', new PostgresDatabase(this.get('pool')));
 
     // Independent services (services with minimal dependencies)
     this.register('userService', new UserService(this.get('supabase')));
