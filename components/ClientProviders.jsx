@@ -1,17 +1,20 @@
 // components/ClientProviders.jsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { FirebaseProvider } from "@/components/FirebaseProvider";
 import { WalletProviderComponent } from '@/components/WalletProvider';
-import PriceSchedulerInitializer from '@/components/PriceSchedulerInitializer';
-
+import { initializePriceScheduler } from '@/services/PricesSchedulerInitializer';
 
 export default function ClientProviders({ children }) {
+  useEffect(() => {
+    // Initialize the price scheduler
+    initializePriceScheduler();
+  }, []);
+
   return (
     <FirebaseProvider>
       <WalletProviderComponent>
-      <PriceSchedulerInitializer />
         {children}
       </WalletProviderComponent>
     </FirebaseProvider>

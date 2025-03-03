@@ -146,7 +146,7 @@ class HomePageService {
         // Market variations based on marketId
         const marketVariations = [
             {
-                token_address: "0xabcdef1234567890abcdef1234567890abcdef01",
+                token_address: "2jcx4R6R8X2A8bqp4i612izx1s71Srubpt8MeZrHyBYt",
                 initial_coin_price: 0.000025,
                 initial_market_cap: 20000,
                 initial_liquidity: 4000,
@@ -160,7 +160,7 @@ class HomePageService {
                 dex_screener_url: "https://dexscreener.com/solana/pepe-address"
             },
             {
-                token_address: "0x123456abcdef7890abcdef1234567890abcdef02",
+                token_address: "fiYsJnMggjZ4zSyHLcFk4LdJB6xaWcQrTYxQ1btpump",
                 initial_coin_price: 0.000035,
                 initial_market_cap: 30000,
                 initial_liquidity: 6000,
@@ -174,7 +174,7 @@ class HomePageService {
                 dex_screener_url: "https://dexscreener.com/solana/shiba-address"
             },
             {
-                token_address: "0x7890abcdef123456abcdef1234567890abcdef03",
+                token_address: "8QhSMvYfXome11VgxFMD75hNbGQXW5QTnjA8khENkY2c",
                 initial_coin_price: 0.000045,
                 initial_market_cap: 40000,
                 initial_liquidity: 8000,

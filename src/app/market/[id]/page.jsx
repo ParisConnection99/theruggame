@@ -11,7 +11,8 @@ import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { checkSufficientBalance, placeBet } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
-import { startPriceScheduler, stopPriceScheduler, getTokenPrice } from '@/services/PricesScheduler';
+import { getTokenPrice } from '@/services/PricesScheduler';
+import MarketChart from '@/components/MarketChart';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
@@ -46,6 +47,13 @@ export default function MarketPage() {
 
   // Added state for token price updates
   const [currentPrice, setCurrentPrice] = useState(0);
+  const [liquidity, setLiquidity] = useState(0);
+
+  // Added state for price history 
+  const [priceHistory, setPriceHistory] = useState([]);
+
+
+  // Fetching the market data + initial token price
 
   useEffect(() => {
     if (!id) return;
@@ -57,14 +65,18 @@ export default function MarketPage() {
         const marketData = await marketPageService.fetchMarketWith(id);
 
         if (marketData) {
-          console.log(`Market: ${marketData}`);
           setMarket(marketData);
+
+          // Fetch price history for charts
+          const priceHistoryData = await marketPageService.fetchPriceHistory(id);
+          setPriceHistory(priceHistoryData);
 
           // Set initial price using the scheduler's function
           if (marketData.token_address) {
-            const price = await getTokenPrice(marketData.token_address);
-            console.log(`Current price: ${price}`);
+            const { price, liquidity } = await getTokenPrice(marketData.token_address);
+
             if (price) setCurrentPrice(price);
+            if (liquidity) setLiquidity(liquidity);
           }
 
         } else {
@@ -80,6 +92,7 @@ export default function MarketPage() {
     fetchMarketData();
   }, [id]);
 
+  // Fetching user data
   useEffect(() => {
     const fetchUserData = async () => {
       if (!authUser || !authUser.uid) {
@@ -140,40 +153,11 @@ export default function MarketPage() {
     }
   }, [market?.id]); // Only depend on the ID, not the entire market object
 
-  // Add this useEffect to subscribe to real-time price updates
-  useEffect(() => {
-    if (!market?.token_address) return;
-
-    // Subscribe to price updates for this specific token
-    const priceChannel = supabase
-      .channel('realtime_prices')
-      .on('broadcast', { event: 'price_update' }, (payload) => {
-        // Check if this update is for our token
-        if (payload.payload.token_address === market.token_address) {
-          console.log(`Price: payload.payload.current_price`);
-          setCurrentPrice(payload.payload.current_price);
-        }
-      })
-      .subscribe();
-
-    // Cleanup subscription when component unmounts
-    return () => {
-      supabase.removeChannel(priceChannel);
-    };
-  }, [market?.token_address]);
-
-  useEffect(() => {
-    // Start the scheduler when the component mounts
-    console.log('Starting price scheduler for testing...');
-    startPriceScheduler();
-
-    // Stop the scheduler when the component unmounts
-    return () => {
-      console.log('Stopping price scheduler...');
-      stopPriceScheduler();
-    };
-  }, []);
-
+  const handlePriceUpdate = (priceData) => {
+    setCurrentPrice(priceData.price);
+    setLiquidity(priceData.liquidity);
+    console.log(`Market page updated with new price: ${priceData.price}`);
+  }
 
   // Add the countdown timer effect from MarketCard
   useEffect(() => {
@@ -562,14 +546,14 @@ export default function MarketPage() {
       </div>
 
       {/* Current Price + Liquidity */}
-      <div className="mt-8 text-lg font-semibold text-white">
-        Current Price: <span className="text-green-400">
+      <div className="mt-8 text-l font-semibold text-gray-400">
+        Current Price: <span className="text-white">
           {currentPrice ? currentPrice.toFixed(8) : "0.00"}
         </span>
       </div>
 
-      <div className="text-lg text-gray-400 mt-2">
-        Liquidity: <span className="text-white">${market?.initial_liquidity || "0"}</span>
+      <div className="text-l font-semibold text-gray-400 mt-2">
+        Liquidity: <span className="text-white">${liquidity}</span>
       </div>
 
       {/* Market Details */}
@@ -592,8 +576,19 @@ export default function MarketPage() {
       {/* Main Section: Chart and Buy/Sell */}
       <div className="flex flex-col lg:flex-row mt-6 gap-6">
         {/* Chart (Left Section) */}
-        <div className="flex-1 bg-gray-800 rounded-md p-4 h-64">
-          <p className="text-gray-500">[Chart Placeholder]</p>
+        <div className="flex-1 bg-gray-800 rounded-md p-4 relative">
+          {market && (
+            <MarketChart
+              tokenAddress={market.token_address}
+              marketId={market.id}
+              marketStartTime={market.start_time}
+              marketEndTime={market.end_time}
+              startingPrice={market.initial_coin_price}
+              initialPriceHistory={priceHistory}
+              marketName={market.name}
+              onPriceUpdate={handlePriceUpdate}
+            />
+          )}
         </div>
 
         {/* Buy/Sell Section (Right Section) */}
