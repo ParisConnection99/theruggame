@@ -10,7 +10,7 @@ const alfaSlabOne = Alfa_Slab_One({
 const FeaturedMarket = ({
   marketName = "",
   amountWagered = "",
-  imageSrc = "/images/ruggy_angry.svg",
+  imageSrc,
   start_time,
   end_time,
   duration,
@@ -23,6 +23,11 @@ const FeaturedMarket = ({
   const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
   const questionEnd = " Pump or Rug in 10 mins?";
+
+  if (!imageSrc) {
+    imageSrc = "/images/ruggy_angry.svg";
+  }
+
 
   // Calculate and update countdown - using the same logic as MarketCard
   useEffect(() => {
@@ -140,7 +145,7 @@ const FeaturedMarket = ({
         <div className="flex gap-6 items-center">
           <Image
             src={imageSrc}
-            alt=""
+            alt="Featured Market"
             width={60}
             height={60}
             className="rounded-md"

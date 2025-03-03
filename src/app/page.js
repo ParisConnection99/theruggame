@@ -161,7 +161,7 @@ export default function Home() {
   const showMoreMarkets = () => {
     setVisibleMarkets((prev) => prev + 6); // Load 6 more markets
   };
-
+  
   return (
     <div>
       <main >

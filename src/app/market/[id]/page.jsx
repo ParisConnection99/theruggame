@@ -272,7 +272,8 @@ export default function MarketPage() {
   }, [market?.duration, market?.start_time, market?.end_time]);
 
   const tokenNameNoSpaces = market?.name ? market.name.replace(/\s+/g, "") : "UnknownToken";
-  const question = `Will ${tokenNameNoSpaces} Pump or Rug in 10 mins?`;
+  const questionStart = "Will ";
+  const questionEnd = " Pump or Rug in 10 mins?";
 
   // Use state to manage the active state of the buttons
   const [isPumpActive, setIsPumpActive] = useState(true); // Default is 'Pump' active
@@ -564,6 +565,12 @@ export default function MarketPage() {
   // Calculate total amount wagered and format for display
   const totalAmountWagered = (market?.total_pump_amount || 0) + (market?.total_rug_amount || 0);
   const formattedTotalWagered = totalAmountWagered.toFixed(2);
+  const getImageSrc = () => {
+    if (!market || !market.icon_url || market.icon_url === "") {
+      return "/images/ruggy_angry.svg";
+    }
+    return market.icon_url;
+  };
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-blue-900 text-white">
@@ -572,13 +579,17 @@ export default function MarketPage() {
         {/* Title and Image */}
         <div className="flex items-center gap-4 mt-8">
           <Image
-            src={market?.icon_url ?? "/images/ruggy_angry.svg"} // Update this path to your actual image file
-            alt=""
+            src={getImageSrc()} // Update this path to your actual image file
+            alt="Market icon"
             width={50}
             height={50}
             className="rounded-full"
           />
-          <h1 className="text-2xl font-semibold">{question}</h1>
+          <h1 className="text-2xl font-semibold">
+          {questionStart}
+          <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
+          {questionEnd}
+          </h1>
         </div>
       </div>
 

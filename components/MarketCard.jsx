@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 
-function MarketCard({ name, imageSrc = "/images/ruggy_angry.svg", start_time, end_time, duration, onMarketClick }) {
+function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketClick }) {
   // Format the question with no spaces in market name
-  const tokenNameNoSpaces = name ? name.replace(/\s+/g, "") : "UnknownToken";
+  const tokenNameNoSpaces = name ? name.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
   const questionEnd = " Pump or Rug in 10 mins?";
+
+  if (!imageSrc) {
+    imageSrc = "/images/ruggy_angry.svg";
+  }
+
+ console.log(`ImageSource: ${imageSrc}`);
 
   // State for countdown
   const [timeLeft, setTimeLeft] = useState('');
