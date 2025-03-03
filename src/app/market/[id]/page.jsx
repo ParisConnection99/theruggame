@@ -13,6 +13,8 @@ import { checkSufficientBalance, placeBet } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
+import { useAnalytics } from '@/components/FirebaseProvider';
+import { logEvent } from 'firebase/analytics';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
@@ -23,6 +25,7 @@ export default function MarketPage() {
   const PLATFORM_FEE = 0.02;
   const inputRef = useRef(null); // Add ref for the input element
   const { publicKey, sendTransaction, connected } = useWallet();
+  const analytics = useAnalytics();
 
   if (!id) {
     console.error("Market ID is missing from URL.");
@@ -64,7 +67,6 @@ export default function MarketPage() {
 
         const marketData = await marketPageService.fetchMarketWith(id);
 
-        console.log(`MARKET ICON: ${marketData.icon_url}`);
         if (marketData) {
           setMarket(marketData);
 
@@ -85,6 +87,11 @@ export default function MarketPage() {
         }
       } catch (error) {
         console.error('Error fetching market data.');
+        analytics().logEvent('market_page_error', {
+          error_message: error.message,
+          error_code: error.code || 'unknown',
+          error_stack: error.stack
+        });
       } finally {
         setLoading(false);
       }
@@ -118,6 +125,11 @@ export default function MarketPage() {
         console.log(`Fetched user balance: ${dbUser.balance}`);
       } catch (error) {
         console.error("Error fetching user data:", error);
+        analytics().logEvent('market_page_error', {
+          error_message: error.message,
+          error_code: error.code || 'unknown',
+          error_stack: error.stack
+        });
         setUserBalance(0);
       } finally {
         setUserLoading(false);
@@ -240,6 +252,11 @@ export default function MarketPage() {
         setTimeLeft(`${formattedMinutes}:${formattedSeconds}`);
       } catch (error) {
         console.error("Error calculating countdown:", error);
+        analytics().logEvent('market_page_error', {
+          error_message: error.message,
+          error_code: error.code || 'unknown',
+          error_stack: error.stack
+        });
         setTimeLeft('ERROR');
       }
     };
@@ -312,6 +329,14 @@ export default function MarketPage() {
   const handleButtonClick = (isPump) => {
     setIsPumpActive(isPump);
 
+    if (analytics) {
+      logEvent(analytics, 'pump_rug_button_clicked', {
+        isPump: isPump,
+        page: 'market',
+        timestamp: new Date()
+      });
+    }
+
     // Recalculate with new bet type if there's a bet amount
     if (betAmount > 0) {
       handleAmountChange(betAmount);
@@ -324,6 +349,12 @@ export default function MarketPage() {
 
   const handleBetClick = async () => {
     console.log('PLACE BET!');
+    if (analytics) {
+      logEvent(analytics, 'place_bet_button_click', {
+        page: 'market',
+        timestamp: new Date()
+      });
+    }
 
     // Prevent multiple clicks while processing
     if (isBetting) {
@@ -499,6 +530,11 @@ export default function MarketPage() {
       }
     } catch (error) {
       console.error('Error placing bet: ', error);
+      analytics().logEvent('market_page_error', {
+        error_message: error.message,
+        error_code: error.code || 'unknown',
+        error_stack: error.stack
+      });
       alert(`Error placing bet: ${error.message}`);
     } finally {
       setIsBetting(false);
@@ -536,8 +572,8 @@ export default function MarketPage() {
         {/* Title and Image */}
         <div className="flex items-center gap-4 mt-8">
           <Image
-            src={market?.icon_url ? market.icon_url : "/images/ruggy_angry.svg"} // Update this path to your actual image file
-            alt="Market Image"
+            src={market?.icon_url ?? "/images/ruggy_angry.svg"} // Update this path to your actual image file
+            alt=""
             width={50}
             height={50}
             className="rounded-full"

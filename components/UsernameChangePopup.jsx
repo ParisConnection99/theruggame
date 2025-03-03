@@ -1,11 +1,13 @@
 'use client';
 import { useState } from 'react';
+import { useAnalytics } from '@/components/FirebaseProvider';
 
 // This component can be added to your ProfilePage component
 export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUsername = "" }) {
   const [username, setUsername] = useState(currentUsername);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const analytics = useAnalytics();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +24,11 @@ export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUs
       onClose();
     } catch (error) {
       setError(error.message || "Failed to update username");
+      analytics().logEvent('username_change_modal_error', {
+        error_message: error.message,
+        error_code: error.code || 'unknown',
+        error_stack: error.stack
+      });
     } finally {
       setLoading(false);
     }

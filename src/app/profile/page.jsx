@@ -7,10 +7,13 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import UsernameChangePopup from '@/components/UsernameChangePopup';
 import CashoutModal from '@/components/CashoutModal';
+import { useAnalytics } from '@/components/FirebaseProvider';
+import { logEvent } from 'firebase/analytics';
 
 export default function ProfilePage() {
     const { disconnect } = useWallet();
     const { user: authUser, auth } = useAuth();
+    const analytics = useAnalytics();
     const [userData, setUserData] = useState(null);
     const [bets, setBets] = useState([]);
     const [cashouts, setCashouts] = useState([]);
@@ -50,6 +53,11 @@ export default function ProfilePage() {
                 setUserData(dbUser);
             } catch (error) {
                 console.error("Error fetching user data:", error);
+                analytics().logEvent('profile_page_error', {
+                    error_message: error.message,
+                    error_code: error.code || 'unknown',
+                    error_stack: error.stack
+                });
                 setUserData(null);
             } finally {
                 setUserLoading(false);
@@ -88,6 +96,11 @@ export default function ProfilePage() {
                 }
             } catch (error) {
                 console.error('Error fetching bets:', error);
+                analytics().logEvent('profile_page_error', {
+                    error_message: error.message,
+                    error_code: error.code || 'unknown',
+                    error_stack: error.stack
+                });
                 setBets([]);
             } finally {
                 setBetsLoading(false);
@@ -126,6 +139,11 @@ export default function ProfilePage() {
                 }
             } catch (error) {
                 console.error('Error fetching users cashouts: ', error);
+                analytics().logEvent('profile_page_error', {
+                    error_message: error.message,
+                    error_code: error.code || 'unknown',
+                    error_stack: error.stack
+                });
                 setCashouts([]);
             } finally {
                 setCashoutsLoading(false);
@@ -136,16 +154,34 @@ export default function ProfilePage() {
     }, [userData]);
 
     const handleSignOut = async () => {
+        if (analytics) {
+            logEvent(analytics, 'signout_button_click', {
+                page: 'profile',
+                timestamp: new Date()
+            });
+        }
         try {
             await signOut(auth);
             await disconnect();
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);
+            analytics().logEvent('profile_page_error', {
+                error_message: error.message,
+                error_code: error.code || 'unknown',
+                error_stack: error.stack
+            });
         }
     };
 
     const handleCashOut = async () => {
+        if (analytics) {
+            logEvent(analytics, 'cashout_button_click', {
+                page: 'profile',
+                timestamp: new Date()
+            });
+        }
+
         if (!userData || userData.balance <= 0) {
             alert(`You do not have enough funds to cash out.`);
             return;
@@ -155,6 +191,12 @@ export default function ProfilePage() {
     };
 
     const handleEditProfile = async () => {
+        if (analytics) {
+            logEvent(analytics, 'edit_profile_button_click', {
+                page: 'profile',
+                timestamp: new Date()
+            });
+        }
         // Check if username was created in the last 7 days
         if (userData.username_changed_at) {
             const createdAt = new Date(userData.username_changed_at);
@@ -208,6 +250,11 @@ export default function ProfilePage() {
             return true;
         } catch (error) {
             console.error("Error updating username:", error);
+            analytics().logEvent('profile_page_error', {
+                error_message: error.message,
+                error_code: error.code || 'unknown',
+                error_stack: error.stack
+            });
             throw new Error("Failed to update username");
         }
     };
@@ -249,6 +296,11 @@ export default function ProfilePage() {
             alert('Your cashout request has been submitted and is pending approval.');
         } catch (error) {
             console.error('Error processing cashout:', error);
+            analytics().logEvent('profile_page_error', {
+                error_message: error.message,
+                error_code: error.code || 'unknown',
+                error_stack: error.stack
+            });
             throw new Error('Failed to process your cashout. Please try again.');
         }
     };

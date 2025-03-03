@@ -69,7 +69,7 @@ class ServiceRepository {
       this.get('refundService'), 
       this.get('db'),
       this.get('marketResolveService'),
-      this.get('payoutService')
+      this.get('payoutService'),
     ));
     
     // Third level dependent services
@@ -78,6 +78,16 @@ class ServiceRepository {
       this.get('pool'), 
       this.get('expiryService')
     ));
+
+    this.register('marketCreationService', new MarketCreationService(
+      this.get('tokenService'),
+      this.get('marketService'),
+      {},
+      this.get('supabase')
+    ));
+
+    // Complete the circular dependency by setting marketCreationService on expiryService
+    this.get('expiryService').setMarketCreationService(this.get('marketCreationService'));
     
     // Fourth level dependent services
     this.register('matchingService', new MatchingService(
@@ -86,13 +96,6 @@ class ServiceRepository {
       this.get('marketService'),
       this.get('statusUpdateService'),
       this.get('betUnitService')
-    ));
-    
-    this.register('marketCreationService', new MarketCreationService(
-      this.get('tokenService'),
-      this.get('marketService'),
-      {},
-      this.get('supabase')
     ));
     
     // Final level dependent services

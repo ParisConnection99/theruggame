@@ -10,7 +10,7 @@ const alfaSlabOne = Alfa_Slab_One({
 const FeaturedMarket = ({
   marketName = "",
   amountWagered = "",
-  imageSrc = "/images/ruggy_smiley",
+  imageSrc = "/images/ruggy_angry.svg",
   start_time,
   end_time,
   duration,
@@ -20,10 +20,7 @@ const FeaturedMarket = ({
   const [timeLeft, setTimeLeft] = useState('');
   const [isBettingClosed, setIsBettingClosed] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
-
-  //const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "";
-
-  const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "UnknownToken";
+  const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
   const questionEnd = " Pump or Rug in 10 mins?";
 
@@ -143,7 +140,7 @@ const FeaturedMarket = ({
         <div className="flex gap-6 items-center">
           <Image
             src={imageSrc}
-            alt="Market Image"
+            alt=""
             width={60}
             height={60}
             className="rounded-md"

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Image from "next/image";
 
-function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketClick }) {
+function MarketCard({ name, imageSrc = "/images/ruggy_angry.svg", start_time, end_time, duration, onMarketClick }) {
   // Format the question with no spaces in market name
   const tokenNameNoSpaces = name ? name.replace(/\s+/g, "") : "UnknownToken";
   const questionStart = "Will ";
@@ -110,7 +110,7 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
       {/* Image and Question */}
       <div className="flex gap-4 items-center">
         <Image
-          src={imageSrc || "/images/eth.webp"}
+          src={imageSrc}
           alt="Market Image"
           width={40}
           height={40}

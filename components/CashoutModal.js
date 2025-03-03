@@ -1,11 +1,13 @@
 'use client';
 import { useState } from 'react';
+import { useAnalytics } from '@/components/FirebaseProvider';
 
 export default function CashoutModal({ isOpen, onClose, onSubmit, maxAmount, defaultWallet = "" }) {
   const [walletAddress, setWalletAddress] = useState(defaultWallet);
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const analytics = useAnalytics();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,6 +38,11 @@ export default function CashoutModal({ isOpen, onClose, onSubmit, maxAmount, def
       onClose();
     } catch (error) {
       setError(error.message || "Failed to process cashout");
+      analytics().logEvent('cashout_modal_error', {
+        error_message: error.message,
+        error_code: error.code || 'unknown',
+        error_stack: error.stack
+      });
     } finally {
       setLoading(false);
     }

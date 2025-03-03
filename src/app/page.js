@@ -7,6 +7,8 @@ import MarketCard from '@/components/MarketCard';
 import FeaturedMarket from '@/components/FeaturedMarket';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useRouter } from 'next/navigation';
+import { useAnalytics } from '@/components/FirebaseProvider';
+import { logEvent } from 'firebase/analytics';
 
 
 const homePageService = new HomePageService(supabase);
@@ -16,6 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [featuredMarket, setFeaturedMarket] = useState(null);
   const router = useRouter();
+  const analytics = useAnalytics();
 
   // Helper function defined outside of any useEffect
   const updateFeaturedMarket = (marketsList) => {
@@ -64,6 +67,12 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error fetching markets: ", error);
+        analytics().logEvent('home_page_error', {
+          error_message: error.message,
+          error_code: error.code || 'unknown',
+          error_stack: error.stack
+        });
+
       } finally {
         setLoading(false);
       }
@@ -95,6 +104,19 @@ export default function Home() {
             return updatedMarkets;
           });
           break;
+        case 'MARKET STATUS UPDATE':
+    
+          // Removes the markets with the resolved status
+          setMarkets(currentMarkets => {
+            const filteredMarkets = currentMarkets.filter(market =>
+              !(market.id === updatedMarket.payload.id && updatedMarket.payload.status === 'RESOLVED')
+            );
+
+            // Recalculate featured market if needed
+            updateFeaturedMarket(filteredMarkets);
+
+            return filteredMarkets;
+          });
       }
     }
 
@@ -108,6 +130,14 @@ export default function Home() {
   }, [markets]);
 
   async function onMarketClick(marketId) {
+    if (analytics) {
+      logEvent(analytics, 'market_click', {
+        market_id: marketId,
+        page: 'home',
+        timestamp: new Date()
+      });
+    }
+
     router.push(`/market/${marketId}`);
   }
 
@@ -115,6 +145,14 @@ export default function Home() {
   const handleFeaturedMarketClick = () => {
     // Navigate to the market details page
     if (featuredMarket && featuredMarket.id) {
+      if (analytics) {
+        logEvent(analytics, 'featured_market_click', {
+          market_id: featuredMarket.id,
+          page: 'home',
+          timestamp: new Date()
+        });
+      }
+
       router.push(`/market/${featuredMarket.id}`);
     }
   };
@@ -135,7 +173,7 @@ export default function Home() {
             end_time={featuredMarket.end_time}
             duration={featuredMarket.duration}
             amountWagered={`${featuredMarket.total_pump_amount + featuredMarket.total_rug_amount} SOL`}
-            imageSrc={featuredMarket.icon_url}
+            imageSrc={featuredMarket?.icon_url}
             onMarketClick={handleFeaturedMarketClick}
           />
         ) : (
@@ -153,7 +191,7 @@ export default function Home() {
               <MarketCard
                 key={index}
                 name={market.name}
-                imageSrc={market.icon_url}
+                imageSrc={market?.icon_url}
                 start_time={market.start_time}
                 end_time={market.end_time}
                 duration={market.duration}
