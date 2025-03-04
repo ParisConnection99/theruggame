@@ -38,10 +38,9 @@ export default function CashoutModal({ isOpen, onClose, onSubmit, maxAmount, def
       onClose();
     } catch (error) {
       setError(error.message || "Failed to process cashout");
-      analytics().logEvent('cashout_modal_error', {
+      logEvent(analytics, 'cashout_modal_error', {
         error_message: error.message,
-        error_code: error.code || 'unknown',
-        error_stack: error.stack
+        error_code: error.code || 'unknown'
       });
     } finally {
       setLoading(false);

@@ -42,17 +42,14 @@ export default function Home() {
       try {
         setLoading(true);
 
-        // const response = await fetch(`/api/setup/markets`);
+        const marketsResponse = await fetch('/api/markets');
 
-        // if (!response.ok) {
-        //   const errorData = await response.json();
-        //   throw new Error(errorData.error || 'Failed to set up markets');
-        // }
+        if (!marketsResponse.ok) {
+          const errorData = await marketsResponse.json();
+          throw new Error(errorData.error || 'Failed to fetch markets.');
+        }
 
-        // await homePageService.createMockMarket(supabase, 1);
-        //await homePageService.createMockMarket(supabase, 2);
-        //await homePageService.createMockMarket(supabase, 3);
-        const marketsData = await homePageService.fetchActiveMarkets();
+        const marketsData = await marketsResponse.json();
 
         if (marketsData && marketsData.length > 0) {
           const sortedMarkets = marketsData.sort((a, b) => {
@@ -67,10 +64,9 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error fetching markets: ", error);
-        analytics().logEvent('home_page_error', {
+        logEvent(analytics, 'home_page_error', {
           error_message: error.message,
-          error_code: error.code || 'unknown',
-          error_stack: error.stack
+          error_code: error.code || 'unknown'
         });
 
       } finally {
@@ -189,7 +185,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {markets.slice(0, visibleMarkets).map((market, index) => (
               <MarketCard
-                key={index}
+                key={market.id}
                 name={market.name}
                 imageSrc={market?.icon_url}
                 start_time={market.start_time}

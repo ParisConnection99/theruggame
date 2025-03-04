@@ -9,7 +9,8 @@ class MarketCreationService {
         this.config = config;
         this.supabase = supabase;
         this.tokens = [];
-        this.TOTAL_MARKET_CAPACITY = 15;
+        this.activeMarkets = [];
+        //this.TOTAL_MARKET_CAPACITY = 15;
         this.MAXIMUM_ATTEMPTS = 5;
         this.ACTIVE_MARKETS_LIMIT = 10;
         this.MARKET_DURATION = 10;
@@ -18,30 +19,32 @@ class MarketCreationService {
     // Purpose: Fetch a filtered coin to become a market
     async fetchMarkets() {
         try {
-            // 1️⃣ Check if another process is already fetching
-            const canStartFetching = await this.canStartFetching();
-            if (!canStartFetching) {
-                console.log('Another process is already fetching markets. Exiting.');
+
+            const canFetchWithLock = await this.canStartFetchingAndLock();
+            if (!canFetchWithLock) {
+                console.log('Another process is already fetching markets. Exiting');
                 return;
             }
 
-            // 2️⃣ Lock fetching process
-            await this.startFetching();
 
             // 3️⃣ Get active market and reserve count (LOCKED)
-            const { activeMarketCount, reserveCount, totalCount } = await this.getMarketAndReserveCounts();
+            //const { activeMarketCount } = await this.getMarketAndReserveCounts();
 
-            console.log(`Current counts - Active Markets: ${activeMarketCount}, Reserve: ${reserveCount}, Total: ${totalCount}`);
+            this.activeMarkets = await this.marketService.getActiveMarkets();
+
+            const activeMarketCount = this.activeMarkets.length;
+
+            console.log(`Current counts - Active Markets: ${activeMarketCount}`);
 
             let token = null;
 
-            if (totalCount < this.TOTAL_MARKET_CAPACITY) {
+            if (activeMarketCount < this.ACTIVE_MARKETS_LIMIT) {
                 // 4️⃣ Need to fetch more tokens
-                const tokensNeeded = this.TOTAL_MARKET_CAPACITY - totalCount;
+                const tokensNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
                 console.log(`Need ${tokensNeeded} more tokens`);
 
                 // // Fetch tokens (LOCKED)
-                const tokens = await this.startTokenFetchCycle(totalCount);
+                const tokens = await this.startTokenFetchCycle(activeMarketCount);
 
                 token = tokens.shift();
 
@@ -49,24 +52,24 @@ class MarketCreationService {
                 await this.handleMarketCreation(token, tokens, activeMarketCount);
 
             } else {
-                // 5️⃣ We have enough total tokens, get one from reserve (LOCKED)
-                const reservedToken = await this.getReservedToken();
+                // // 5️⃣ We have enough total tokens, get one from reserve (LOCKED)
+                // const reservedToken = await this.getReservedToken();
 
-                if (!reservedToken) {
-                    // No valid reserve token → Fetch new tokens (LOCKED)                 
-                    //token = await this.fetchTokens(totalCount);
-                    const tokens = await this.startTokenFetchCycle(totalCount);
+                // if (!reservedToken) {
+                //     // No valid reserve token → Fetch new tokens (LOCKED)                 
+                //     //token = await this.fetchTokens(totalCount);
+                //     const tokens = await this.startTokenFetchCycle(totalCount);
 
-                    token = tokens.shift();
+                //     token = tokens.shift();
 
-                    // Handle Market Creation
-                    await this.handleMarketCreation(token, tokens, activeMarketCount);
+                //     // Handle Market Creation
+                //     await this.handleMarketCreation(token, tokens, activeMarketCount);
 
-                } else {
-                    // Valid reserve token available → Create market (LOCKED)
-                    token = reservedToken;
-                    await this.createMarket(reservedToken);
-                }
+                // } else {
+                //     // Valid reserve token available → Create market (LOCKED)
+                //     token = reservedToken;
+                //     await this.createMarket(reservedToken);
+                // }
             }
 
             // 6️⃣ Unlock fetching process
@@ -92,10 +95,10 @@ class MarketCreationService {
     async getMarketAndReserveCounts() {
         try {
             const activeMarketCount = await this.marketService.getMarketCount();
-            const reserveCount = await this.tokenService.getReserveCount();
-            const totalCount = activeMarketCount + reserveCount;
+            //const reserveCount = await this.tokenService.getReserveCount();
+            //const totalCount = activeMarketCount + reserveCount;
 
-            return { activeMarketCount, reserveCount, totalCount };
+            return { activeMarketCount };
         } catch (error) {
             console.error('Error fetching market and reserve counts:', error);
             throw error;
@@ -106,15 +109,25 @@ class MarketCreationService {
         try {
             // Calculate how many markets need to be created
             const marketsNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
-            
+
+            // Validate primary token first
+            // if (!token || typeof token !== 'object') {
+            //     console.log('Primary token is undefined or invalid, cannot proceed with market creation');
+            //     return;
+            // }
+
+            // Filter out any undefined or null tokens from the array
+            const validTokens = tokens.filter(t => t !== undefined && t !== null);
+            console.log(`Filtered tokens array: ${validTokens.length} valid tokens out of ${tokens.length} total`);
+
             // Track any tokens that weren't used for market creation
-            const unusedTokens = [...tokens]; // Create a copy to avoid modifying the original
-            
+            const unusedTokens = [...validTokens]; // Create a copy to avoid modifying the original
+
             // Create the required number of markets
-            for(let i = 0; i < marketsNeeded; i++) {
+            for (let i = 0; i < marketsNeeded; i++) {
                 let currentToken;
-                
-                if (i === 0) { // Use strict equality
+
+                if (i === 0) {
                     currentToken = token;
                 } else if (unusedTokens.length > 0) {
                     currentToken = unusedTokens.shift();
@@ -122,33 +135,96 @@ class MarketCreationService {
                     console.log('No more tokens available for market creation');
                     break;
                 }
-    
+
+                // Validate token before attempting to create market
+                if (!currentToken || !currentToken.address) {
+                    console.log(`Invalid token at position ${i}, skipping market creation`);
+                    continue;
+                }
+
                 try {
                     await this.createMarket(currentToken);
-                    console.log(`Market created successfully with token: ${currentToken.id || currentToken}`);
+                    console.log(`Market created successfully with token:`,
+                        currentToken.id ?
+                            `ID: ${currentToken.id}, Address: ${currentToken.address}` :
+                            `Address: ${currentToken.address}`
+                    );
                 } catch (error) {
-                    console.error(`Error creating market with token: ${currentToken.id || currentToken}`, error);
+                    console.error(`Error creating market with token:`,
+                        currentToken.id ?
+                            `ID: ${currentToken.id}, Address: ${currentToken.address}` :
+                            `Address: ${currentToken.address}`,
+                        error
+                    );
                     // Consider adding the token back to unusedTokens if creation fails
+                    // uncommenting the following line would allow retry of failed tokens
+                    // unusedTokens.push(currentToken);
                 }
             }
-            
-            // Save any remaining tokens
-            if(unusedTokens.length > 0) {
-                console.log(`Saving ${unusedTokens.length} remaining tokens to reserve`);
-                await this.saveReserveTokens(unusedTokens);
-            }
-            
-            // Clean up expired tokens
-            await this.tokenService.removeExpiredTokens();
-            
+
+            // // Save any remaining tokens
+            // if (unusedTokens.length > 0) {
+            //     console.log(`Saving ${unusedTokens.length} remaining tokens to reserve`);
+            //     await this.saveReserveTokens(unusedTokens);
+            // }
+
+            // // Clean up expired tokens
+            // await this.tokenService.removeExpiredTokens();
+
         } catch (error) {
             console.error('Error in market creation process:', error);
             throw error; // Re-throw to allow caller to handle the error
         }
     }
-    
+
+    // async handleMarketCreation(token, tokens, activeMarketCount) {
+    //     try {
+    //         // Calculate how many markets need to be created
+    //         const marketsNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
+
+    //         // Track any tokens that weren't used for market creation
+    //         const unusedTokens = [...tokens]; // Create a copy to avoid modifying the original
+
+    //         // Create the required number of markets
+    //         for (let i = 0; i < marketsNeeded; i++) {
+    //             let currentToken;
+
+    //             if (i === 0) { // Use strict equality
+    //                 currentToken = token;
+    //             } else if (unusedTokens.length > 0) {
+    //                 currentToken = unusedTokens.shift();
+    //             } else {
+    //                 console.log('No more tokens available for market creation');
+    //                 break;
+    //             }
+
+    //             try {
+    //                 await this.createMarket(currentToken);
+    //                 console.log(`Market created successfully with token: ${currentToken}`);
+    //             } catch (error) {
+    //                 console.error(`Error creating market with token: ${currentToken}`, error);
+    //                 // Consider adding the token back to unusedTokens if creation fails
+    //             }
+    //         }
+
+    //         // // Save any remaining tokens
+    //         // if (unusedTokens.length > 0) {
+    //         //     console.log(`Saving ${unusedTokens.length} remaining tokens to reserve`);
+    //         //     await this.saveReserveTokens(unusedTokens);
+    //         // }
+
+    //         // // Clean up expired tokens
+    //         // await this.tokenService.removeExpiredTokens();
+
+    //     } catch (error) {
+    //         console.error('Error in market creation process:', error);
+    //         throw error; // Re-throw to allow caller to handle the error
+    //     }
+    // }
+
     // Purpose: Create a new Market
     async createMarket(token) {
+        console.log(`Token about to be created: ${JSON.stringify(token, null, 2)}`);
         if (!token.address || !token.priceUsd || !token.marketCap || !token.liquidity ||
             !token.transactions.h24?.buys || !token.transactions.h24?.sells) {
             throw new Error('Error processing Token.');
@@ -175,9 +251,9 @@ class MarketCreationService {
             icon_url: token.imageUrl,
             coin_description: token.labels,
             name: token.name,
-            socials: { 
+            socials: {
                 socials: token.socials
-             }
+            }
         };
 
         return await this.marketService.createMarket(marketData);
@@ -227,22 +303,31 @@ class MarketCreationService {
 
         console.log('Start token cycle.');
 
-        while (numberOfCalls < this.MAXIMUM_ATTEMPTS && count < this.TOTAL_MARKET_CAPACITY) {
+        while (numberOfCalls < this.MAXIMUM_ATTEMPTS && count < this.ACTIVE_MARKETS_LIMIT) {
             // Fetch the token profiles
             const tokenProfiles = await this.fetchTokenProfiles(30);
 
+            // Check to makesure profile doesnt exist in active markets array
+            const uniqueTokenProfiles = this.filterOutExistingTokens(tokenProfiles, this.activeMarkets);
+
             // Fetch the unfilteredTokens
-            const tokens = await this.fetchTokenDetails(tokenProfiles.map(token => token.tokenAddress));
+            const tokens = await this.fetchTokenDetails(uniqueTokenProfiles.map(token => token.tokenAddress));
 
             // Filter the tokens
             const filteredTokens = await this.filterTokens(tokens);
-            count += filteredTokens.length;
 
-            // Add to coins array
-            coins.push(...filteredTokens);
+            // Makesure the tokens are not in the coins array
+            const uniqueFilteredTokens = this.filterTokensNotInCoins(filteredTokens, coins);
+
+            count += uniqueFilteredTokens.length;
+
+            // // Add to coins array
+
+            // // Check if tokens already exist if they 
+            coins.push(...uniqueFilteredTokens);
             numberOfCalls++;
 
-            if (count >= this.TOTAL_MARKET_CAPACITY) {
+            if (count >= this.ACTIVE_MARKETS_LIMIT) {
                 break;
             }
         }
@@ -250,60 +335,137 @@ class MarketCreationService {
         return coins;
     }
 
-    async canStartFetching() {
-        // Check if we are currently fetching or not
-        const { data, error } = await this.supabase
-            .from('system_flags')
-            .select('value')
-            .eq('key', 'reserve_fetch_status')
-            .single(); // Use maybeSingle() instead of single()
-
-        // No row exists = no one is fetching
-        if (error?.code === 'PGRST116' || !data) {
-            return true;
+    filterOutExistingTokens(newTokens, activeTokens) {
+        // Create a Set of lowercase active token addresses for efficient lookup
+        const activeAddresses = new Set();
+        for (const token of activeTokens) {
+            if (token && token.token_address) {
+                activeAddresses.add(token.token_address.toLowerCase());
+            }
         }
+
+        // Filter new tokens, keeping only those not in active tokens
+        return newTokens.filter(newToken => {
+            if (!newToken || !newToken.tokenAddress) {
+                return false; // Skip invalid tokens
+            }
+            return !activeAddresses.has(newToken.tokenAddress.toLowerCase());
+        });
+    }
+
+    filterTokensNotInCoins(filteredTokens, coins) {
+        // Check for null or undefined inputs
+        if (!filteredTokens || !Array.isArray(filteredTokens)) {
+            return [];
+        }
+
+        // Handle null or undefined coins by treating it as an empty array
+        const coinsArray = Array.isArray(coins) ? coins : [];
+
+        // Safely create a Set of valid addresses from the coins array
+        const coinAddresses = new Set();
+        for (const coin of coinsArray) {
+            if (coin && typeof coin.address === 'string') {
+                coinAddresses.add(coin.address.toLowerCase());
+            }
+        }
+
+        // Filter tokens with valid addresses that are not in the coinAddresses set
+        const uniqueTokens = filteredTokens.filter(token => {
+            // Skip tokens with invalid addresses
+            if (!token || typeof token.address !== 'string') {
+                return false;
+            }
+
+            return !coinAddresses.has(token.address.toLowerCase());
+        });
+
+        return uniqueTokens;
+    }
+
+
+    async canStartFetchingAndLock() {
+        // Use our new RPC function
+        const { data, error } = await this.supabase.rpc(
+            'try_acquire_fetch_lock',
+            { key_param: 'reserve_fetch_status' }
+        );
+
+        console.log(`System flags data: ${JSON.stringify(data, null, 2)}`);
 
         if (error) {
             console.error("Error checking fetch status:", error);
             return false;
         }
 
-        // If another process is already fetching, exit
-        if (data.value === 'fetching') {
-            console.log("Another process is already fetching tokens. Exiting.");
-            return false;
-        }
-
-        return true;
+        return data; // true if we got the lock, false otherwise
     }
 
-    async startFetching() {
-        const { error: updateError } = await this.supabase
-            .from('system_flags')
-            .update({ value: 'fetching', updated_at: new Date().toISOString() })
-            .eq('key', 'reserve_fetch_status')
-            .neq('value', 'fetching');  // Ensures only one process updates
+    // async canStartFetching() {
+    //     // Check if we are currently fetching or not
+    //     const { data, error } = await this.supabase
+    //         .from('system_flags')
+    //         .select('value')
+    //         .eq('key', 'reserve_fetch_status')
+    //         .single(); // Use maybeSingle() instead of single()
 
-        if (updateError) {
-            console.log("Another process updated the flag first. Exiting.", updateError.message);
-            return false;
-        }
+    //     // No row exists = no one is fetching
+    //     if (error?.code === 'PGRST116' || !data) {
+    //         return true;
+    //     }
 
-        console.log('Updated system_flag db')
-        return true;
-    }
+    //     if (error) {
+    //         console.error("Error checking fetch status:", error);
+    //         return false;
+    //     }
+
+    //     // If another process is already fetching, exit
+    //     if (data.value === 'fetching') {
+    //         console.log("Another process is already fetching tokens. Exiting.");
+    //         return false;
+    //     }
+
+    //     return true;
+    // }
+
+    // async startFetching() {
+    //     const { error: updateError } = await this.supabase
+    //         .from('system_flags')
+    //         .update({ value: 'fetching', updated_at: new Date().toISOString() })
+    //         .eq('key', 'reserve_fetch_status')
+    //         .neq('value', 'fetching');  // Ensures only one process updates
+
+    //     if (updateError) {
+    //         console.log("Another process updated the flag first. Exiting.", updateError.message);
+    //         return false;
+    //     }
+
+    //     console.log('Updated system_flag db')
+    //     return true;
+    // }
 
     async finishedFetching() {
-        const { error: updateError } = await this.supabase
-            .from('system_flags')
-            .update({ value: 'ready', updated_at: new Date().toISOString() })
-            .eq('key', 'reserve_fetch_status');
+        const { data, error } = await this.supabase.rpc(
+            'release_fetch_lock',
+            { key_param: 'reserve_fetch_status' }
+        );
 
-        if (updateError) {
-            console.log('Error finishing fetching..');
-            return;
+        if (error) {
+            console.error('Error releasing fetch lock:', error);
         }
     }
+
+    // async finishedFetching() {
+    //     const { error: updateError } = await this.supabase
+    //         .from('system_flags')
+    //         .update({ value: 'ready', updated_at: new Date().toISOString() })
+    //         .eq('key', 'reserve_fetch_status');
+
+    //     if (updateError) {
+    //         console.log('Error finishing fetching..');
+    //         return;
+    //     }
+    // }
 
     async fetchTokenProfiles(limit = 50) {
         return await OracleService.fetchTokenProfiles(limit);
@@ -314,7 +476,7 @@ class MarketCreationService {
     }
 
     async filterTokens(tokens) {
-        console.log('filter tokens: ',tokens);
+        console.log('filter tokens: ', tokens);
         try {
             const now = Date.now();
 
@@ -345,10 +507,12 @@ class MarketCreationService {
                 const tokenAge = now - token.createdAt;
                 const ageInDays = tokenAge / (24 * 60 * 60 * 1000);
 
+                console.log(`Filtered token liquidity: ${liquidityUsd}, volume: ${volume24h}, ageInDays: ${ageInDays}`);
+
                 return (
-                    liquidityUsd >= 40000 &&
-                    volume24h >= 100000 &&
-                    ageInDays < 7  // Only fresh high-risk tokens
+                    liquidityUsd >= 20000 &&
+                    volume24h >= 70000 &&
+                    ageInDays < 10  // Only fresh high-risk tokens
                 );
             });
 

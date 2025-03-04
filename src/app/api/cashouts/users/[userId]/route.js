@@ -3,6 +3,7 @@ import { serviceRepo } from '@/services/ServiceRepository';
 
 export async function GET(request, { params }) {
   try {
+    params = await params;
     const userId = params.userId;
     
     if (!userId) {

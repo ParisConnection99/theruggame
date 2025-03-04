@@ -53,11 +53,11 @@ export default function ProfilePage() {
                 setUserData(dbUser);
             } catch (error) {
                 console.error("Error fetching user data:", error);
-                analytics().logEvent('profile_page_error', {
+                logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
-                    error_code: error.code || 'unknown',
-                    error_stack: error.stack
-                });
+                    error_code: error.code || 'unknown'
+                  });
+                
                 setUserData(null);
             } finally {
                 setUserLoading(false);
@@ -96,11 +96,10 @@ export default function ProfilePage() {
                 }
             } catch (error) {
                 console.error('Error fetching bets:', error);
-                analytics().logEvent('profile_page_error', {
+                logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
-                    error_code: error.code || 'unknown',
-                    error_stack: error.stack
-                });
+                    error_code: error.code || 'unknown'
+                  });
                 setBets([]);
             } finally {
                 setBetsLoading(false);
@@ -139,11 +138,10 @@ export default function ProfilePage() {
                 }
             } catch (error) {
                 console.error('Error fetching users cashouts: ', error);
-                analytics().logEvent('profile_page_error', {
+                logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
-                    error_code: error.code || 'unknown',
-                    error_stack: error.stack
-                });
+                    error_code: error.code || 'unknown'
+                  });
                 setCashouts([]);
             } finally {
                 setCashoutsLoading(false);
@@ -166,11 +164,10 @@ export default function ProfilePage() {
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);
-            analytics().logEvent('profile_page_error', {
+            logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
-                error_code: error.code || 'unknown',
-                error_stack: error.stack
-            });
+                error_code: error.code || 'unknown'
+              });
         }
     };
 
@@ -250,11 +247,10 @@ export default function ProfilePage() {
             return true;
         } catch (error) {
             console.error("Error updating username:", error);
-            analytics().logEvent('profile_page_error', {
+            logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
-                error_code: error.code || 'unknown',
-                error_stack: error.stack
-            });
+                error_code: error.code || 'unknown'
+              });
             throw new Error("Failed to update username");
         }
     };
@@ -296,11 +292,10 @@ export default function ProfilePage() {
             alert('Your cashout request has been submitted and is pending approval.');
         } catch (error) {
             console.error('Error processing cashout:', error);
-            analytics().logEvent('profile_page_error', {
+            logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
-                error_code: error.code || 'unknown',
-                error_stack: error.stack
-            });
+                error_code: error.code || 'unknown'
+              });
             throw new Error('Failed to process your cashout. Please try again.');
         }
     };

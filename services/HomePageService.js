@@ -3,22 +3,6 @@ class HomePageService {
         this.supabase = supabase;
     }
 
-    // Purpose: Fetch the active Markets
-    async fetchActiveMarkets() {
-        try {
-            const { data, error } = await this.supabase
-                .from('markets')
-                .select('*')
-                .in('phase', ['BETTING', 'OBSERVATION']);
-
-            if (error) throw error;
-            return data || [];
-        } catch (error) {
-            console.error('Error fetching Markets.');
-            throw error;
-        }
-    }
-
     async createMockMarkets(supabase, count = 10) {
         try {
             const mockMarkets = [];

@@ -87,10 +87,9 @@ export default function MarketPage() {
         }
       } catch (error) {
         console.error('Error fetching market data.');
-        analytics().logEvent('market_page_error', {
+        logEvent(analytics, 'market_page_error', {
           error_message: error.message,
-          error_code: error.code || 'unknown',
-          error_stack: error.stack
+          error_code: error.code || 'unknown'
         });
       } finally {
         setLoading(false);
@@ -125,10 +124,9 @@ export default function MarketPage() {
         console.log(`Fetched user balance: ${dbUser.balance}`);
       } catch (error) {
         console.error("Error fetching user data:", error);
-        analytics().logEvent('market_page_error', {
+        logEvent(analytics, 'market_page_error', {
           error_message: error.message,
-          error_code: error.code || 'unknown',
-          error_stack: error.stack
+          error_code: error.code || 'unknown'
         });
         setUserBalance(0);
       } finally {
@@ -252,10 +250,9 @@ export default function MarketPage() {
         setTimeLeft(`${formattedMinutes}:${formattedSeconds}`);
       } catch (error) {
         console.error("Error calculating countdown:", error);
-        analytics().logEvent('market_page_error', {
+        logEvent(analytics, 'market_page_error', {
           error_message: error.message,
-          error_code: error.code || 'unknown',
-          error_stack: error.stack
+          error_code: error.code || 'unknown'
         });
         setTimeLeft('ERROR');
       }
@@ -531,10 +528,9 @@ export default function MarketPage() {
       }
     } catch (error) {
       console.error('Error placing bet: ', error);
-      analytics().logEvent('market_page_error', {
+      logEvent(analytics, 'market_page_error', {
         error_message: error.message,
-        error_code: error.code || 'unknown',
-        error_stack: error.stack
+        error_code: error.code || 'unknown'
       });
       alert(`Error placing bet: ${error.message}`);
     } finally {
