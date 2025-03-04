@@ -42,6 +42,13 @@ export default function Home() {
       try {
         setLoading(true);
 
+        // const response = await fetch('/api/setup/markets');
+
+        // if (!response.ok) {
+        //   const errorData = await response.json();
+        //   throw new Error(errorData.error || 'Failed to fetch markets.');
+        // }
+
         const marketsResponse = await fetch('/api/markets');
 
         if (!marketsResponse.ok) {

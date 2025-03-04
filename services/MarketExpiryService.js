@@ -118,7 +118,9 @@ class ExpiryService {
             })
             .eq('id', bet.id);
           // Add part refund here!!
-          await this.refundService.addRefund(bet.id, bet.user_id, bet.market_id, bet.amount);
+          // Refund full amount including fees
+          const amountWithFees = bet.amount + bet.fee;
+          await this.refundService.addRefund(bet.id, bet.user_id, bet.market_id, amountWithFees);
   
         } else if (bet.status === 'PARTIALLY_MATCHED') {
           // Calculate refund for unmatched portion
@@ -143,41 +145,7 @@ class ExpiryService {
         throw error;
       }
     }
-  
-    // Start the resolving the market
-    async processMarketResolve(market) {
-      if (!market) {
-        throw new Error('Error processing Market.');
-      }
-  
-      if (market.phase != 'RESOLVED') {
-        throw new Error('Market not resolved yet.');
-      }
-  
-      try {
-  
-        // Set the market status / phase to resolve
-        const marketResult = this.marketResolveService.resolveMarket(market);
-  
-        // Handle the payouts + bet status update
-        await this.payoutService.handleMarketResolution(market.id, marketResult);
-  
-        // Update the market status to settles
-        await this.settledStatusUpdate(market.id);
-  
-        // Update the markets total pump + total rug amounts
-        //await this.updateMarketTotalPumpsAndTotalRugs(market.id);
-  
-        return marketResult;
-  
-      } catch (error) {
-        /*
-        - what should we be doing here is there going to be retries
-        */
-        throw new Error('Error processing Market Resolution.');
-      }
-    }
-  
+
     async monitorMarket(marketId, startTime, duration) {
       try {
         if (!marketId || !startTime || !duration) {
@@ -270,6 +238,39 @@ class ExpiryService {
         throw error; // Re-throw if you want calling code to handle it
       }
     }
+
+    // Start the resolving the market
+    async processMarketResolve(market) {
+      if (!market) {
+        throw new Error('Error processing Market.');
+      }
+  
+      if (market.phase != 'RESOLVED') {
+        throw new Error('Market not resolved yet.');
+      }
+  
+      try {
+  
+        // Set the market status / phase to resolve
+        const marketResult = await this.marketResolveService.resolveMarket(market);
+
+        console.log(`Market Result: ${JSON.stringify(marketResult, null, 2)}`);
+  
+        // Handle the payouts + bet status update
+        await this.payoutService.handleMarketResolution(market.id, marketResult.result);
+  
+        // Update the market status to settles
+        await this.settledStatusUpdate(market.id, marketResult.price);
+  
+        return marketResult;
+  
+      } catch (error) {
+        /*
+        - what should we be doing here is there going to be retries
+        */
+        throw new Error('Error processing Market Resolution.');
+      }
+    }
   
     async resolveStatusUpdate(marketId, newPhase) {
       if (!marketId || !newPhase) {
@@ -281,11 +282,14 @@ class ExpiryService {
       try {
         market = await this.db.resolveStatus(marketId, newPhase);
       } catch (error) {
+        console.error('Error changing resolve status. ',error);
         throw error;
       }
   
+      console.log(`MARKET RESOLVED: ${JSON.stringify(market, null, 2)}`);
       // Start the market creation process
-      await this.startMarketCreationProcess();
+      
+      //await this.startMarketCreationProcess();
   
       // Resolved means the market is done
       return market;
@@ -294,11 +298,12 @@ class ExpiryService {
     // Purpose: Start Market creation process
     async startMarketCreationProcess() {
   
+      console.log(`--- Starting market creation process ---`);
       // call market creation service.fetchmarkets
       await this.marketCreationService.fetchMarkets();
     }
   
-    async settledStatusUpdate(marketId) {
+    async settledStatusUpdate(marketId, price) {
       if (!marketId) {
         throw new Error('Error processing Market status update.');
       }
@@ -308,6 +313,7 @@ class ExpiryService {
           .from('markets')
           .update({
             status: 'SETTLED',
+            final_price: price,
             settled_at: new Date().toISOString()
           })
           .eq('id', marketId)

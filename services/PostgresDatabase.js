@@ -665,7 +665,7 @@ class PostgresDatabase {
         if (!row) return null;
         return {
             id: row.id,
-            tokenAddress: row.token_address,
+            token_address: row.token_address,
             startTime: row.start_time,
             endTime: row.end_time,
             duration: row.duration,

@@ -12,8 +12,8 @@ class MarketCreationService {
         this.activeMarkets = [];
         //this.TOTAL_MARKET_CAPACITY = 15;
         this.MAXIMUM_ATTEMPTS = 5;
-        this.ACTIVE_MARKETS_LIMIT = 10;
-        this.MARKET_DURATION = 10;
+        this.ACTIVE_MARKETS_LIMIT = 1;
+        this.MARKET_DURATION = 2;
     }
 
     // Purpose: Fetch a filtered coin to become a market
@@ -25,10 +25,6 @@ class MarketCreationService {
                 console.log('Another process is already fetching markets. Exiting');
                 return;
             }
-
-
-            // 3️⃣ Get active market and reserve count (LOCKED)
-            //const { activeMarketCount } = await this.getMarketAndReserveCounts();
 
             this.activeMarkets = await this.marketService.getActiveMarkets();
 
@@ -50,27 +46,7 @@ class MarketCreationService {
 
                 // Handle Market Creation
                 await this.handleMarketCreation(token, tokens, activeMarketCount);
-
-            } else {
-                // // 5️⃣ We have enough total tokens, get one from reserve (LOCKED)
-                // const reservedToken = await this.getReservedToken();
-
-                // if (!reservedToken) {
-                //     // No valid reserve token → Fetch new tokens (LOCKED)                 
-                //     //token = await this.fetchTokens(totalCount);
-                //     const tokens = await this.startTokenFetchCycle(totalCount);
-
-                //     token = tokens.shift();
-
-                //     // Handle Market Creation
-                //     await this.handleMarketCreation(token, tokens, activeMarketCount);
-
-                // } else {
-                //     // Valid reserve token available → Create market (LOCKED)
-                //     token = reservedToken;
-                //     await this.createMarket(reservedToken);
-                // }
-            }
+            } 
 
             // 6️⃣ Unlock fetching process
             await this.finishedFetching();
@@ -109,12 +85,6 @@ class MarketCreationService {
         try {
             // Calculate how many markets need to be created
             const marketsNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
-
-            // Validate primary token first
-            // if (!token || typeof token !== 'object') {
-            //     console.log('Primary token is undefined or invalid, cannot proceed with market creation');
-            //     return;
-            // }
 
             // Filter out any undefined or null tokens from the array
             const validTokens = tokens.filter(t => t !== undefined && t !== null);
@@ -162,65 +132,11 @@ class MarketCreationService {
                 }
             }
 
-            // // Save any remaining tokens
-            // if (unusedTokens.length > 0) {
-            //     console.log(`Saving ${unusedTokens.length} remaining tokens to reserve`);
-            //     await this.saveReserveTokens(unusedTokens);
-            // }
-
-            // // Clean up expired tokens
-            // await this.tokenService.removeExpiredTokens();
-
         } catch (error) {
             console.error('Error in market creation process:', error);
             throw error; // Re-throw to allow caller to handle the error
         }
     }
-
-    // async handleMarketCreation(token, tokens, activeMarketCount) {
-    //     try {
-    //         // Calculate how many markets need to be created
-    //         const marketsNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
-
-    //         // Track any tokens that weren't used for market creation
-    //         const unusedTokens = [...tokens]; // Create a copy to avoid modifying the original
-
-    //         // Create the required number of markets
-    //         for (let i = 0; i < marketsNeeded; i++) {
-    //             let currentToken;
-
-    //             if (i === 0) { // Use strict equality
-    //                 currentToken = token;
-    //             } else if (unusedTokens.length > 0) {
-    //                 currentToken = unusedTokens.shift();
-    //             } else {
-    //                 console.log('No more tokens available for market creation');
-    //                 break;
-    //             }
-
-    //             try {
-    //                 await this.createMarket(currentToken);
-    //                 console.log(`Market created successfully with token: ${currentToken}`);
-    //             } catch (error) {
-    //                 console.error(`Error creating market with token: ${currentToken}`, error);
-    //                 // Consider adding the token back to unusedTokens if creation fails
-    //             }
-    //         }
-
-    //         // // Save any remaining tokens
-    //         // if (unusedTokens.length > 0) {
-    //         //     console.log(`Saving ${unusedTokens.length} remaining tokens to reserve`);
-    //         //     await this.saveReserveTokens(unusedTokens);
-    //         // }
-
-    //         // // Clean up expired tokens
-    //         // await this.tokenService.removeExpiredTokens();
-
-    //     } catch (error) {
-    //         console.error('Error in market creation process:', error);
-    //         throw error; // Re-throw to allow caller to handle the error
-    //     }
-    // }
 
     // Purpose: Create a new Market
     async createMarket(token) {
@@ -401,49 +317,6 @@ class MarketCreationService {
         return data; // true if we got the lock, false otherwise
     }
 
-    // async canStartFetching() {
-    //     // Check if we are currently fetching or not
-    //     const { data, error } = await this.supabase
-    //         .from('system_flags')
-    //         .select('value')
-    //         .eq('key', 'reserve_fetch_status')
-    //         .single(); // Use maybeSingle() instead of single()
-
-    //     // No row exists = no one is fetching
-    //     if (error?.code === 'PGRST116' || !data) {
-    //         return true;
-    //     }
-
-    //     if (error) {
-    //         console.error("Error checking fetch status:", error);
-    //         return false;
-    //     }
-
-    //     // If another process is already fetching, exit
-    //     if (data.value === 'fetching') {
-    //         console.log("Another process is already fetching tokens. Exiting.");
-    //         return false;
-    //     }
-
-    //     return true;
-    // }
-
-    // async startFetching() {
-    //     const { error: updateError } = await this.supabase
-    //         .from('system_flags')
-    //         .update({ value: 'fetching', updated_at: new Date().toISOString() })
-    //         .eq('key', 'reserve_fetch_status')
-    //         .neq('value', 'fetching');  // Ensures only one process updates
-
-    //     if (updateError) {
-    //         console.log("Another process updated the flag first. Exiting.", updateError.message);
-    //         return false;
-    //     }
-
-    //     console.log('Updated system_flag db')
-    //     return true;
-    // }
-
     async finishedFetching() {
         const { data, error } = await this.supabase.rpc(
             'release_fetch_lock',
@@ -454,18 +327,6 @@ class MarketCreationService {
             console.error('Error releasing fetch lock:', error);
         }
     }
-
-    // async finishedFetching() {
-    //     const { error: updateError } = await this.supabase
-    //         .from('system_flags')
-    //         .update({ value: 'ready', updated_at: new Date().toISOString() })
-    //         .eq('key', 'reserve_fetch_status');
-
-    //     if (updateError) {
-    //         console.log('Error finishing fetching..');
-    //         return;
-    //     }
-    // }
 
     async fetchTokenProfiles(limit = 50) {
         return await OracleService.fetchTokenProfiles(limit);

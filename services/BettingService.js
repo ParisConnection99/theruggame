@@ -79,9 +79,8 @@ class BettingService {
         .from('bets')
         .select('*')
         .eq('user_id', userId)
-        .single();
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw error;
         return data;
     }
   
