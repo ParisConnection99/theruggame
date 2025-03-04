@@ -245,7 +245,7 @@ class MarketCreationService {
             liquidity: token.liquidity,
             buys: token.transactions.h24?.buys || 0,
             sells: token.transactions.h24?.sells || 0,
-            dexscreener_url: token.url,
+            dex_screener_url: token.url,
             dex_id: token.dexId,
             website_url: (token.info?.websites && token.info.websites.length > 0) ? token.info.websites[0] : '',
             icon_url: token.imageUrl,
