@@ -1,27 +1,33 @@
 'use client';
 import { useState } from 'react';
+import { useAnalytics } from '@/components/FirebaseProvider';
 
 // This component can be added to your ProfilePage component
 export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUsername = "" }) {
   const [username, setUsername] = useState(currentUsername);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const analytics = useAnalytics();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     if (!username.trim()) {
       setError("Username cannot be empty");
       return;
     }
-    
+
     try {
       setLoading(true);
       await onSave(username);
       onClose();
     } catch (error) {
       setError(error.message || "Failed to update username");
+      logEvent(analytics, 'username_change_modal_error', {
+        error_message: error.message,
+        error_code: error.code || 'unknown'
+      });
     } finally {
       setLoading(false);
     }
@@ -33,13 +39,13 @@ export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUs
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-gray-800 rounded-lg p-6 w-80 shadow-lg">
         <h3 className="text-lg font-bold mb-4 text-center">Change Username</h3>
-        
+
         <div className="mb-4 p-3 bg-yellow-800 bg-opacity-30 rounded border border-yellow-700">
           <p className="text-yellow-300 text-sm">
             Note: You can only change your username once per week.
           </p>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="username" className="block text-sm font-medium mb-1">
@@ -55,7 +61,7 @@ export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUs
             />
             {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           </div>
-          
+
           <div className="flex justify-end space-x-3">
             <button
               type="button"

@@ -1,8 +1,8 @@
+
 class StatusUpdateService {
-    constructor(db, config, eventEmitter) {
+    constructor(db, config = {}) {
         this.db = db;
         this.config = config;
-        this.eventEmitter = eventEmitter;
 
         // Configuration
         this.MATCHING_PRECISION = config.matchingPrecision || 0.000001; // SOL
@@ -26,7 +26,6 @@ class StatusUpdateService {
     // - Validates the status transition
     // - Logs status change history
     // - Updates bet status in the database
-    // - Emits a status change event
     async updateBetStatus(betId, matchedAmount, totalAmount) {
         const bet = await this.db.getBet(betId);
 
@@ -55,8 +54,6 @@ class StatusUpdateService {
             await db.updateBetStatus(betId, newStatus, matchedAmount);
             await db.insertStatusHistory(statusHistory);
         });
-
-        this._emitStatusChangeEvent(bet, newStatus, statusHistory);
 
         return newStatus;
     }
@@ -93,20 +90,6 @@ class StatusUpdateService {
 
         const key = `${oldStatus || 'PENDING'}_TO_${newStatus}`;
         return reasons[key] || 'Status updated';
-    }
-
-    // Purpose: Broadcasts status change events
-    // - Notifies other parts of the system about bet status updates
-    // - Provides comprehensive details about the status change
-    _emitStatusChangeEvent(bet, newStatus, statusHistory) {
-        this.eventEmitter.emit('betStatusChanged', {
-            betId: bet.id,
-            marketId: bet.marketId,
-            oldStatus: bet.status,
-            newStatus,
-            timestamp: new Date(),
-            statusHistory
-        });
     }
 }
 

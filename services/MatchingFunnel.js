@@ -1,6 +1,6 @@
 
 class MatchingFunnel {
-    constructor(db, config, marketService, statusUpdateService, betUnitService) {
+    constructor(db, config = {}, marketService, statusUpdateService, betUnitService) {
         this.db = db;
         this.config = config;
         this.marketService = marketService;

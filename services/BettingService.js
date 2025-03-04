@@ -3,7 +3,7 @@ class BettingService {
       this.supabase = supabase;
       this.MINIMUM_BET = 0.05; // SOL
       this.MINIMUM_UNIT = 0.05; // Minimum matching unit
-      this.PLATFORM_FEE = config.platformFee || 0.01; // 1%
+      this.PLATFORM_FEE = config.platformFee || 0.02; // 1%
   
       // Initialize sub-services
       this.matchingService = matchingService;
@@ -45,6 +45,7 @@ class BettingService {
           potentialPayout
         });
   
+        // up
   
         // Create and match units
         await this.createUnitsAndMatch(bet);
@@ -74,10 +75,6 @@ class BettingService {
     }
 
     async fetchBetsBy(userId) {
-      if(userId) {
-        throw new Error('Error processing Bets');
-      }
-
       const { data, error } = await this.supabase
         .from('bets')
         .select('*')

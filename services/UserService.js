@@ -57,7 +57,7 @@ class UserService {
         if (error && error.code !== 'PGRST116') throw error;
         return data;
     }
-
+    
     /**
      * Update user information
      * @param {string} userId - User UUID

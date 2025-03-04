@@ -445,15 +445,18 @@ describe('Market Creation Service Tests', () => {
 
       console.log(JSON.stringify(token, null, 2));
 
-      await marketCreationService.handleMarketCreation(token, tokens);
+      await marketCreationService.handleMarketCreation(token, tokens, 9);
 
       // Check the market has been created
       const marketResult = await pool.query(
         'SELECT * FROM markets WHERE token_address = $1', [testMarketData1.address]
       );
 
+      
       // Verify that it is the correct market
       const market = marketResult.rows[0];
+
+      console.log(`Fetched market: ${market}`);
       expect(market.token_address == testMarketData1.address);
       expect(market.initial_market_cap == 70000).toBe(true);
       expect(market.initial_coin_price == 0.05).toBe(true);
@@ -622,7 +625,6 @@ describe('Market Creation Service Tests', () => {
       }
     });
   });
-
 
   describe('Filter Tokens Tests', () => {
     it('should handle edge cases and missing data', async () => {

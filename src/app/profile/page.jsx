@@ -3,27 +3,30 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from '@/components/FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import UserService from '@/services/UserService';
-import CashoutService from '@/services/CashoutService';
-import UserProfileService from '@/services/UserProfileService';
-import { supabase } from '@/lib/supabaseClient';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import UsernameChangePopup from '@/components/UsernameChangePopup';
 import CashoutModal from '@/components/CashoutModal';
-
-const userService = new UserService(supabase);
-const userProfileService = new UserProfileService(supabase);
-const cashoutService = new CashoutService(supabase, userService);
+import { useAnalytics } from '@/components/FirebaseProvider';
+import { logEvent } from 'firebase/analytics';
 
 export default function ProfilePage() {
     const { disconnect } = useWallet();
     const { user: authUser, auth } = useAuth();
+    const analytics = useAnalytics();
     const [userData, setUserData] = useState(null);
     const [bets, setBets] = useState([]);
     const [cashouts, setCashouts] = useState([]);
     const [isCashoutModalOpen, setIsCashoutModalOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
+
+    // Separate loading states for each data type
+    const [userLoading, setUserLoading] = useState(true);
+    const [betsLoading, setBetsLoading] = useState(false);
+    const [cashoutsLoading, setCashoutsLoading] = useState(false);
+
+    // Computed overall loading state
+    const isLoading = userLoading || betsLoading || cashoutsLoading;
+
     const router = useRouter();
 
     // Popup state
@@ -32,76 +35,116 @@ export default function ProfilePage() {
     // Fetch user data when user auth changes
     useEffect(() => {
         const fetchUserData = async () => {
-            if (authUser && authUser.uid) {
-                try {
-                    setLoading(true);
-                    // Fetch user data from your database using authUser.uid
-                    const dbUser = await userService.getUserByWallet(authUser.uid);
-                    setUserData(dbUser);
-                } catch (error) {
-                    console.error("Error fetching user data:", error);
-                } finally {
-                    setLoading(false);
-                }
-            } else {
-                setLoading(false);
+            if (!authUser || !authUser.uid) {
+                setUserLoading(false);
                 setUserData(null);
+                return;
+            }
+
+            try {
+                setUserLoading(true);
+                const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const dbUser = await response.json();
+                setUserData(dbUser);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                logEvent(analytics, 'profile_page_error', {
+                    error_message: error.message,
+                    error_code: error.code || 'unknown'
+                  });
+                
+                setUserData(null);
+            } finally {
+                setUserLoading(false);
             }
         };
 
         fetchUserData();
     }, [authUser]);
 
-    // Fetch the users bet history
+    // Fetch the users bet history - only runs when userData is available
     useEffect(() => {
         const fetchBets = async () => {
-            // Only proceed if we have valid userData with an ID
-            if (userData && userData.user_id) {
-                try {
-                    setLoading(true);
+            if (!userData || !userData.user_id) {
+                return;
+            }
 
-                    const betsData = await userProfileService.fetchBetsBy(userData.user_id);
+            try {
+                setBetsLoading(true);
+                const response = await fetch(`/api/betting/user/${userData.user_id}`);
 
-                    console.log(`Bets: ${betsData}`);
-                    if (betsData) {
-                        const sortedBets = betsData.sort((a, b) => {
-                            return new Date(b.created_at) - new Date(a.created_at);
-                        });
-
-                        setBets(sortedBets);
-                    }
-                } catch (error) {
-                    console.error('Error fetching bets:', error);
-                    // Keep showing sample data or empty state on error
-                } finally {
-                    setLoading(false);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch bets');
                 }
+
+                const betsData = await response.json();
+
+                if (betsData) {
+                    const sortedBets = betsData.sort((a, b) => {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
+
+                    setBets(sortedBets);
+                } else {
+                    setBets([]);
+                }
+            } catch (error) {
+                console.error('Error fetching bets:', error);
+                logEvent(analytics, 'profile_page_error', {
+                    error_message: error.message,
+                    error_code: error.code || 'unknown'
+                  });
+                setBets([]);
+            } finally {
+                setBetsLoading(false);
             }
         };
 
         fetchBets();
     }, [userData]);
 
-    // Fetch the users cashouts
+    // Fetch the users cashouts - only runs when userData is available
     useEffect(() => {
         const fetchCashouts = async () => {
-            if (userData && userData.user_id) {
-                try {
-                    setLoading(true);
+            if (!userData || !userData.user_id) {
+                return;
+            }
 
-                    const cashoutsData = await userProfileService.fetchCashoutsBy(userData.user_id);
-                    if (cashoutsData) {
-                        const sortedCashouts = cashoutsData.sort((a, b) => {
-                            return new Date(b.created_at) - new Date(a.created_at);
-                        });
+            try {
+                setCashoutsLoading(true);
+                const response = await fetch(`/api/cashouts/users/${userData.user_id}`);
 
-                        setCashouts(sortedCashouts);
-                    }
-                } catch (error) {
-                    console.error('Error fetching users cashouts: ', error);
-                } finally {
-                    setLoading(false)
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch bets');
                 }
+
+                const cashoutsData = await response.json();
+
+                if (cashoutsData) {
+                    const sortedCashouts = cashoutsData.sort((a, b) => {
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    });
+
+                    setCashouts(sortedCashouts);
+                } else {
+                    setCashouts([]);
+                }
+            } catch (error) {
+                console.error('Error fetching users cashouts: ', error);
+                logEvent(analytics, 'profile_page_error', {
+                    error_message: error.message,
+                    error_code: error.code || 'unknown'
+                  });
+                setCashouts([]);
+            } finally {
+                setCashoutsLoading(false);
             }
         };
 
@@ -109,25 +152,48 @@ export default function ProfilePage() {
     }, [userData]);
 
     const handleSignOut = async () => {
+        if (analytics) {
+            logEvent(analytics, 'signout_button_click', {
+                page: 'profile',
+                timestamp: new Date()
+            });
+        }
         try {
             await signOut(auth);
             await disconnect();
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);
+            logEvent(analytics, 'profile_page_error', {
+                error_message: error.message,
+                error_code: error.code || 'unknown'
+              });
         }
     };
 
     const handleCashOut = async () => {
+        if (analytics) {
+            logEvent(analytics, 'cashout_button_click', {
+                page: 'profile',
+                timestamp: new Date()
+            });
+        }
+
         if (!userData || userData.balance <= 0) {
-            alert(`You do not have enough funds to cash out.`)
-            return
+            alert(`You do not have enough funds to cash out.`);
+            return;
         }
 
         setIsCashoutModalOpen(true);
     };
 
     const handleEditProfile = async () => {
+        if (analytics) {
+            logEvent(analytics, 'edit_profile_button_click', {
+                page: 'profile',
+                timestamp: new Date()
+            });
+        }
         // Check if username was created in the last 7 days
         if (userData.username_changed_at) {
             const createdAt = new Date(userData.username_changed_at);
@@ -159,26 +225,59 @@ export default function ProfilePage() {
                 username_changed_at: new Date().toISOString(),
             };
 
-            await userService.updateUser(userData.user_id, updatedData);
+            await fetch('/api/users', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userData.user_id,
+                    ...updatedData
+                }),
+            });
+
 
             // Update local state
             setUserData({
                 ...userData,
-                username: newUsername
+                username: newUsername,
+                username_changed_at: new Date().toISOString()
             });
 
             return true;
         } catch (error) {
             console.error("Error updating username:", error);
+            logEvent(analytics, 'profile_page_error', {
+                error_message: error.message,
+                error_code: error.code || 'unknown'
+              });
             throw new Error("Failed to update username");
         }
     };
 
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
         try {
-            const newCashout = await cashoutService.createCashout(userData.user_id, amount, walletAddress);
 
-            // // Update the user's balance
+            const response = await fetch('/api/cashouts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userData.user_id,
+                    amount: amount,
+                    wallet_ca: walletAddress
+                }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create cashout');
+            }
+
+            const newCashout = await response.json();
+
+            // Update the user's balance
             const updatedBalance = userData.balance - amount;
 
             // Update local state
@@ -193,35 +292,73 @@ export default function ProfilePage() {
             alert('Your cashout request has been submitted and is pending approval.');
         } catch (error) {
             console.error('Error processing cashout:', error);
+            logEvent(analytics, 'profile_page_error', {
+                error_message: error.message,
+                error_code: error.code || 'unknown'
+              });
             throw new Error('Failed to process your cashout. Please try again.');
         }
     };
 
+    // Loading UI
+    if (userLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <div className="animate-pulse flex flex-col items-center gap-4">
+                    <div className="rounded-full bg-gray-700 h-20 w-20"></div>
+                    <div className="h-4 bg-gray-700 rounded w-48"></div>
+                    <div className="h-4 bg-gray-700 rounded w-32"></div>
+                </div>
+            </div>
+        );
+    }
+
+    // No user data
+    if (!userData) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-4">
+                <p className="text-center">Unable to load user profile. Please sign in again.</p>
+                <button
+                    onClick={() => router.push('/')}
+                    className="mt-4 bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
+                >
+                    Return to Home
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col items-center gap-4 p-4">
-            <h1 className="text-center text-sm font-bold">Welcome {userData ? `${userData.username}` : ""}</h1>
+            <h1 className="text-center text-sm font-bold">Welcome {userData.username}</h1>
 
             <div className="flex justify-center">
                 <div className="flex flex-col items-center">
                     <Image
                         className="rounded-full"
-                        src="/images/pepe.webp"
+                        src="/images/cool_ruggy.svg"
                         alt="profile picture"
                         width={75}
                         height={75}
                         priority
                     />
 
-                    <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData ? `${userData.wallet_ca.substring(0, 10)}...` : "-"}</h1>
-                    <h2 className="font-bold text-sm">Balance: {userData ? `${userData.balance} SOL` : "-"}</h2>
+                    <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData.wallet_ca.substring(0, 10)}...</h1>
+                    <h2 className="font-bold text-sm">Balance: {userData.balance} SOL</h2>
                     <button
                         className="text-m mt-3 mb-3 cursor-pointer hover:scale-105"
                         onClick={handleEditProfile}>[Edit Profile]</button>
 
-                    { /* --- List of cashouts --- */}
+                    {/* --- List of cashouts --- */}
                     <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Cashout History</h3>
-                        {cashouts.length > 0 ? (
+                        {cashoutsLoading ? (
+                            <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full"></div>
+                            </div>
+                        ) : cashouts.length > 0 ? (
                             <div className="bg-gray-800 rounded-lg p-3 w-full">
                                 <div className="grid grid-cols-3 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
                                     <div className="col-span-1">Date</div>
@@ -245,7 +382,7 @@ export default function ProfilePage() {
                             </div>
                         ) : (
                             <div className="text-center py-4 bg-gray-800 rounded-lg">
-
+                                <p className="text-gray-400">No cashout history</p>
                             </div>
                         )}
                     </div>
@@ -253,7 +390,13 @@ export default function ProfilePage() {
                     {/* --- List Of Bets --- */}
                     <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
-                        {bets.length > 0 ? (
+                        {betsLoading ? (
+                            <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+                                <div className="h-4 bg-gray-700 rounded w-full"></div>
+                            </div>
+                        ) : bets.length > 0 ? (
                             <div className="bg-gray-800 rounded-lg p-3 w-full">
                                 <div className="grid grid-cols-4 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
                                     <div className="col-span-1">Date</div>
@@ -293,24 +436,27 @@ export default function ProfilePage() {
                             </div>
                         ) : (
                             <div className="text-center py-4 bg-gray-800 rounded-lg">
-
+                                <p className="text-gray-400">No bet history</p>
                             </div>
                         )}
                     </div>
-                    <h4 className="text-gray-500 text-sm mt-4">JOINED AT: 12/01/2025</h4>
+                    <h4 className="text-gray-500 text-sm mt-4">JOINED AT: {userData.created_at ? new Date(userData.created_at).toLocaleDateString() : "12/01/2025"}</h4>
                 </div>
             </div>
             <div>
                 <button
                     onClick={handleSignOut}
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded cursor-pointer"
+                    disabled={isLoading}
                 >
                     Sign Out
                 </button>
 
                 <button
                     onClick={handleCashOut}
-                    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded ml-5 cursor-pointer">
+                    className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded ml-5 cursor-pointer"
+                    disabled={isLoading || userData.balance <= 0}
+                >
                     Cash Out
                 </button>
             </div>

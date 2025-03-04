@@ -20,6 +20,8 @@ class TokenService {
                 dex_id: token.dexId,
                 fetched_at: now
             }));
+
+            console.log(`Pool: ${this.pool}`)
     
             // Use parameterized query with RETURNING clause
             const { rows, error } = await this.pool.query(`

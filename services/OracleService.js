@@ -1,7 +1,7 @@
 class OracleService {
     static baseUrl = 'https://api.dexscreener.com';
 
-    static async fetchTokenProfiles(limit = 50) {
+    static async fetchTokenProfiles() {
         try {
             const headers = {
                 'Accept': '*/*',
@@ -13,7 +13,7 @@ class OracleService {
                 'Host': 'api.dexscreener.com'
             };
 
-            const response = await fetch(`${this.baseUrl}/token-boosts/latest/v1`, {
+            const response = await fetch(`${this.baseUrl}/token-boosts/top/v1`, {
                 method: 'GET',
                 headers
             });
@@ -33,7 +33,6 @@ class OracleService {
             }
 
             const solanaTokens = data
-                .slice(0, limit)
                 .map(token => ({
                     tokenAddress: token.tokenAddress,
                     chainId: token.chainId,

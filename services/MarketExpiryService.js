@@ -42,61 +42,64 @@ class ExpiryService {
     // Process cutoff for a market
     async processCutoff(marketId) {
       try {
-        // Update market phase
-  
         if (!marketId) {
-          throw new Error('Market Id is needed!');
+          throw new Error('Market ID is required.');
         }
-  
-        try {
-  
-          await this.supabase
-            .from('markets')
-            .update({
-              phase: 'CUTOFF',
-              status: 'MATCHING'
-            })
-            .eq('id', marketId);
-  
-        } catch (error) {
-          console.log('Error updating market.')
-          throw error;
+    
+        // Update market phase to CUTOFF
+        const { error: updateError } = await this.supabase
+          .from('markets')
+          .update({
+            phase: 'CUTOFF',
+            status: 'MATCHING'
+          })
+          .eq('id', marketId);
+    
+        if (updateError) {
+          throw new Error(`Error updating market phase: ${updateError.message}`);
         }
-  
-        // here we need to update status as locked
-  
-        // Get all unmatched and partially matched bets
-        const { data: bets, error } = await this.supabase
+    
+        // Fetch all unmatched and partially matched bets
+        const { data: bets, error: betError } = await this.supabase
           .from('bets')
           .select('*')
           .eq('market_id', marketId)
           .in('status', ['PENDING', 'PARTIALLY_MATCHED']);
-  
-  
-        if (error) throw error;
-  
-        // Process each bet
-        for (const bet of bets) {
-          await this.processBetExpiry(bet);
+    
+        if (betError) {
+          throw new Error(`Error fetching unmatched bets: ${betError.message}`);
         }
-  
+    
+        // Process all unmatched/partially matched bets in parallel
+        if (bets.length > 0) {
+          await Promise.all(bets.map(bet => this.processBetExpiry(bet)));
+        }
+    
         // Update market to observation phase
-        await this.supabase
+        const { error: obsError } = await this.supabase
           .from('markets')
           .update({
             phase: 'OBSERVATION',
             status: 'LOCKED'
           })
           .eq('id', marketId);
-  
+    
+        if (obsError) {
+          throw new Error(`Error updating market to observation phase: ${obsError.message}`);
+        }
+    
+        console.log(`Market ${marketId} moved to observation phase.`);
+    
+        // Fetch new markets
+        //await this.startMarketCreationProcess();
+    
         return bets;
-  
       } catch (error) {
-        console.error('Error processing cutoff:', error);
+        console.error('Error processing cutoff:', error.message);
         throw error;
       }
     }
-  
+    
     // Process expiry for a single bet
     async processBetExpiry(bet) {
       if (!bet.id) {
@@ -367,6 +370,7 @@ class ExpiryService {
   
     // Validate bet placement against market phase
     async validateBetPlacement(marketId) {
+      console.log(`Validate bet placement.`);
       if (!marketId) {
         throw new Error('Error processing Market.');
       }
@@ -384,6 +388,8 @@ class ExpiryService {
         market.duration
       );
   
+      console.log(`Market phase: ${market.phase}`);
+
       if (phase !== 'BETTING') {
         throw new Error('Market is not accepting bets at this time');
       }

@@ -74,7 +74,8 @@ class UserProfileService {
           website_url: "https://mockcoin.io",
           icon_url: "https://mockcoin.io/logo.png",
           coin_description: "MockCoin is a new memecoin on Solana with great tokenomics and a strong community.",
-          socials: socials
+          socials: socials,
+          name: 'Doge Coin'
         };
       
         try {

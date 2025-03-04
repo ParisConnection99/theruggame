@@ -114,7 +114,8 @@ async function createTestMarket(client, { tokenAddress,
    website_url = '', 
    icon_url = '', 
    coin_description = '', 
-   socials = {} }) {
+   socials = {},
+   name = '' }) {
   console.log(`The Token address: ${tokenAddress}`);
   try {
     // ✅ Ensure startTime is properly formatted as TIMESTAMP WITH TIME ZONE
@@ -143,7 +144,8 @@ async function createTestMarket(client, { tokenAddress,
           website_url,
           icon_url,
           coin_description,
-          socials
+          socials,
+          name
         ) VALUES (
           $1, 
           $2::TIMESTAMP WITH TIME ZONE, 
@@ -165,7 +167,8 @@ async function createTestMarket(client, { tokenAddress,
           $17::TEXT,
           $18::TEXT,
           $19::TEXT,
-          $20::JSONB
+          $20::JSONB,
+          $21::TEXT
         ) RETURNING *`,
       values: [
         tokenAddress,
@@ -187,7 +190,8 @@ async function createTestMarket(client, { tokenAddress,
         website_url,
         icon_url,
         coin_description,
-        socials
+        socials,
+        name
       ]
     };
 
