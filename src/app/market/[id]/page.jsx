@@ -534,7 +534,7 @@ export default function MarketPage() {
         error_message: error.message,
         error_code: error.code || 'unknown'
       });
-      alert(`Error placing bet: ${error.message}`);
+      alert(`Error placing bet.`);
     } finally {
       setIsBetting(false);
       setLoading(false);
