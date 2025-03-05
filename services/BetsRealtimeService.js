@@ -1,24 +1,26 @@
-const { createClient } = require('@supabase/supabase-js');
+import { supabase } from '@/lib/supabaseClient';
 
-// Initialize Supabase Client
-const supabase = createClient(process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY);
-
-const listenToBets = (onBetUpdate) => {
+export const listenToBets = (onBetUpdate) => {
     try {
         const subscription = supabase
             .channel('bets-realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'bet_details' }, (payload) => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bets' }, (payload) => {
                 console.log('Bet Update:', payload);
 
                 if (payload.eventType === 'INSERT') {
-                    console.log(`New Bet Placed: ${payload.new.user_id} bet ${payload.new.amount} SOL on ${payload.new.market_name}`);
-                    onBetUpdate(payload.new);
+                    console.log(`New Bet Placed: ${payload.new.user_id} bet ${payload.new.amount} SOL on ${payload.new.token_name}`);
+                    onBetUpdate({
+                        payload: payload.new,
+                        type: 'INSERT'
+                    });
                 }
 
                 if (payload.eventType === 'UPDATE' && payload.new.status === 'WON') {
-                    console.log(`Bet Won: ${payload.new.user_id} won ${payload.new.potential_payout} SOL on ${payload.new.market_name}`);
-                    onBetUpdate(payload.new);
+                    console.log(`Bet Won: ${payload.new.user_id} won ${payload.new.potential_payout} SOL on ${payload.new.token_name}`);
+                    onBetUpdate({
+                        payload: payload.new,
+                        type: 'UPDATE'
+                    });
                 }
             })
             .subscribe();
@@ -29,4 +31,3 @@ const listenToBets = (onBetUpdate) => {
         return null;
     }
 };
-module.exports = { listenToBets };

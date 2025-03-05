@@ -85,27 +85,17 @@ class UserService {
      * @returns {Promise<Object>} Updated user object
      */
     async updateBalance(userId, amount) {
-        // First get current balance
-        console.log(`Updated balance: userId - ${userId}, amount: ${amount}`);
-
-        const user = await this.getUserById(userId);
-        if (!user) throw new Error('User not found');
-
-        console.log(`Fetched user: ${user}`);
-
-        const newBalance = (parseFloat(user.balance) || 0) + parseFloat(amount);
-        
-        const { data, error } = await this.supabase
-            .from(this.tableName)
-            .update({ balance: newBalance })
-            .eq('user_id', userId)
-            .select();
-
-        if(error) {
-            throw new Error('Error updating Balance. ', error.message);
-        }
-        
-        return data[0];
+        const { data, error } = await this.supabase.rpc(
+            'update_user_balance', 
+            { user_id_param: userId, amount_param: amount }
+          );
+          
+          if (error) {
+            console.error('Error updating balance:', error);
+            throw error;
+          }
+          
+          return data[0];
     }
 
     /**

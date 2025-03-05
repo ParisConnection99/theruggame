@@ -4,9 +4,9 @@ export async function POST(request) {
   console.log(`Just entered the place bet route.`);
   try {
     const body = await request.json();
-    const { marketId, userId, amount, betType } = body;
+    const { marketId, userId, amount, betType, token_name } = body;
     
-    if (!marketId || !userId || !amount || !betType) {
+    if (!marketId || !userId || !amount || !betType, !token_name) {
       return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -18,7 +18,8 @@ export async function POST(request) {
     const bet = await serviceRepo.bettingService.placeBet(marketId, { 
       userId, 
       amount, 
-      betType 
+      betType, 
+      token_name
     });
     
     return new Response(JSON.stringify(bet), {

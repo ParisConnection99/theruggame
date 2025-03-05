@@ -13,9 +13,6 @@ export async function GET(request, { params }) {
       });
     }
 
-    // You might want to add authentication check here to ensure
-    // the requesting user has permission to access this data
-    
     const cashouts = await serviceRepo.cashoutService.fetchCashoutsBy(userId);
     
     return new Response(JSON.stringify(cashouts), {

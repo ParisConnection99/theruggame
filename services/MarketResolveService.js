@@ -32,9 +32,11 @@ class MarketResolveService {
             throw new Error('Market is not ready to be resolved.');
         }
         
+        console.log(`Resolving market: ${JSON.stringify(market, null, 2)}`);
         // Fetch token details
-        const token = await OracleService.fetchTokenDetails([market.tokenAddress]);
+        const token = await OracleService.fetchTokenDetails([market.token_address]);
         
+        console.log('--- Market Resolution ---');
         // Debug the market object to see what properties are available
         console.log('Market object:', JSON.stringify(market, null, 2));
         
@@ -76,8 +78,10 @@ class MarketResolveService {
         }
         
         const result = await this.evaluateMarketOutcome(initialData, finalData);
+
+        console.log(`Final price: ${finalData.price}`);
         
-        return result;
+        return { result: result, price: finalData.price };
     }
    
     async fetchBets(marketId) {
@@ -102,36 +106,79 @@ class MarketResolveService {
         if (!initialData || !finalData || typeof initialData !== 'object' || typeof finalData !== 'object') {
             throw new Error('Invalid market data');
         }
-
+    
         const requiredFields = ['liquidity', 'price', 'marketCap', 'txns', 'timestamp'];
         for (const field of requiredFields) {
             if (!initialData[field] || !finalData[field]) {
                 throw new Error(`Missing required field: ${field}`);
             }
         }
-
+    
         try {
             // Calculate percentage changes
             const liquidityChange = (finalData.liquidity / initialData.liquidity);
             const priceChange = ((finalData.price - initialData.price) / initialData.price) * 100;
-
+    
             // Calculate total transaction volumes
             const totalBuys = finalData.txns.buys - initialData.txns.buys;
             const totalSells = finalData.txns.sells - initialData.txns.sells;
-
+    
+            // Determine the outcome result
+            let result = 'HOUSE'; // Default result
+    
             // RUG conditions
-            if (liquidityChange <= 0.1) return 'RUG';  // 90%+ liquidity drop
-            if (priceChange <= -80) return 'RUG';      // 80%+ price drop
-
+            if (liquidityChange <= 0.1) result = 'RUG';  // 90%+ liquidity drop
+            else if (priceChange <= -80) result = 'RUG';      // 80%+ price drop
             // PUMP conditions
-            if (priceChange >= 50) return 'PUMP';      // 50%+ price increase
-            if (totalBuys / Math.max(totalSells, 1) >= 5) return 'PUMP';  // 5x buy volume
-
-            return 'HOUSE';
+            else if (priceChange >= 50) result = 'PUMP';      // 50%+ price increase
+            else if (totalBuys / Math.max(totalSells, 1) >= 5) result = 'PUMP';  // 5x buy volume
+    
+            // Log the result before returning
+            console.log(`Market outcome: ${result}`);
+            console.log(`Liquidity change: ${liquidityChange}`);
+            console.log(`Price change: ${priceChange}%`);
+            console.log(`Buy/Sell ratio: ${totalBuys}/${totalSells}`);
+    
+            return result;
         } catch (error) {
             throw new Error(`Error evaluating market: ${error.message}`);
         }
     }
+
+    // async evaluateMarketOutcome(initialData, finalData) {
+    //     if (!initialData || !finalData || typeof initialData !== 'object' || typeof finalData !== 'object') {
+    //         throw new Error('Invalid market data');
+    //     }
+
+    //     const requiredFields = ['liquidity', 'price', 'marketCap', 'txns', 'timestamp'];
+    //     for (const field of requiredFields) {
+    //         if (!initialData[field] || !finalData[field]) {
+    //             throw new Error(`Missing required field: ${field}`);
+    //         }
+    //     }
+
+    //     try {
+    //         // Calculate percentage changes
+    //         const liquidityChange = (finalData.liquidity / initialData.liquidity);
+    //         const priceChange = ((finalData.price - initialData.price) / initialData.price) * 100;
+
+    //         // Calculate total transaction volumes
+    //         const totalBuys = finalData.txns.buys - initialData.txns.buys;
+    //         const totalSells = finalData.txns.sells - initialData.txns.sells;
+
+    //         // RUG conditions
+    //         if (liquidityChange <= 0.1) return 'RUG';  // 90%+ liquidity drop
+    //         if (priceChange <= -80) return 'RUG';      // 80%+ price drop
+
+    //         // PUMP conditions
+    //         if (priceChange >= 50) return 'PUMP';      // 50%+ price increase
+    //         if (totalBuys / Math.max(totalSells, 1) >= 5) return 'PUMP';  // 5x buy volume
+
+    //         return 'HOUSE';
+    //     } catch (error) {
+    //         throw new Error(`Error evaluating market: ${error.message}`);
+    //     }
+    // }
 }
 
 module.exports = MarketResolveService;

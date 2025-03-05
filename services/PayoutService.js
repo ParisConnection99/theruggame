@@ -21,7 +21,8 @@ class PayoutService {
         }
 
         if (!bets || bets.length === 0) {
-            throw new Error(`Bets not found with ID: ${marketId}`);
+            console.log(`Bets not found with ID: ${marketId}`);
+            return;
         }
 
         if (result != 'HOUSE') {

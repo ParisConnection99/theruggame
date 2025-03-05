@@ -11,8 +11,6 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
     imageSrc = "/images/ruggy_angry.svg";
   }
 
- console.log(`ImageSource: ${imageSrc}`);
-
   // State for countdown
   const [timeLeft, setTimeLeft] = useState('');
   const [isBettingClosed, setIsBettingClosed] = useState(false);

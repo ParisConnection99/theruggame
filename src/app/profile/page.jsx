@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import UsernameChangePopup from '@/components/UsernameChangePopup';
 import CashoutModal from '@/components/CashoutModal';
+import BetShareModal from '@/components/BetShareModal'; // Import the BetShareModal component
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 
@@ -18,6 +19,10 @@ export default function ProfilePage() {
     const [bets, setBets] = useState([]);
     const [cashouts, setCashouts] = useState([]);
     const [isCashoutModalOpen, setIsCashoutModalOpen] = useState(false);
+
+    // Add state for BetShareModal
+    const [selectedBet, setSelectedBet] = useState(null);
+    const [isBetShareModalOpen, setIsBetShareModalOpen] = useState(false);
 
     // Separate loading states for each data type
     const [userLoading, setUserLoading] = useState(true);
@@ -56,8 +61,8 @@ export default function ProfilePage() {
                 logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
                     error_code: error.code || 'unknown'
-                  });
-                
+                });
+
                 setUserData(null);
             } finally {
                 setUserLoading(false);
@@ -99,7 +104,7 @@ export default function ProfilePage() {
                 logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
                     error_code: error.code || 'unknown'
-                  });
+                });
                 setBets([]);
             } finally {
                 setBetsLoading(false);
@@ -141,7 +146,7 @@ export default function ProfilePage() {
                 logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
                     error_code: error.code || 'unknown'
-                  });
+                });
                 setCashouts([]);
             } finally {
                 setCashoutsLoading(false);
@@ -167,7 +172,7 @@ export default function ProfilePage() {
             logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
                 error_code: error.code || 'unknown'
-              });
+            });
         }
     };
 
@@ -185,6 +190,20 @@ export default function ProfilePage() {
         }
 
         setIsCashoutModalOpen(true);
+    };
+
+    // Add handler for bet sharing
+    const handleBetShare = (bet) => {
+        if (analytics) {
+            logEvent(analytics, 'bet_share_click', {
+                page: 'profile',
+                bet_id: bet.id,
+                timestamp: new Date()
+            });
+        }
+
+        setSelectedBet(bet);
+        setIsBetShareModalOpen(true);
     };
 
     const handleEditProfile = async () => {
@@ -250,7 +269,7 @@ export default function ProfilePage() {
             logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
                 error_code: error.code || 'unknown'
-              });
+            });
             throw new Error("Failed to update username");
         }
     };
@@ -295,7 +314,7 @@ export default function ProfilePage() {
             logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
                 error_code: error.code || 'unknown'
-              });
+            });
             throw new Error('Failed to process your cashout. Please try again.');
         }
     };
@@ -397,42 +416,61 @@ export default function ProfilePage() {
                                 <div className="h-4 bg-gray-700 rounded w-full"></div>
                             </div>
                         ) : bets.length > 0 ? (
-                            <div className="bg-gray-800 rounded-lg p-3 w-full">
-                                <div className="grid grid-cols-4 gap-x-4 text-sm text-gray-400 mb-2 font-semibold">
-                                    <div className="col-span-1">Date</div>
-                                    <div className="col-span-1">Amount</div>
-                                    <div className="col-span-1">Result</div>
-                                    <div className="col-span-1">Profit</div>
-                                </div>
-
-                                {bets.map((bet) => (
-                                    <div key={bet.id} className="grid grid-cols-4 gap-x-4 text-sm py-2 border-t border-gray-700">
-                                        <div>{new Date(bet.created_at).toLocaleDateString()}</div>
-                                        <div>{bet.matched_amount} SOL</div>
-                                        <div className={
-                                            bet.status === 'WON'
-                                                ? 'text-green-500'
-                                                : bet.status === 'LOST'
-                                                    ? 'text-red-500'
-                                                    : ''
-                                        }>
-                                            {bet.status === 'WON' || bet.status === 'LOST' ? bet.status : ''}
-                                        </div>
-                                        <div className={
-                                            bet.status === 'WON'
-                                                ? 'text-green-500'
-                                                : bet.status === 'LOST'
-                                                    ? 'text-red-500'
-                                                    : ''
-                                        }>
-                                            {bet.status === 'WON'
-                                                ? `${bet.matched_amount} SOL`
-                                                : bet.status === 'LOST'
-                                                    ? `-${bet.matched_amount} SOL`
-                                                    : ''}
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
+                                <table className="w-full table-fixed">
+                                    <thead>
+                                        <tr className="text-sm text-gray-400">
+                                            <th className="w-[25%] p-1 text-left">Date</th>
+                                            <th className="w-[15%] p-1 text-left">Amount</th>
+                                            <th className="w-[20%] p-1 text-left">Result</th>
+                                            <th className="w-[25%] p-1 text-left">Profit</th>
+                                            <th className="w-[15%] p-1 text-center">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {bets.map((bet) => (
+                                            <tr key={bet.id} className="text-sm border-t border-gray-700">
+                                                <td className="p-1 truncate">
+                                                    {new Date(bet.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-1 truncate">
+                                                    {bet.matched_amount} SOL
+                                                </td>
+                                                <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
+                                                        ? 'text-green-500'
+                                                        : bet.status === 'LOST'
+                                                            ? 'text-red-500'
+                                                            : ''
+                                                    }`}>
+                                                    {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REFUNDED' ? bet.status : ''}
+                                                </td>
+                                                <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
+                                                        ? 'text-green-500'
+                                                        : bet.status === 'LOST'
+                                                            ? 'text-red-500'
+                                                            : ''
+                                                    }`}>
+                                                    {bet.status === 'WON' || bet.status === 'REFUNDED'
+                                                        ? `${bet.matched_amount} SOL`
+                                                        : bet.status === 'LOST'
+                                                            ? `-${bet.matched_amount} SOL`
+                                                            : ''}
+                                                </td>
+                                                <td className="p-1 text-center">
+                                                    {(bet.status === 'WON' || bet.status === 'LOST') &&
+                                                        <span
+                                                            className="cursor-pointer hover:opacity-75"
+                                                            title="Share bet result"
+                                                            onClick={() => handleBetShare(bet)}
+                                                        >
+                                                            📋
+                                                        </span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         ) : (
                             <div className="text-center py-4 bg-gray-800 rounded-lg">
@@ -476,6 +514,13 @@ export default function ProfilePage() {
                 onSubmit={handleCashoutSubmit}
                 maxAmount={userData?.balance || 0}
                 defaultWallet={userData?.wallet_ca || ""}
+            />
+
+            {/* Bet Share Modal */}
+            <BetShareModal
+                isOpen={isBetShareModalOpen}
+                onClose={() => setIsBetShareModalOpen(false)}
+                bet={selectedBet}
             />
         </div>
     );

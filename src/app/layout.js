@@ -6,6 +6,7 @@ import ClientProviders from '@/components/ClientProviders';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import '@solana/wallet-adapter-react-ui/styles.css';
+import ActivityBanner from '@/components/ActivityBanner'; 
 
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900`}
       >
         <ClientProviders>
+          <ActivityBanner />
           <Header />
           {children}
           <Footer />

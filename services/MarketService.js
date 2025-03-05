@@ -33,47 +33,20 @@ class MarketService {
     }
 
     try {
-      await this.pool.query('BEGIN;'); // Start transaction
-
-      // 1️⃣ Check if the token exists
-      const { rows: existingToken } = await this.pool.query(`
-              SELECT token_address FROM tokens WHERE token_address = $1;
-          `, [tokenAddress]);
-
-      if (!existingToken.length) {
-        // Token does not exist, insert it first
-        await this.pool.query(`
-                  INSERT INTO tokens (
-                      token_address, created_at, status, dex_id, fetched_at
-                  ) VALUES ($1, NOW(), 'available', $2, NOW());
-              `, [tokenAddress, dex_id]);
-
-        console.log(`Token ${tokenAddress} was missing and has been inserted.`);
-      }
-
-      // 2️⃣ Lock the token row to prevent race conditions
-      const { rows: lockedToken } = await this.pool.query(`
-              SELECT token_address FROM tokens 
-              WHERE token_address = $1 
-              FOR UPDATE SKIP LOCKED;
-          `, [tokenAddress]);
-
-      if (!lockedToken.length) throw new Error('Token is locked or unavailable.');
-
-      // 3️⃣ Insert market using the locked token
+      // Insert market directly without token-related operations
       const { rows: market } = await this.pool.query(`
-              INSERT INTO markets (
-                  token_address, start_time, duration, end_time, status, phase, 
-                  total_pump_amount, total_rug_amount, current_pump_odds, current_rug_odds, 
-                  initial_coin_price, initial_market_cap, initial_liquidity, initial_buy_txns, initial_sell_txns,
-                  dex_screener_url, dex_id, website_url, icon_url, coin_description, socials, name
-              ) 
-              VALUES ($1, $2, $3, $4, $5, $6, 
-                      0, 0, 2.0, 2.0, 
-                      $7, $8, $9, $10, $11, 
-                      $12, $13, $14, $15, $16, $17, $18)
-              RETURNING *;
-          `, [
+          INSERT INTO markets (
+              token_address, start_time, duration, end_time, status, phase, 
+              total_pump_amount, total_rug_amount, current_pump_odds, current_rug_odds, 
+              initial_coin_price, initial_market_cap, initial_liquidity, initial_buy_txns, initial_sell_txns,
+              dex_screener_url, dex_id, website_url, icon_url, coin_description, socials, name
+          ) 
+          VALUES ($1, $2, $3, $4, $5, $6, 
+                  0, 0, 2.0, 2.0, 
+                  $7, $8, $9, $10, $11, 
+                  $12, $13, $14, $15, $16, $17, $18)
+          RETURNING *;
+      `, [
         tokenAddress,
         startTime,
         duration,
@@ -94,30 +67,19 @@ class MarketService {
         name
       ]);
 
-      // 4️⃣ Update token status to "used"
-      await this.pool.query(`
-              UPDATE tokens 
-              SET status = 'used' 
-              WHERE token_address = $1;
-          `, [tokenAddress]);
-
-      await this.pool.query('COMMIT;'); // Commit transaction
-
       console.log('Market created successfully:', market[0]);
-
-
       console.log(`Market: ${market[0].id}, startTime: ${startTime}, duration: ${duration}`);
+      
       // Start monitoring the new market
       this.expiryService.monitorMarket(market[0].id, startTime, duration);
 
       return market[0];
     } catch (error) {
-      await this.pool.query('ROLLBACK;'); // Rollback transaction on error
       console.error('Error creating market:', error);
       throw error;
     }
   }
-
+  
   async placeBet(marketId, betData) {
     if (!marketId || !betData) {
       throw new Error('Error processing Bet.');
@@ -159,7 +121,8 @@ class MarketService {
         fee_param: betData.fee,
         bet_type_param: betData.betType,
         odds_locked_param: betData.odds,
-        potential_payout_param: betData.potentialPayout
+        potential_payout_param: betData.potentialPayout,
+        token_name_param: betData.token_name
       });
 
       if (error) throw error;

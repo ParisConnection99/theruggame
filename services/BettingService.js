@@ -14,9 +14,9 @@ class BettingService {
     }
   
     // Place a new bet
-    async placeBet(marketId, { userId, amount, betType }) {
+    async placeBet(marketId, { userId, amount, betType, token_name }) {
   
-      if (!marketId || !userId || !amount || !betType) {
+      if (!marketId || !userId || !amount || !betType || !token_name) {
         throw new Error('Error processing Bet.');
       }
   
@@ -42,7 +42,8 @@ class BettingService {
           fee,
           betType,
           odds,
-          potentialPayout
+          potentialPayout,
+          token_name
         });
   
         // up
@@ -79,9 +80,8 @@ class BettingService {
         .from('bets')
         .select('*')
         .eq('user_id', userId)
-        .single();
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw error;
         return data;
     }
   
