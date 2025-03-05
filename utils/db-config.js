@@ -2,8 +2,7 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  connectionString: `postgresql://postgres.molrjroewztjwyiksluz:${process.env.POSTGRES_PASSWORD}@aws-0-us-east-1.pooler.supabase.com:6543/postgres`,
-  ssl: true,
+  connectionString: `postgresql://postgres.molrjroewztjwyiksluz:${process.env.POSTGRES_PASSWORD}@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require`,
   // Connection pool settings
   max: 20,                         // maximum number of clients in the pool
   idleTimeoutMillis: 30000,       // how long a client is allowed to remain idle before being closed
