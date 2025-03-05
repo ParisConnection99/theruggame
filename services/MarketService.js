@@ -121,7 +121,8 @@ class MarketService {
         fee_param: betData.fee,
         bet_type_param: betData.betType,
         odds_locked_param: betData.odds,
-        potential_payout_param: betData.potentialPayout
+        potential_payout_param: betData.potentialPayout,
+        token_name_param: betData.token_name
       });
 
       if (error) throw error;

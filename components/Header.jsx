@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
 
+
 const userService = new UserService(supabase);
 
 export default function Header() {
@@ -162,19 +163,7 @@ export default function Header() {
     return (
         <header className="w-full relative">
             {/* Top Banner */}
-            <div className="w-[calc(100%-2rem)] h-10 bg-blue-300 flex items-center justify-center rounded-lg ml-4 mt-4 mr-4 gap-4 px-4">
-                <Image
-                    className="rounded-full"
-                    src="/images/ruggy_money.svg"
-                    alt="banner"
-                    width={25}
-                    height={25}
-                    priority
-                />
-                <h1 className="text-black text-sm font-semibold">
-                    MoneyMagnet bet 3 SOL ($600) on HoodAI to Rug 🚀
-                </h1>
-            </div>
+            {/* <ActivityBanner /> */}
 
             {/* Navigation Container */}
             <div className="flex justify-between items-center w-full px-5 mt-5">

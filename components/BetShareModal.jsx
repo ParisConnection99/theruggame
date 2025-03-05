@@ -1,63 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useAnalytics } from '@/components/FirebaseProvider';
-import { logEvent } from 'firebase/analytics';
 import html2canvas from 'html2canvas';
 import { saveAs } from 'file-saver';
 
 const BetShareModal = ({ isOpen, onClose, bet }) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [market, setMarket] = useState(null);
-  const [loading, setLoading] = useState(false);
   const cardRef = useRef(null);
-  const analytics = useAnalytics();
-
-  // Fetch market data when bet changes
-  useEffect(() => {
-    const fetchMarketData = async () => {
-      if (!bet || !bet.market_id) {
-        console.log("No market_id available in bet:", bet);
-        return;
-      }
-      
-      try {
-        setLoading(true);
-        console.log(`Fetching market with ID: ${bet.market_id}`);
-        
-        // Log the exact URL being called
-        const url = `/api/markets/market/${bet.market_id}`;
-        console.log(`Calling API endpoint: ${url}`);
-        
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          console.error(`API error (${response.status}):`, errorData);
-          throw new Error(`Failed to fetch market data: ${response.status}`);
-        }
-
-        const marketData = await response.json();
-        console.log("Market data received:", marketData);
-        setMarket(marketData);
-      } catch (error) {
-        console.error('Error fetching market data: ', error);
-        if (analytics) {
-          logEvent(analytics, 'bet_share_modal_error', {
-            error_message: error.message,
-            error_code: error.code || 'unknown',
-            market_id: bet.market_id
-          });
-        }
-        setMarket(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isOpen && bet) {
-      fetchMarketData();
-    }
-  }, [bet, isOpen, analytics]);
-
+  
   // Only render if modal is open and bet data exists
   if (!isOpen || !bet) return null;
 
@@ -73,7 +21,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
   };
   
   // Format the market name as in MarketCard
-  const tokenNameNoSpaces = market?.name ? market.name.replace(/\s+/g, "") : "";
+  const tokenNameNoSpaces = bet.token_name ? bet.token_name.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
   const questionEnd = " Pump or Rug in 10 mins?";
 
@@ -129,14 +77,11 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
               <div className="text-purple-400 text-lG font-bold">
                 THE RUG GAME
               </div>
-              {market && (
-                <div className="text-sm mt-1">
+              <div className="text-sm mt-1">
                   {questionStart}
                   <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
                   {questionEnd}
                 </div>
-              )}
-              {loading && <div className="text-sm mt-1 text-gray-400">Loading market details...</div>}
             </div>
             <img
               src="/images/logo1.png"

@@ -708,7 +708,8 @@ class PostgresDatabase {
             oddsLocked: parseFloat(row.odds_locked),
             potentialPayout: parseFloat(row.potential_payout),
             createdAt: row.created_at,
-            matchedAt: row.matched_at
+            matchedAt: row.matched_at,
+            token_name: row.token_name
         };
     }
 

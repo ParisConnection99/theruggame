@@ -44,5 +44,3 @@ export const listenToMarkets = (onMarketUpdate) => {
         return null;
     }
 };
-
-//module.exports = { listenToMarkets };

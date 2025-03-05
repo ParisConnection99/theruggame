@@ -42,7 +42,7 @@ export default function Home() {
       try {
         setLoading(true);
 
-        // const response = await fetch('/api/setup/markets');
+        //  const response = await fetch('/api/setup/markets');
 
         // if (!response.ok) {
         //   const errorData = await response.json();

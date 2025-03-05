@@ -278,7 +278,7 @@ export default function MarketPage() {
   const stats = calculatePumpRugPercentages(market?.total_pump_amount || 0, market?.total_rug_amount || 0);
 
   // Constants for betting
-  const MIN_BET_AMOUNT = 0.05;
+  const MIN_BET_AMOUNT = 0.07;
   const MAX_BET_AMOUNT = 100;
 
   const [isBetting, setIsBetting] = useState(false);
@@ -420,7 +420,8 @@ export default function MarketPage() {
             marketId: market.id,
             userId: dbUser.user_id,
             amount: betAmount,
-            betType: betType
+            betType: betType,
+            token_name: market.name
           })
         });
 
@@ -492,7 +493,8 @@ export default function MarketPage() {
                     marketId: market.id,
                     userId: dbUser.user_id,
                     amount: betAmount,
-                    betType: betType
+                    betType: betType,
+                    token_name: market.name
                   })
                 });
 
