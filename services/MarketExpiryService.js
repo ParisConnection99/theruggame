@@ -289,7 +289,7 @@ class ExpiryService {
       console.log(`MARKET RESOLVED: ${JSON.stringify(market, null, 2)}`);
       // Start the market creation process
       
-      await this.startMarketCreationProcess();
+      //await this.startMarketCreationProcess();
   
       // Resolved means the market is done
       return market;
