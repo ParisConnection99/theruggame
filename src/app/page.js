@@ -78,17 +78,6 @@ export default function Home() {
           console.log("No Markets found or empty data returned");
         }
 
-        // if (marketsData && marketsData.length > 0) {
-        //   const sortedMarkets = marketsData.sort((a, b) => {
-        //     return new Date(b.created_at) - new Date(a.created_at);
-        //   });
-
-        //   setMarkets(sortedMarkets);
-
-        //   updateFeaturedMarket(sortedMarkets);
-        // } else {
-        //   console.log("No Markets found or empty data returned");
-        // }
       } catch (error) {
         console.error("Error fetching markets: ", error);
         logEvent(analytics, 'home_page_error', {
@@ -121,10 +110,6 @@ export default function Home() {
             setMarkets(newMarkets);
           }
           break;
-        // const newMarkets = [...markets, updatedMarket.payload];
-        // newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        // setMarkets(newMarkets);
-        // break;
 
         case 'PUMP VS RUG SPLIT UPDATE':
           // We should update the Featured Market.

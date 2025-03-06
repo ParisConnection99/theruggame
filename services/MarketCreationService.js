@@ -12,7 +12,7 @@ class MarketCreationService {
         this.activeMarkets = [];
         //this.TOTAL_MARKET_CAPACITY = 15;
         this.MAXIMUM_ATTEMPTS = 5;
-        this.ACTIVE_MARKETS_LIMIT = 5;
+        this.ACTIVE_MARKETS_LIMIT = 10;
         this.MARKET_DURATION = 10;
     }
 
@@ -20,11 +20,11 @@ class MarketCreationService {
     async fetchMarkets() {
         try {
 
-            const canFetchWithLock = await this.canStartFetchingAndLock();
-            if (!canFetchWithLock) {
-                console.log('Another process is already fetching markets. Exiting');
-                return;
-            }
+            // const canFetchWithLock = await this.canStartFetchingAndLock();
+            // if (!canFetchWithLock) {
+            //     console.log('Another process is already fetching markets. Exiting');
+            //     return;
+            // }
 
             this.activeMarkets = await this.marketService.getActiveMarkets();
 
@@ -40,16 +40,20 @@ class MarketCreationService {
                 console.log(`Need ${tokensNeeded} more tokens`);
 
                 // // Fetch tokens (LOCKED)
-                const tokens = await this.startTokenFetchCycle(activeMarketCount);
+                const fetchedTokens = await this.startTokenFetchCycle(activeMarketCount);
+
+                const tokens = this.shuffleArray(fetchedTokens);
 
                 token = tokens.shift();
 
                 // Handle Market Creation
                 await this.handleMarketCreation(token, tokens, activeMarketCount);
-            } 
+            } else {
+                console.log('We have enough active markets.');
+            }
 
             // 6️⃣ Unlock fetching process
-            await this.finishedFetching();
+           // await this.finishedFetching();
 
             return token;
 
@@ -57,9 +61,25 @@ class MarketCreationService {
             console.error('Error in fetchMarket:', error);
 
             // 7️⃣ Ensure we always unlock on failure
-            await this.finishedFetching();
+            //await this.finishedFetching();
             throw error;
         }
+    }
+
+    shuffleArray(array) {
+        // Create a copy of the array to avoid modifying the original
+        const shuffled = [...array];
+        
+        // Start from the last element and swap one by one
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            // Pick a random index from 0 to i
+            const j = Math.floor(Math.random() * (i + 1));
+            
+            // Swap elements at i and j
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        return shuffled;
     }
 
     async fetchTokens(totalCount) {
@@ -90,6 +110,7 @@ class MarketCreationService {
             const validTokens = tokens.filter(t => t !== undefined && t !== null);
             console.log(`Filtered tokens array: ${validTokens.length} valid tokens out of ${tokens.length} total`);
 
+            console.log(`Active Market count: ${activeMarketCount}, markets needed: ${marketsNeeded}, token: ${tokens.length} `);
             // Track any tokens that weren't used for market creation
             const unusedTokens = [...validTokens]; // Create a copy to avoid modifying the original
 

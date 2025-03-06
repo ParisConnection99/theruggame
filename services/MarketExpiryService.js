@@ -286,18 +286,7 @@ class ExpiryService {
       console.log(`MARKET RESOLVED: ${JSON.stringify(market, null, 2)}`);
       // Start the market creation process
       
-      //await this.startMarketCreationProcess();
-  
-      // Resolved means the market is done
       return market;
-    }
-  
-    // Purpose: Start Market creation process
-    async startMarketCreationProcess() {
-  
-      console.log(`--- Starting market creation process ---`);
-      // call market creation service.fetchmarkets
-      await this.marketCreationService.fetchMarkets();
     }
   
     async settledStatusUpdate(marketId, price) {
