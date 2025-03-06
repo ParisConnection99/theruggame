@@ -91,7 +91,7 @@ class ExpiryService {
         console.log(`Market ${marketId} moved to observation phase.`);
     
         // Fetch new markets
-        //await this.startMarketCreationProcess();
+        await this.startMarketCreationProcess();
     
         return bets;
       } catch (error) {

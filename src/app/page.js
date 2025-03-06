@@ -1,8 +1,6 @@
  "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import HomePageService from '@/services/HomePageService';
 import MarketCard from '@/components/MarketCard';
 import FeaturedMarket from '@/components/FeaturedMarket';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
@@ -10,8 +8,6 @@ import { useRouter } from 'next/navigation';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 
-
-const homePageService = new HomePageService(supabase);
 
 export default function Home() {
   const [markets, setMarkets] = useState([]);

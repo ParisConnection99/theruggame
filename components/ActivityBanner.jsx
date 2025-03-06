@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { listenToBets } from '@/services/BetsRealtimeService';
-import { listenToMarkets } from '@/services/MarketRealtimeService';
 
 const ActivityBanner = () => {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -27,27 +26,9 @@ const ActivityBanner = () => {
     const limitTokenName = (name) => name.length > 7 ? name.slice(0, 7) + '...' : name;
     
     if (bet.type === 'INSERT') {
-      return `User ${shortUserId} bet ${bet.payload.amount} on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} 🚀`;
+      return `${shortUserId} bet ${bet.payload.amount} SOL on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} in 10 mins 🚀`;
     } else if (bet.type === 'UPDATE' && bet.payload.status === 'WON') {
-      return `User ${shortUserId} won ${bet.payload.potential_payout} ${limitTokenName(bet.payload.token_name)} on ${bet.payload.market_name} to ${bet.payload.bet_type} 🎉`;
-    }
-    
-    return null;
-  };
-
-  // Format market message
-  const formatMarketMessage = (market) => {
-    if (!market || !market.payload) {
-      console.log("Received invalid market data:", market);
-      return null;
-    }
-
-    console.log(`Formatting betting data 🔒`);
-    
-    if (market.type === 'NEW MARKET') {
-      return `${market.payload.name} to Pump or Rug in 10 mins is live now! 🔥`;
-    } else if (market.type === 'MARKET STATUS UPDATE') {
-      return `Betting is now closed for ${market.payload.name} 🔒`;
+      return `${shortUserId} won ${bet.payload.potential_payout} SOL on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} in 10 mins 🎉`;
     }
     
     return null;
@@ -120,30 +101,8 @@ const ActivityBanner = () => {
     };
   }, []);
 
-  // Fetch latest market updates
-  useEffect(() => {
-    console.log("Setting up market update listener");
-    
-    const handleMarketUpdates = (updatedMarket) => {
-      console.log("Received market update:", updatedMarket);
-      const message = formatMarketMessage(updatedMarket);
-      console.log("Formatted market message:", message);
-      addToQueue(message);
-    };
-    
-    const subscription = listenToMarkets(handleMarketUpdates);
-    console.log("Market subscription created:", !!subscription);
-    
-    return () => {
-      console.log("Cleaning up market subscription");
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    };
-  }, []);
-
   return (
-    <div className="w-[calc(100%-2rem)] h-10 bg-blue-300 flex items-center justify-center rounded-lg ml-4 mt-4 mr-4 gap-4 px-4">
+    <div className="w-[calc(100%-2rem)] h-10 bg-blue-300 flex items-center justify-center rounded-lg ml-4 mt-4 gap-2 px-4">
       <Image
         className="rounded-full"
         src="/images/bh.png"
@@ -152,7 +111,7 @@ const ActivityBanner = () => {
         height={25}
         priority
       />
-      <h1 className="text-black text-sm font-semibold">
+      <h1 className="text-black text-m font-medium">
         {currentMessage}
       </h1>
     </div>
