@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useState, useEffect } from 'react';
 import MarketCard from '@/components/MarketCard';
@@ -57,7 +57,7 @@ export default function Home() {
         if (marketsData && marketsData.length > 0) {
           // First create a map to store unique markets by token_address
           const uniqueMarketsMap = new Map();
-          
+
           // Add each market to the map, with newer markets overwriting older ones
           marketsData.forEach(market => {
             // If this token_address doesn't exist in the map OR
@@ -67,11 +67,11 @@ export default function Home() {
               uniqueMarketsMap.set(market.token_address, market);
             }
           });
-          
+
           // Convert map values back to array and sort by created_at
           const uniqueSortedMarkets = Array.from(uniqueMarketsMap.values())
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-          
+
           setMarkets(uniqueSortedMarkets);
           updateFeaturedMarket(uniqueSortedMarkets);
         } else {
@@ -109,10 +109,22 @@ export default function Home() {
     const handleMarketUpdate = (updatedMarket) => {
       switch (updatedMarket.type) {
         case 'NEW MARKET':
-          const newMarkets = [...markets, updatedMarket.payload];
-          newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-          setMarkets(newMarkets);
+          // Check if market with same token_address already exists
+          const marketExists = markets.some(market =>
+            market.token_address === updatedMarket.payload.token_address
+          );
+
+          // Only add if it doesn't exist
+          if (!marketExists) {
+            const newMarkets = [...markets, updatedMarket.payload];
+            newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setMarkets(newMarkets);
+          }
           break;
+        // const newMarkets = [...markets, updatedMarket.payload];
+        // newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        // setMarkets(newMarkets);
+        // break;
 
         case 'PUMP VS RUG SPLIT UPDATE':
           // We should update the Featured Market.
@@ -128,7 +140,7 @@ export default function Home() {
           });
           break;
         case 'MARKET STATUS UPDATE':
-    
+
           // Removes the markets with the resolved status
           setMarkets(currentMarkets => {
             const filteredMarkets = currentMarkets.filter(market =>
@@ -184,7 +196,7 @@ export default function Home() {
   const showMoreMarkets = () => {
     setVisibleMarkets((prev) => prev + 6); // Load 6 more markets
   };
-  
+
   return (
     <div>
       <main >
