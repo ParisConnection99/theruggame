@@ -55,16 +55,40 @@ export default function Home() {
         const marketsData = await marketsResponse.json();
 
         if (marketsData && marketsData.length > 0) {
-          const sortedMarkets = marketsData.sort((a, b) => {
-            return new Date(b.created_at) - new Date(a.created_at);
+          // First create a map to store unique markets by token_address
+          const uniqueMarketsMap = new Map();
+          
+          // Add each market to the map, with newer markets overwriting older ones
+          marketsData.forEach(market => {
+            // If this token_address doesn't exist in the map OR
+            // if this market is newer than the one in the map, add/update it
+            const existingMarket = uniqueMarketsMap.get(market.token_address);
+            if (!existingMarket || new Date(market.created_at) > new Date(existingMarket.created_at)) {
+              uniqueMarketsMap.set(market.token_address, market);
+            }
           });
-
-          setMarkets(sortedMarkets);
-
-          updateFeaturedMarket(sortedMarkets);
+          
+          // Convert map values back to array and sort by created_at
+          const uniqueSortedMarkets = Array.from(uniqueMarketsMap.values())
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          
+          setMarkets(uniqueSortedMarkets);
+          updateFeaturedMarket(uniqueSortedMarkets);
         } else {
           console.log("No Markets found or empty data returned");
         }
+
+        // if (marketsData && marketsData.length > 0) {
+        //   const sortedMarkets = marketsData.sort((a, b) => {
+        //     return new Date(b.created_at) - new Date(a.created_at);
+        //   });
+
+        //   setMarkets(sortedMarkets);
+
+        //   updateFeaturedMarket(sortedMarkets);
+        // } else {
+        //   console.log("No Markets found or empty data returned");
+        // }
       } catch (error) {
         console.error("Error fetching markets: ", error);
         logEvent(analytics, 'home_page_error', {
