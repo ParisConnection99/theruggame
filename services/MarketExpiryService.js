@@ -89,10 +89,7 @@ class ExpiryService {
         }
     
         console.log(`Market ${marketId} moved to observation phase.`);
-    
-        // Fetch new markets
-        await this.startMarketCreationProcess();
-    
+
         return bets;
       } catch (error) {
         console.error('Error processing cutoff:', error.message);
