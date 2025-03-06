@@ -181,7 +181,7 @@ class MarketService {
       const { data: markets, error } = await this.supabase
         .from('markets')
         .select('*')
-        .in('phase', ['BETTING', 'CUTOFF', 'OBSERVATION'])
+        .in('phase', ['BETTING', 'CUTOFF'])
 
       if (error) throw error;
 
