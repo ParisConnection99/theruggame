@@ -284,9 +284,6 @@ export default function ProfilePage() {
             os: parser.getOS()
         };
 
-        const deviceInfoString = JSON.stringify(deviceInfo);
-
-        console.log(`Device info: ${deviceInfoString}`);
         try {
 
             const response = await fetch('/api/cashouts', {
@@ -298,7 +295,7 @@ export default function ProfilePage() {
                     userId: userData.user_id,
                     amount: amount,
                     wallet_ca: walletAddress,
-                    device_info: deviceInfoString
+                    device_info: deviceInfo
                 }),
             });
 

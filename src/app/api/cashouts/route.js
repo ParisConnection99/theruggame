@@ -45,13 +45,18 @@ export async function POST(request) {
       geo: { city, country, region }
     }
 
+    const deviceInfoString = JSON.stringify(enhanced_device_info);
+
+
+    console.log(`Ip address: ${ip}`);
+
 
 
     const cashout = await serviceRepo.cashoutService.createCashout(
       userId,
       parseFloat(amount),
       wallet_ca,
-      enhanced_device_info,
+      deviceInfoString,
       ip,
     );
 
