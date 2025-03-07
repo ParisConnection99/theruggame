@@ -174,12 +174,11 @@ export default function Home() {
   const showMoreMarkets = () => {
     setVisibleMarkets((prev) => prev + 6); // Load 6 more markets
   };
-
   return (
     <div>
-      <main >
+      <main>
         {/* Featured Market Component */}
-        {featuredMarket ? (
+        {featuredMarket && (
           <FeaturedMarket
             marketName={featuredMarket.name}
             start_time={featuredMarket.start_time}
@@ -188,13 +187,6 @@ export default function Home() {
             amountWagered={`${featuredMarket.total_pump_amount + featuredMarket.total_rug_amount} SOL`}
             imageSrc={featuredMarket?.icon_url}
             onMarketClick={handleFeaturedMarketClick}
-          />
-        ) : (
-          // Fallback for when no featured market is available
-          <FeaturedMarket
-            start_time={new Date(Date.now() - 5 * 60000).toISOString()} // 5 minutes ago
-            end_time={new Date(Date.now() + 10 * 60000).toISOString()} // 10 minutes from now
-            duration={15} // 15 minutes total duration
           />
         )}
 
@@ -225,7 +217,6 @@ export default function Home() {
           )}
         </div>
       </main>
-
     </div>
   );
 }
