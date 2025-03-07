@@ -34,7 +34,8 @@ class ExpiryService {
     const endTime = new Date(start.getTime() + (duration * 60000));
 
     if (now < start) return 'NOT_STARTED';
-    if (now < cutoffTime) return 'BETTING';
+   //if (now < cutoffTime) return 'BETTING';
+    if (now < new Date(cutoffTime.getTime() + 1000)) return 'BETTING'; // 1-second tolerance
     if (now < endTime) return 'OBSERVATION';
     return 'RESOLVED';
   }

@@ -41,15 +41,16 @@ class MarketPhaseMessageService {
    */
   async scheduleMarketPhaseChecks(marketId, startTime, durationMinutes, endTime) {
     const start = new Date(startTime);
+    const end = new Date(endTime);
     const now = new Date();
     
     // Calculate cutoff (50% duration) and end (100% duration) times
     const cutoffTime = new Date(start.getTime() + (durationMinutes * 30000));
-    const endTime = new Date(endTime);
+    
     
     // Calculate delays in seconds (with safety check to not go negative)
     const cutoffDelay = Math.max(0, Math.floor((cutoffTime - now) / 1000));
-    const endDelay = Math.max(0, Math.floor((endTime - now) / 1000));
+    const endDelay = Math.max(0, Math.floor((end - now) / 1000));
     
     // Schedule both messages
     const cutoffMessageId = await this.schedulePhaseCheck(marketId, cutoffDelay);
@@ -60,7 +61,7 @@ class MarketPhaseMessageService {
       cutoffMessageId,
       cutoffScheduledFor: cutoffTime,
       endMessageId,
-      endScheduledFor: endTime
+      endScheduledFor: end
     };
   }
 
