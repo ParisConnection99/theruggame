@@ -37,7 +37,7 @@ export default function Footer() {
 
                     {/* Social Media Icons */}
                     <div className="flex items-center justify-center gap-6">
-                        <a href="https://t.me/theruggamegroup" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
+                        <a href="https://t.me/theruggamesupport" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
                             <FaTelegram className="w-5 h-5" />
                         </a>
                         <a href="https://x.com/ruggamedotfun" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
