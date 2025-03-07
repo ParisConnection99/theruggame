@@ -73,9 +73,7 @@ class MarketService {
       console.log('Market created successfully:', market[0]);
       console.log(`Market: ${market[0].id}, startTime: ${startTime}, duration: ${duration}`);
       
-      // Start monitoring the new market
-      //this.expiryService.monitorMarket(market[0].id, startTime, duration);
-
+      // Create callbacks to monitor market phases
       await this.createMessages(market[0].id, startTime, duration, endTime);
 
       return market[0];
@@ -183,6 +181,22 @@ class MarketService {
     };
   }
 
+  async fetchActiveMarketsForCreation() {
+    try {
+      const { data: markets, error } = await this.supabase
+        .from('markets')
+        .select('*')
+        .in('phase', ['BETTING', 'CUTOFF'])
+
+      if (error) throw error;
+
+      return markets;
+    } catch (error) {
+      console.log(`Error fetching markets: ${error}`);
+      throw error;
+    }
+  }
+
   // Fetch active markets 
   async getActiveMarkets() {
     try {
@@ -190,7 +204,7 @@ class MarketService {
       const { data: markets, error } = await this.supabase
         .from('markets')
         .select('*')
-        .in('phase', ['BETTING', 'CUTOFF'])
+        .in('phase', ['BETTING', 'CUTOFF', 'OBSERVATION'])
 
       if (error) throw error;
 

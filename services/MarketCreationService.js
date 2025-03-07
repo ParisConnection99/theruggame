@@ -26,7 +26,7 @@ class MarketCreationService {
             //     return;
             // }
 
-            this.activeMarkets = await this.marketService.getActiveMarkets();
+            this.activeMarkets = await this.marketService.fetchActiveMarketsForCreation();
 
             const activeMarketCount = this.activeMarkets.length;
 
