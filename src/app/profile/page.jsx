@@ -10,7 +10,7 @@ import CashoutModal from '@/components/CashoutModal';
 import BetShareModal from '@/components/BetShareModal'; // Import the BetShareModal component
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
-import UAParser from 'ua-parser-js';
+import { UAParser } from 'ua-parser-js';
 
 export default function ProfilePage() {
     const { disconnect } = useWallet();
