@@ -226,8 +226,9 @@ class ExpiryService {
       // Handle the payouts + bet status update
       await this.payoutService.handleMarketResolution(market.id, marketResult.result);
 
+      console.log('Payouts resolved time to update market to settled. ');
       // Update the market status to settles
-      await this.settledStatusUpdate(market.id, marketResult.price, marketResult);
+      await this.settledStatusUpdate(market.id, marketResult.price, marketResult.result);
 
       return marketResult;
 
@@ -259,10 +260,12 @@ class ExpiryService {
     return market;
   }
 
-  async settledStatusUpdate(marketId, price, marketResult) {
-    if (!marketId) {
+  async settledStatusUpdate(marketId, price, result) {
+    if (!marketId || !price || !result) {
       throw new Error('Error processing Market status update.');
     }
+
+    console.log(`Settled status before db update: ${marketId}, price: ${price}, result: ${result}`);
 
     try {
       const { data, error } = await this.supabase
@@ -270,7 +273,7 @@ class ExpiryService {
         .update({
           status: 'SETTLED',
           final_price: price,
-          outcome: marketResult,
+          outcome: result,
           settled_at: new Date().toISOString()
         })
         .eq('id', marketId)

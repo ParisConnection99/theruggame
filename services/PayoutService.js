@@ -45,6 +45,7 @@ class PayoutService {
                 await this.updateBetStatus(bets, 'LOST');
             } catch (error) {
                 console.error('Error processing Resolution');
+                throw new Error('Error processing Resolution in the payout service');
             }
         }
     }
