@@ -135,6 +135,7 @@ class ServiceRepository {
   get oddsService() { return this.get('oddsService'); }
   get tokenService() { return this.get('tokenService'); }
   get cashoutService() { return this.get('cashoutService'); }
+  get expiryService() { return this.get('expiryService'); }
 }
 
 // Create and export a singleton instance

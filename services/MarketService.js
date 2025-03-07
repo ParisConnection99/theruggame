@@ -1,3 +1,5 @@
+import { marketPhaseMessageService } from '@/services/MarketPhaseMessageService';
+
 class MarketService {
   constructor(supabase, pool, expiryService) {
     this.supabase = supabase;
@@ -71,13 +73,19 @@ class MarketService {
       console.log(`Market: ${market[0].id}, startTime: ${startTime}, duration: ${duration}`);
       
       // Start monitoring the new market
-      this.expiryService.monitorMarket(market[0].id, startTime, duration);
+      //this.expiryService.monitorMarket(market[0].id, startTime, duration);
+
+      await this.createMessages(market[0].id, startTime, duration);
 
       return market[0];
     } catch (error) {
       console.error('Error creating market:', error);
       throw error;
     }
+  }
+
+  async createMessages(marketId, startTime, duration) {
+     await this.marketPhaseMessageService.scheduleMarketPhaseChecks(marketId, startTime, duration);
   }
   
   async placeBet(marketId, betData) {
