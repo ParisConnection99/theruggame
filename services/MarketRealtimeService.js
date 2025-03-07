@@ -33,6 +33,14 @@ export const listenToMarkets = (onMarketUpdate) => {
                             type: 'MARKET STATUS UPDATE'
                         });
                     }
+
+                    if (payload.new.outcome !== payload.old.outcome) {
+                        console.log(`Outcome updated: ${payload.new.outcome}`);
+                        onMarketUpdate({
+                            payload: payload.new,
+                            type: 'OUTCOME UPDATE'
+                        });
+                    }
                 }
                 
             })
