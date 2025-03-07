@@ -38,25 +38,34 @@ export async function POST(request) {
       });
     }
 
-    const { ip, city, country, region } = geolocation(request);
+    const forwarded = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const geoData = geolocation(request);
+
+    // Log all potential sources to debug
+    console.log('Headers x-forwarded-for:', forwarded);
+    console.log('Headers x-real-ip:', realIp);
+    console.log('Geolocation data:', geoData);
+
+    // Use fallback chain to get IP
+    const ip = forwarded?.split(',')[0] ||
+      realIp ||
+      geoData.ip ||
+      request.headers.get('cf-connecting-ip') || // Cloudflare specific
+      'unknown';
+
+    //const deviceInfoString = JSON.stringify(enhanced_device_info);
 
     const enhanced_device_info = {
       ...device_info,
-      geo: { city, country, region }
-    }
-
-    const deviceInfoString = JSON.stringify(enhanced_device_info);
-
-
-    console.log(`Ip address: ${ip}`);
-
-
+      geo: geoData ? { city: geoData.city, country: geoData.country, region: geoData.region } : {}
+    };
 
     const cashout = await serviceRepo.cashoutService.createCashout(
       userId,
       parseFloat(amount),
       wallet_ca,
-      deviceInfoString,
+      enhanced_device_info,
       ip,
     );
 
