@@ -155,6 +155,7 @@ export default function MarketPage() {
         case 'OUTCOME UPDATE':
           if (updatedMarket.payload.id === market.id) {
             // Use functional update to avoid dependency on market itself
+            console.log(`outcome: ${updatedMarket.payload.outcome}`);
             alert('MARKET OUTCOME: ', updatedMarket.payload.outcome);
           }
           break;

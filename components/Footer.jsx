@@ -40,10 +40,10 @@ export default function Footer() {
                         <a href="https://t.me/theruggamegroup" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
                             <FaTelegram className="w-5 h-5" />
                         </a>
-                        <a href="https://twitter.com/theruggame" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
+                        <a href="https://x.com/ruggamedotfun" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400">
                             <FaTwitter className="w-5 h-5" />
                         </a>
-                        <a href="https://instagram.com/theruggame" target="_blank" rel="noopener noreferrer" className="hover:text-pink-400">
+                        <a href="https://instagram.com/theruggame.fun" target="_blank" rel="noopener noreferrer" className="hover:text-pink-400">
                             <FaInstagram className="w-5 h-5" />
                         </a>
                     </div>
