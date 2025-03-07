@@ -109,7 +109,7 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
   }, [start_time, end_time, duration]);
 
   return (
-    <div className="bg-gray-600 p-4 rounded-lg shadow-md text-white flex flex-col gap-4 hover:border-2 hover:border-white"
+    <div className="bg-gray-600 p-4 rounded-lg shadow-md text-white flex flex-col gap-4 hover:border-2 hover:border-white hover:cursor-pointer ${isBettingClosed ? 'opacity-50 cursor-not-allowed' : ''}"
       onClick={onMarketClick}>
       {/* Image and Question */}
       <div className="flex gap-4 items-center">
@@ -130,13 +130,13 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
       {/* Buttons */}
       <div className="flex gap-4 mt-2">
         <button
-          className={`bg-green-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-green-600 ${isBettingClosed ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-green-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-green-600`}
           disabled={isBettingClosed}
         >
           pump (yes) 🚀
         </button>
         <button
-          className={`bg-red-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-red-600 ${isBettingClosed ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`bg-red-500 text-black text-sm font-bold px-4 py-2 rounded-md flex-1 hover:bg-red-600`}
           disabled={isBettingClosed}
         >
           rug (no) 📉
