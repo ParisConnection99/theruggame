@@ -34,6 +34,7 @@ class MarketService {
       throw new Error('Values cannot be negative');
     }
 
+    const endTime = new Date(new Date(startTime).getTime() + duration * 60000)
     try {
       // Insert market directly without token-related operations
       const { rows: market } = await this.pool.query(`
@@ -52,7 +53,7 @@ class MarketService {
         tokenAddress,
         startTime,
         duration,
-        new Date(new Date(startTime).getTime() + duration * 60000),
+        endTime,
         status,
         phase,
         coinPrice,
@@ -75,7 +76,7 @@ class MarketService {
       // Start monitoring the new market
       //this.expiryService.monitorMarket(market[0].id, startTime, duration);
 
-      await this.createMessages(market[0].id, startTime, duration);
+      await this.createMessages(market[0].id, startTime, duration, endTime);
 
       return market[0];
     } catch (error) {
@@ -84,8 +85,8 @@ class MarketService {
     }
   }
 
-  async createMessages(marketId, startTime, duration) {
-     await marketPhaseMessageService.scheduleMarketPhaseChecks(marketId, startTime, duration);
+  async createMessages(marketId, startTime, duration, endTime) {
+     await marketPhaseMessageService.scheduleMarketPhaseChecks(marketId, startTime, duration, endTime);
   }
   
   async placeBet(marketId, betData) {

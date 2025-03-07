@@ -36,15 +36,16 @@ class MarketPhaseMessageService {
    * @param {string} marketId - ID of the market
    * @param {Date|string} startTime - Market start time
    * @param {number} durationMinutes - Market duration in minutes
+   * @param {Date|string} endTime - Market end time
    * @returns {Promise<Object>} Object containing message IDs for both scheduled checks
    */
-  async scheduleMarketPhaseChecks(marketId, startTime, durationMinutes) {
+  async scheduleMarketPhaseChecks(marketId, startTime, durationMinutes, endTime) {
     const start = new Date(startTime);
     const now = new Date();
     
     // Calculate cutoff (50% duration) and end (100% duration) times
     const cutoffTime = new Date(start.getTime() + (durationMinutes * 30000));
-    const endTime = new Date(start.getTime() + (durationMinutes * 60000));
+    const endTime = new Date(endTime);
     
     // Calculate delays in seconds (with safety check to not go negative)
     const cutoffDelay = Math.max(0, Math.floor((cutoffTime - now) / 1000));
