@@ -5,7 +5,7 @@ class CashoutService {
         this.userService = userService;
     }
 
-    async createCashout(userId, amount, wallet_ca, device_info) {
+    async createCashout(userId, amount, wallet_ca, device_info, ip_address) {
         // Validate input data
         if (!userId || !amount || !wallet_ca || !device_info) {
             throw new Error('Missing required fields: userId, amount, wallet_ca, deviceInfo');
@@ -21,6 +21,8 @@ class CashoutService {
             throw new Error('Insufficient balance');
         }
 
+        
+
         try {
             // Create cashout request
             const { data: cashout, error: cashoutError } = await this.supabase
@@ -30,6 +32,7 @@ class CashoutService {
                     amount,
                     wallet_ca,
                     device_info,
+                    ip_address,
                     status: 'pending'
                 }])
                 .select()
