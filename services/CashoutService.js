@@ -5,10 +5,10 @@ class CashoutService {
         this.userService = userService;
     }
 
-    async createCashout(userId, amount, wallet_ca) {
+    async createCashout(userId, amount, wallet_ca, device_info) {
         // Validate input data
-        if (!userId || !amount || !wallet_ca) {
-            throw new Error('Missing required fields: userId, amount, wallet_ca');
+        if (!userId || !amount || !wallet_ca || !device_info) {
+            throw new Error('Missing required fields: userId, amount, wallet_ca, deviceInfo');
         }
 
         // Fetch user and check balance using UserService
@@ -29,6 +29,7 @@ class CashoutService {
                     userId,
                     amount,
                     wallet_ca,
+                    device_info,
                     status: 'pending'
                 }])
                 .select()

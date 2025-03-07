@@ -10,10 +10,12 @@ import CashoutModal from '@/components/CashoutModal';
 import BetShareModal from '@/components/BetShareModal'; // Import the BetShareModal component
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
+import UAParser from 'ua-parser-js';
 
 export default function ProfilePage() {
     const { disconnect } = useWallet();
     const { user: authUser, auth } = useAuth();
+    const parser = new UAParser();
     const analytics = useAnalytics();
     const [userData, setUserData] = useState(null);
     const [bets, setBets] = useState([]);
@@ -275,6 +277,16 @@ export default function ProfilePage() {
     };
 
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
+        // I can fetch the device information
+        const deviceInfo = {
+            browser: parser.getBrowser(),
+            device: parser.getDevice(),
+            os: parser.getOS()
+        };
+
+        const deviceInfoString = JSON.stringify(deviceInfo);
+
+        console.log(`Device info: ${deviceInfoString}`);
         try {
 
             const response = await fetch('/api/cashouts', {
@@ -285,7 +297,8 @@ export default function ProfilePage() {
                 body: JSON.stringify({
                     userId: userData.user_id,
                     amount: amount,
-                    wallet_ca: walletAddress
+                    wallet_ca: walletAddress,
+                    deviceInfo: deviceInfoString
                 }),
             });
 
@@ -437,18 +450,18 @@ export default function ProfilePage() {
                                                     {bet.matched_amount} SOL
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
-                                                        ? 'text-green-500'
-                                                        : bet.status === 'LOST'
-                                                            ? 'text-red-500'
-                                                            : ''
+                                                    ? 'text-green-500'
+                                                    : bet.status === 'LOST'
+                                                        ? 'text-red-500'
+                                                        : ''
                                                     }`}>
                                                     {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REFUNDED' ? bet.status : ''}
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
-                                                        ? 'text-green-500'
-                                                        : bet.status === 'LOST'
-                                                            ? 'text-red-500'
-                                                            : ''
+                                                    ? 'text-green-500'
+                                                    : bet.status === 'LOST'
+                                                        ? 'text-red-500'
+                                                        : ''
                                                     }`}>
                                                     {bet.status === 'WON' || bet.status === 'REFUNDED'
                                                         ? `${bet.matched_amount} SOL`

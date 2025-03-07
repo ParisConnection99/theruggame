@@ -21,9 +21,9 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { userId, amount, wallet_ca } = body;
+    const { userId, amount, wallet_ca, device_info } = body;
     
-    if (!userId || !amount || !wallet_ca) {
+    if (!userId || !amount || !wallet_ca || !device_info) {
       return new Response(JSON.stringify({ 
         error: 'Missing required fields: userId, amount, wallet_ca' 
       }), {
@@ -35,7 +35,8 @@ export async function POST(request) {
     const cashout = await serviceRepo.cashoutService.createCashout(
       userId, 
       parseFloat(amount), 
-      wallet_ca
+      wallet_ca,
+      device_info
     );
     
     return new Response(JSON.stringify(cashout), {
