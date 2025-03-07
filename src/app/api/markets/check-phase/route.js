@@ -1,6 +1,6 @@
 import { serviceRepo } from '@/services/ServiceRepository';
-import { verifySignature } from "@upstash/qstash/nextjs";
 import { NextResponse } from "next/server";
+import { verifySignatureAppRouter } from "@upstash/qstash/dist/nextjs/app";
 
 // Define the handler separately
 async function handler(request) {
@@ -9,38 +9,20 @@ async function handler(request) {
         const { marketId } = body;
 
         if (!marketId) {
-            // Try using a different approach for the error response
-            return new Response(
-                JSON.stringify({ error: "Market ID is required" }), 
-                { 
-                    status: 400, 
-                    headers: { 'Content-Type': 'application/json' }
-                }
-            );
+            return NextResponse.json({ error: "Market ID is required" }, { status: 400 });
         }
 
         await serviceRepo.expiryService.checkPhase(marketId);
 
-        // Use the same approach for success response
-        return new Response(
-            JSON.stringify({ success: true, marketId }),
-            { 
-                status: 200, 
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
+        return NextResponse.json({ success: true, marketId });
     } catch (error) {
         console.error("Error processing market phase check:", error);
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            { 
-                status: 500, 
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
-export const POST = verifySignature(handler, {
-    currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY
+// Use the App Router specific verification function
+export const POST = verifySignatureAppRouter(handler, {
+    currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY,
+    nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY
 });
