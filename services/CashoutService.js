@@ -21,8 +21,6 @@ class CashoutService {
             throw new Error('Insufficient balance');
         }
 
-        console.log( `Cashout information: ${device_info} ipaddress: ${ip_address}`);
-
         try {
             // Create cashout request
             const { data: cashout, error: cashoutError } = await this.supabase

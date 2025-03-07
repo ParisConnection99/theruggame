@@ -206,99 +206,6 @@ class ExpiryService {
     }
   }
 
-  // async monitorMarket(marketId, startTime, duration) {
-  //   try {
-  //     if (!marketId || !startTime || !duration) {
-  //       throw new Error('Error processing Market: missing required parameters');
-  //     }
-
-  //     // Initial market fetch
-  //     const { data: market, error: fetchError } = await this.supabase
-  //       .from('markets')
-  //       .select('*')
-  //       .eq('id', marketId)
-  //       .single();
-
-  //     if (fetchError) {
-  //       throw new Error(`Failed to fetch market: ${fetchError.message}`);
-  //     }
-
-  //     if (!market) {
-  //       throw new Error(`Market not found with ID: ${marketId}`);
-  //     }
-
-  //     // Calculate exact transition times
-  //     const start = new Date(startTime);
-  //     const now = new Date();
-  //     const cutoffTime = new Date(start.getTime() + (duration * 30000)); // 50% of duration
-  //     const endTime = new Date(start.getTime() + (duration * 60000));    // 100% of duration
-
-  //     // Calculate delays until transitions (in milliseconds)
-  //     const msToCutoff = Math.max(0, cutoffTime.getTime() - now.getTime());
-  //     const msToEnd = Math.max(0, endTime.getTime() - now.getTime());
-
-  //     // Reuse the existing checkPhase function
-  //     const checkPhase = async () => {
-  //       try {
-  //         const currentPhase = this.calculateMarketPhase(
-  //           startTime,
-  //           duration
-  //         );
-
-  //         if (currentPhase !== market.phase) {
-  //           if (currentPhase === 'OBSERVATION') {
-  //             await this.processCutoff(marketId);
-  //           } else if (currentPhase === 'RESOLVED') {
-  //             const updatedMarket = await this.resolveStatusUpdate(marketId, currentPhase);
-
-  //             // Process market resolution if we have the updated market
-  //             if (updatedMarket) {
-  //               await this.processMarketResolve(updatedMarket);
-  //             }
-  //           } else {
-  //             const { error: phaseUpdateError } = await this.supabase
-  //               .from('markets')
-  //               .update({
-  //                 phase: currentPhase,
-  //                 status: currentPhase === 'BETTING' ? 'OPEN' :
-  //                   currentPhase === 'CUTOFF' ? 'MATCHING' :
-  //                     currentPhase === 'OBSERVATION' ? 'LOCKED' : 'RESOLVED'
-  //               })
-  //               .eq('id', marketId);
-
-  //             if (phaseUpdateError) {
-  //               throw new Error(`Failed to update market phase: ${phaseUpdateError.message}`);
-  //             }
-  //           }
-  //         }
-  //       } catch (error) {
-  //         console.error(`Error checking phase for market ${marketId}:`, error);
-  //       }
-  //     };
-
-  //     // Initial check
-  //     await checkPhase();
-
-  //     // Set up precise timeouts instead of interval
-  //     const cutoffTimeout = setTimeout(checkPhase, msToCutoff);
-  //     const resolutionTimeout = setTimeout(checkPhase, msToEnd);
-
-  //     // Return cleanup function
-  //     return () => {
-  //       try {
-  //         clearTimeout(cutoffTimeout);
-  //         clearTimeout(resolutionTimeout);
-  //       } catch (cleanupError) {
-  //         console.error('Error cleaning up market monitor:', cleanupError);
-  //       }
-  //     };
-
-  //   } catch (error) {
-  //     console.error(`Fatal error in monitorMarket for ${marketId}:`, error);
-  //     throw error; // Re-throw if you want calling code to handle it
-  //   }
-  // }
-
   // Start the resolving the market
   async processMarketResolve(market) {
     if (!market) {
@@ -320,7 +227,7 @@ class ExpiryService {
       await this.payoutService.handleMarketResolution(market.id, marketResult.result);
 
       // Update the market status to settles
-      await this.settledStatusUpdate(market.id, marketResult.price);
+      await this.settledStatusUpdate(market.id, marketResult.price, marketResult);
 
       return marketResult;
 
@@ -352,7 +259,7 @@ class ExpiryService {
     return market;
   }
 
-  async settledStatusUpdate(marketId, price) {
+  async settledStatusUpdate(marketId, price, marketResult) {
     if (!marketId) {
       throw new Error('Error processing Market status update.');
     }
@@ -363,6 +270,7 @@ class ExpiryService {
         .update({
           status: 'SETTLED',
           final_price: price,
+          outcome: marketResult,
           settled_at: new Date().toISOString()
         })
         .eq('id', marketId)

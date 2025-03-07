@@ -54,8 +54,6 @@ export async function POST(request) {
       request.headers.get('cf-connecting-ip') || // Cloudflare specific
       'unknown';
 
-    //const deviceInfoString = JSON.stringify(enhanced_device_info);
-
     const enhanced_device_info = {
       ...device_info,
       geo: geoData ? { city: geoData.city, country: geoData.country, region: geoData.region } : {}

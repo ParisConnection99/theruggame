@@ -277,7 +277,6 @@ export default function ProfilePage() {
     };
 
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
-        // I can fetch the device information
         const deviceInfo = {
             browser: parser.getBrowser(),
             device: parser.getDevice(),

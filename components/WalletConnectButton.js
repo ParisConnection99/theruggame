@@ -31,7 +31,6 @@ export const WalletConnectButton = () => {
  }, [connected, publicKey]);
 
  const handleWalletConnection = async () => {
-  alert("🚀 BUTTON COMPONENT LOADED"); 
    try {
     console.log("Starting wallet connection...");
      if (!publicKey) return;
