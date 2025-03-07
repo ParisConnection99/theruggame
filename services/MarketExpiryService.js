@@ -228,7 +228,7 @@ class ExpiryService {
 
       console.log('Payouts resolved time to update market to settled. ');
       // Update the market status to settles
-      await this.settledStatusUpdate(market.id, marketResult.price, marketResult.result);
+      await this.settledStatusUpdate(market.id, parseFloat(marketResult.price), marketResult.result);
 
       return marketResult;
 
@@ -283,6 +283,7 @@ class ExpiryService {
       return data[0]; // Return the updated market
 
     } catch (error) {
+      console.error(error);
       throw new Error(`Error updating Market: ${error.message}`);
     }
   }
