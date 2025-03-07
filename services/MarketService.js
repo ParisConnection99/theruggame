@@ -85,7 +85,7 @@ class MarketService {
   }
 
   async createMessages(marketId, startTime, duration) {
-     await this.marketPhaseMessageService.scheduleMarketPhaseChecks(marketId, startTime, duration);
+     await marketPhaseMessageService.scheduleMarketPhaseChecks(marketId, startTime, duration);
   }
   
   async placeBet(marketId, betData) {
