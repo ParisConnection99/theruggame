@@ -15,23 +15,6 @@ const nextConfig = {
   images: {
     domains: ['dd.dexscreener.com'],
   },
-  
-  // Add the redirects configuration for maintenance mode
-  async redirects() {
-    const maintenanceMode = process.env.MAINTENANCE_MODE === '1';
-    
-    if (maintenanceMode) {
-      return [
-        {
-          source: '/((?!maintenance|_next/static|_next/image|favicon.ico).*)',
-          destination: '/maintenance',
-          permanent: false,
-        },
-      ];
-    }
-    
-    return [];
-  },
 }
 
 export default nextConfig;
