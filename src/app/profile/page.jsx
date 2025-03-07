@@ -298,7 +298,7 @@ export default function ProfilePage() {
                     userId: userData.user_id,
                     amount: amount,
                     wallet_ca: walletAddress,
-                    deviceInfo: deviceInfoString
+                    device_info: deviceInfoString
                 }),
             });
 
