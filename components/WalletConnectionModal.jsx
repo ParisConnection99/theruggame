@@ -4,11 +4,24 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 
+// Mobile detection utility
+const isMobileDevice = () => {
+  return (
+    typeof window !== 'undefined' && 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+};
+
 export const WalletConnectionModal = ({ isOpen, onClose }) => {
-  const { select, connecting, connected } = useWallet();
+  const { select, connecting, connected, wallet, wallets } = useWallet();
   const [connectionStatus, setConnectionStatus] = useState('idle'); // 'idle', 'connecting', 'success', 'error'
   const [errorMessage, setErrorMessage] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
   const connectionTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    setIsMobile(isMobileDevice());
+  }, []);
 
   // Reset status and clear any existing timeouts when modal opens/closes
   useEffect(() => {
@@ -36,20 +49,22 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
     if (connecting) {
       setConnectionStatus('connecting');
       
-      // Set a timeout to show an error if connection takes too long (5 seconds)
+      // Set a timeout to show an error if connection takes too long (10 seconds)
       connectionTimeoutRef.current = setTimeout(() => {
         if (connectionStatus === 'connecting') {
           setConnectionStatus('error');
-          setErrorMessage('Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
+          setErrorMessage(isMobile 
+            ? 'Connection timed out. Please ensure your wallet app is installed and try again.' 
+            : 'Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
         }
-      }, 5000); // Reduced from 10-15 seconds to 5 seconds
+      }, 10000);
     } else if (connected) {
       setConnectionStatus('success');
       // Auto close after successful connection with a slight delay
-      const timer = setTimeout(() => onClose(), 1000); // Reduced from 1500ms to 1000ms
+      const timer = setTimeout(() => onClose(), 1000);
       return () => clearTimeout(timer);
     }
-  }, [connecting, connected, onClose, connectionStatus]);
+  }, [connecting, connected, onClose, connectionStatus, isMobile]);
 
   if (!isOpen) return null;
 
@@ -67,9 +82,11 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
       connectionTimeoutRef.current = setTimeout(() => {
         if (connectionStatus === 'connecting') {
           setConnectionStatus('error');
-          setErrorMessage('Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
+          setErrorMessage(isMobile 
+            ? 'Connection timed out. Please ensure your wallet app is installed and try again.' 
+            : 'Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
         }
-      }, 5000);
+      }, 10000);
       
       select(walletName);
     } catch (error) {
@@ -83,13 +100,25 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const wallets = [
-    { 
-      name: 'Phantom', 
-      detected: true, 
+  // Dynamically determine available wallets
+  const availableWallets = wallets.map(adapter => ({
+    name: adapter.name,
+    icon: adapter.icon,
+    // For mobile, we'll assume the wallet is available if we're on mobile
+    detected: isMobile ? true : adapter.readyState === 'Installed',
+  }));
+
+  // Add additional wallet options for mobile
+  const renderWallets = [...availableWallets];
+  
+  // If no wallets are detected on mobile, make sure we still show Phantom
+  if (isMobile && renderWallets.length === 0) {
+    renderWallets.push({
+      name: 'Phantom',
+      detected: true,
       logo: '/images/phantom_wallet.png'
-    }
-  ];
+    });
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -104,11 +133,18 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
           </button>
         </div>
         
+        {/* Mobile-specific message */}
+        {isMobile && (
+          <div className="mb-4 p-3 bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg text-blue-300">
+            <p>You're connecting from a mobile device. This will open your wallet app if installed.</p>
+          </div>
+        )}
+        
         {/* Connection Status Indicator */}
         {connectionStatus === 'connecting' && (
           <div className="mb-4 p-3 bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg text-blue-300 flex items-center">
             <div className="animate-spin mr-2 h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-            <span>Connecting to wallet... Please check your wallet extension</span>
+            <span>{isMobile ? 'Opening wallet app...' : 'Connecting to wallet... Please check your wallet extension'}</span>
           </div>
         )}
         
@@ -143,7 +179,7 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
         )}
         
         <div className="space-y-2">
-          {wallets.map((wallet) => (
+          {renderWallets.map((wallet) => (
             <div 
               key={wallet.name}
               onClick={() => wallet.detected && connectionStatus !== 'connecting' && handleWalletSelect(wallet.name)}
@@ -157,7 +193,7 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
               `}
             >
               <Image 
-                src={wallet.logo} 
+                src={wallet.icon || wallet.logo || '/images/phantom_wallet.png'} 
                 alt={`${wallet.name} logo`} 
                 width={24} 
                 height={24} 
@@ -165,10 +201,20 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
               />
               <div className="flex justify-between flex-1">
                 <span>{wallet.name}</span>
-                <span>{wallet.detected ? 'Detected' : 'Not Detected'}</span>
+                <span>{wallet.detected ? (isMobile ? 'Available' : 'Detected') : 'Not Detected'}</span>
               </div>
             </div>
           ))}
+          
+          {/* Only show this on mobile */}
+          {isMobile && connectionStatus === 'error' && (
+            <div className="mt-4 p-3 bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg text-blue-300">
+              <p className="text-sm">
+                If your wallet isn't opening automatically, make sure you have the wallet app installed.
+                You can download Phantom Wallet from the App Store or Play Store.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

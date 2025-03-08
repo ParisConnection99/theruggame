@@ -12,19 +12,30 @@ import { signInWithCustomToken } from 'firebase/auth';
 
 const userService = new UserService(supabase);
 
+// Mobile detection utility
+const isMobileDevice = () => {
+  return (
+    typeof window !== 'undefined' && 
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+};
+
 export const WalletConnectButton = () => {
  const router = useRouter();
  const { publicKey, connected, wallet, connecting } = useWallet();
  const { auth } = useAuth();
  const [isClient, setIsClient] = useState(false);
+ const [isMobile, setIsMobile] = useState(false);
  const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
  const [userProfile, setUserProfile] = useState(null);
  const [connectionInProgress, setConnectionInProgress] = useState(false);
  const [connectionError, setConnectionError] = useState('');
  const connectionTimeoutRef = useRef(null);
+ const [connectionRetries, setConnectionRetries] = useState(0);
 
  useEffect(() => {
    setIsClient(true);
+   setIsMobile(isMobileDevice());
    
    // Cleanup function to clear any timeouts when component unmounts
    return () => {
@@ -46,12 +57,17 @@ export const WalletConnectButton = () => {
      // Set a timeout to reset connecting state if it takes too long
      connectionTimeoutRef.current = setTimeout(() => {
        if (connecting) {
-         setConnectionError('Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
+         // On mobile, we give a different message
+         const errorMessage = isMobile
+           ? 'Connection to wallet is taking longer than expected. Please make sure you have a wallet app installed.'
+           : 'Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.';
+         
+         setConnectionError(errorMessage);
          setConnectionInProgress(false);
        }
-     }, 5000); // 5 second timeout
+     }, isMobile ? 15000 : 10000); // Longer timeout on mobile
    }
- }, [connecting]);
+ }, [connecting, isMobile]);
 
  useEffect(() => {
    if (connected && publicKey) {
@@ -74,7 +90,7 @@ export const WalletConnectButton = () => {
          setConnectionError('Authentication is taking longer than expected. Please try again.');
          setConnectionInProgress(false);
        }
-     }, 5000); // 5 second timeout
+     }, 15000); // Longer timeout for the whole process
      
      console.log("Starting wallet connection...");
      if (!publicKey) {
@@ -124,6 +140,8 @@ export const WalletConnectButton = () => {
      }
      
      setConnectionInProgress(false);
+     // Reset retries on successful connection
+     setConnectionRetries(0);
    } catch (error) {
      console.error('Error during authentication:', error);
      setConnectionError(error.message || 'Failed to complete wallet connection');
@@ -133,6 +151,9 @@ export const WalletConnectButton = () => {
      if (connectionTimeoutRef.current) {
        clearTimeout(connectionTimeoutRef.current);
      }
+     
+     // Increment retry counter
+     setConnectionRetries(prev => prev + 1);
    }
  };
 
@@ -149,6 +170,12 @@ export const WalletConnectButton = () => {
 
  const handleConnectedClick = () => {
    router.push('/profile');
+ };
+
+ const handleConnectClick = () => {
+   // Reset retry counter when initiating a new connection
+   setConnectionRetries(0);
+   setShowWalletConnectionModal(true);
  };
 
  if (!isClient) return null;
@@ -175,7 +202,7 @@ export const WalletConnectButton = () => {
        <div 
          onClick={() => {
            if (!connecting && !connectionInProgress) {
-             setShowWalletConnectionModal(true);
+             handleConnectClick();
            }
          }}
          className={`text-white text-md hover:scale-105 hover:underline cursor-pointer flex items-center gap-2 
@@ -189,6 +216,28 @@ export const WalletConnectButton = () => {
          ) : (
            "CONNECT WALLET"
          )}
+       </div>
+     )}
+
+     {/* Mobile wallet notice - show after multiple failed attempts */}
+     {isMobile && connectionRetries > 1 && !connected && (
+       <div className="fixed bottom-4 left-4 right-4 bg-blue-900 text-white p-3 rounded shadow-lg z-50">
+         <div className="flex items-center">
+           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+           </svg>
+           <div>
+             <p className="font-bold">Having trouble connecting?</p>
+             <p className="text-sm">Make sure you have a Solana wallet app installed on your device.</p>
+             <p className="text-sm mt-1">Try using our site in private browsing mode if problems persist.</p>
+           </div>
+           <button 
+             onClick={() => setConnectionRetries(0)}
+             className="ml-2 text-white"
+           >
+             ✕
+           </button>
+         </div>
        </div>
      )}
 
