@@ -7,9 +7,9 @@ import Image from 'next/image';
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected, wallet } = useWallet();
   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
-  // Add these variables for reconnection
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const maxReconnectAttempts = 3;
+  const maxReconnectAttempts = 5; // Increased from 3
+  const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
   
   // Detect if user is on mobile device
   const isMobileDevice = () => {
@@ -24,9 +24,13 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     setIsMobile(isMobileDevice());
   }, []);
   
+  // Close modal when connected successfully
   useEffect(() => {
     if (connected) {
+      console.log("Connection detected, closing modal");
       onClose();
+      setIsAttemptingConnect(false);
+      setReconnectAttempts(0);
     }
   }, [connected, onClose]);
   
@@ -34,89 +38,118 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   useEffect(() => {
     if (!isOpen) {
       setIsAttemptingConnect(false);
+      setReconnectAttempts(0);
+    }
+  }, [isOpen]);
+
+  // Check URL params on component mount to handle deep link returns
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasWalletParams = urlParams.has('phantom_encryption_public_key') || 
+                             urlParams.has('errorCode') ||
+                             urlParams.has('phantom_connector_id');
+      
+      if (hasWalletParams) {
+        console.log("Detected return from Phantom app via URL params");
+        // Clear the URL params to prevent issues on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Force a reconnection attempt when we detect return via URL params
+        attemptPhantomConnection();
+      }
     }
   }, [isOpen]);
   
-  // Handle mobile visibility changes (app switching)
-  // Handle mobile visibility changes (app switching)
-useEffect(() => {
-  const attemptReconnection = () => {
+  // Function to manually attempt Phantom connection
+  const attemptPhantomConnection = async () => {
+    console.log("Attempting manual Phantom connection");
+    setLastConnectionAttempt(Date.now());
+    
+    try {
+      if (window.phantom?.solana) {
+        console.log("Phantom detected, attempting connect");
+        
+        // First try with onlyIfTrusted for auto-connect
+        try {
+          await window.phantom.solana.connect({ onlyIfTrusted: true });
+          console.log("Connected with trusted connection");
+          return true;
+        } catch (e) {
+          console.log("Trusted connection failed, trying regular connect");
+        }
+        
+        // If that fails, try regular connection
+        try {
+          await window.phantom.solana.connect();
+          console.log("Connected with regular connection");
+          return true;
+        } catch (e) {
+          console.error("Regular connection failed:", e);
+        }
+      } else {
+        console.log("Phantom not available in window");
+      }
+    } catch (error) {
+      console.error("Phantom connection error:", error);
+    }
+    
+    return false;
+  };
+  
+  // Improved reconnection logic
+  const attemptReconnection = async () => {
+    // Prevent too frequent reconnection attempts (at least 1.5s apart)
+    const now = Date.now();
+    if (now - lastConnectionAttempt < 1500) {
+      console.log("Skipping reconnection attempt (too soon)");
+      return;
+    }
+    
     if (reconnectAttempts < maxReconnectAttempts) {
       setReconnectAttempts(prev => prev + 1);
-      console.log(`Reconnection attempt ${reconnectAttempts + 1}...`);
+      console.log(`Reconnection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`);
       
-      // Try to manually reconnect to wallet
-      try {
-        // For Phantom specifically
-        if (window.phantom?.solana && !connected) {
-          window.phantom.solana.connect({ onlyIfTrusted: true })
-            .catch(e => console.log("Reconnection failed:", e));
+      const success = await attemptPhantomConnection();
+      
+      if (!success && reconnectAttempts < maxReconnectAttempts - 1) {
+        // Schedule another attempt with a more gentle backoff
+        const backoffTime = Math.min(1000 * (reconnectAttempts + 1), 3000);
+        console.log(`Scheduling next attempt in ${backoffTime}ms`);
+        setTimeout(attemptReconnection, backoffTime);
+      } else if (!success) {
+        console.log("All reconnection attempts failed");
+        if (onError) {
+          onError('Connection not established. Please try again or restart your wallet app.');
         }
-      } catch (e) {
-        console.error("Reconnection error:", e);
+        setIsAttemptingConnect(false);
+        setReconnectAttempts(0);
       }
-      
-      // Schedule another attempt with exponential backoff
-      setTimeout(attemptReconnection, 1000 * (2 ** (reconnectAttempts + 1)));
-    } else if (reconnectAttempts >= maxReconnectAttempts && !connected) {
-      // If all reconnection attempts fail
-      console.log("All reconnection attempts failed");
-      if (onError) {
-        onError('Connection not established after multiple attempts. Please try again.');
-      }
-      setIsAttemptingConnect(false);
-      setReconnectAttempts(0);
     }
   };
 
-  const handleVisibilityChange = () => {
-    if (!document.hidden && !connected && isAttemptingConnect) {
-      // User returned from wallet app, attempt to refresh connection
-      console.log("User returned from wallet app, checking connection");
-      
-      // Reset reconnection attempts
-      setReconnectAttempts(0);
-      
-      // Start reconnection process
-      attemptReconnection();
-      
-      // Original timeout as fallback
-      setTimeout(() => {
-        if (!connected && isAttemptingConnect) {
-          // If still not connected after returning and no reconnection succeeded
-          if (onError && reconnectAttempts >= maxReconnectAttempts) {
-            onError('Connection not established after returning from wallet app. Please try again.');
+  // Improved visibility change handler
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      // Only react when becoming visible AND we were attempting to connect
+      if (!document.hidden && isAttemptingConnect) {
+        console.log("User returned from wallet app, checking connection");
+        
+        // Give a small delay for the wallet to initialize
+        setTimeout(() => {
+          if (!connected) {
+            console.log("Not connected after return, starting reconnection process");
+            // Reset reconnection counter when we detect a return
+            setReconnectAttempts(0);
+            attemptReconnection();
           }
-          setIsAttemptingConnect(false);
-        }
-      }, 5000);
-    }
-  };
+        }, 500);
+      }
+    };
 
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-}, [connected, isAttemptingConnect, onError, reconnectAttempts]);
-  // useEffect(() => {
-  //   const handleVisibilityChange = () => {
-  //     if (!document.hidden && !connected && isAttemptingConnect) {
-  //       // User returned from wallet app, attempt to refresh connection
-  //       console.log("User returned from wallet app, checking connection");
-  //       // Give a short delay to allow connection to be established
-  //       setTimeout(() => {
-  //         if (!connected && isAttemptingConnect) {
-  //           // If still not connected after returning, show a helpful error
-  //           if (onError) {
-  //             onError('Connection not established after returning from wallet app. Please try again.');
-  //           }
-  //           setIsAttemptingConnect(false);
-  //         }
-  //       }, 1000);
-  //     }
-  //   };
-
-  //   document.addEventListener('visibilitychange', handleVisibilityChange);
-  //   return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  // }, [connected, isAttemptingConnect, onError]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [connected, isAttemptingConnect, onError, reconnectAttempts]);
 
   if (!isOpen) return null;
 
@@ -132,14 +165,24 @@ useEffect(() => {
   const handleWalletSelect = (walletName) => {
     // Set attempting state immediately for visual feedback
     setIsAttemptingConnect(true);
+    setReconnectAttempts(0);
     
     if (isMobile) {
       try {
-        // For mobile, we need to handle deep linking to the wallet app
-        // This will send users to Phantom app and then return to your site
-        const currentUrl = encodeURIComponent(window.location.href);
-        window.location.href = `https://phantom.app/ul/browse/${currentUrl}`;
-        // Note: The connection will be handled on return via visibilitychange event
+        // For mobile, handle deep linking to Phantom
+        // Generate a unique identifier to track this session
+        const sessionId = Date.now().toString();
+        // Store that we're attempting to connect
+        localStorage.setItem('walletConnectAttempt', sessionId);
+        
+        // Get the current URL with any query params removed
+        const currentUrl = window.location.href.split('?')[0];
+        const encodedUrl = encodeURIComponent(currentUrl);
+        
+        // Redirect to Phantom with our URL as the callback
+        window.location.href = `https://phantom.app/ul/browse/${encodedUrl}`;
+        
+        // Connection will be handled on return via visibilitychange event
       } catch (error) {
         console.error("Mobile wallet redirect error:", error);
         setIsAttemptingConnect(false);
