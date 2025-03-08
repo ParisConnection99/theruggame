@@ -163,34 +163,46 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   ];
 
   const handleWalletSelect = (walletName) => {
-    // Set attempting state immediately for visual feedback
     setIsAttemptingConnect(true);
-    setReconnectAttempts(0);
-
+    
     if (isMobile) {
       try {
-        // For mobile, handle deep linking to Phantom
-        // Generate a unique identifier to track this session
-        const sessionId = Date.now().toString();
-        // Store that we're attempting to connect
-        localStorage.setItem('walletConnectAttempt', sessionId);
-
-        // Get the current URL with any query params removed
-        // Get current URL without query params
-        const dappUrl = encodeURIComponent(window.location.origin + window.location.pathname);
-
-        // Try the v1 connection endpoint
-        window.location.href = `https://phantom.app/ul/v1/connect?app_url=${dappUrl}&redirect_url=${dappUrl}`;
-
+        // For Phantom mobile app
+        const onIdentityRequest = async (identityRequest) => {
+          try {
+            const authResult = await identityRequest({
+              appIdentity: {
+                name: 'The Rug Game',
+                uri: window.location.origin,
+                icon: '/your-app-icon.png', // Path to your app icon
+              },
+              cluster: 'mainnet-beta',
+            });
+            
+            console.log('Connected with public key:', authResult.publicKey);
+            // Handle successful connection
+            
+            return authResult;
+          } catch (error) {
+            console.error('Error during identity request:', error);
+            throw error;
+          }
+        };
+        
+        // Using transact from the mobile wallet adapter
+        transact(async (wallet) => {
+          await onIdentityRequest(wallet.identify);
+        });
+        
       } catch (error) {
-        console.error("Mobile wallet redirect error:", error);
+        console.error("Mobile wallet adapter error:", error);
         setIsAttemptingConnect(false);
         if (onError) {
-          onError('Failed to open wallet app. Please ensure Phantom is installed.');
+          onError('Failed to connect to wallet. Please ensure Phantom is installed.');
         }
       }
     } else {
-      // Desktop flow
+      // Your existing desktop flow
       setTimeout(() => {
         try {
           select(walletName);
@@ -204,6 +216,49 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       }, 50);
     }
   };
+
+  // const handleWalletSelect = (walletName) => {
+  //   // Set attempting state immediately for visual feedback
+  //   setIsAttemptingConnect(true);
+  //   setReconnectAttempts(0);
+
+  //   if (isMobile) {
+  //     try {
+  //       // For mobile, handle deep linking to Phantom
+  //       // Generate a unique identifier to track this session
+  //       const sessionId = Date.now().toString();
+  //       // Store that we're attempting to connect
+  //       localStorage.setItem('walletConnectAttempt', sessionId);
+
+  //       // Get the current URL with any query params removed
+  //       // Get current URL without query params
+  //       const dappUrl = encodeURIComponent(window.location.origin + window.location.pathname);
+
+  //       // Try the v1 connection endpoint
+  //       window.location.href = `https://phantom.app/ul/v1/connect?app_url=${dappUrl}&redirect_url=${dappUrl}`;
+
+  //     } catch (error) {
+  //       console.error("Mobile wallet redirect error:", error);
+  //       setIsAttemptingConnect(false);
+  //       if (onError) {
+  //         onError('Failed to open wallet app. Please ensure Phantom is installed.');
+  //       }
+  //     }
+  //   } else {
+  //     // Desktop flow
+  //     setTimeout(() => {
+  //       try {
+  //         select(walletName);
+  //       } catch (error) {
+  //         console.error("Wallet selection error:", error);
+  //         setIsAttemptingConnect(false);
+  //         if (onError) {
+  //           onError('Failed to connect to wallet. Please try again.');
+  //         }
+  //       }
+  //     }, 50);
+  //   }
+  // };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
