@@ -20,6 +20,8 @@ export default function Header() {
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
     const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error
+    const [errorMessage, setErrorMessage] = useState('');
+    const [showErrorToast, setShowErrorToast] = useState(false);
 
     useEffect(() => {
         if (connected && publicKey && auth) {
@@ -50,6 +52,9 @@ export default function Header() {
             if (!publicKey || !auth) {
                 console.log("Wallet connection aborted: publicKey or auth not available");
                 setConnectionStatus('error');
+                // Show error message to user
+                const errorMessage = !publicKey ? "Wallet not connected properly" : "Authentication service unavailable";
+                showConnectionError(errorMessage);
                 return;
             }
 
@@ -77,6 +82,7 @@ export default function Header() {
     
             if (data.error) {
                 setConnectionStatus('error');
+                showConnectionError(`Authentication error: ${data.error}`);
                 throw new Error(data.error);
             }
     
@@ -91,6 +97,15 @@ export default function Header() {
         } catch (error) {
             console.error('Error during authentication:', error);
             setConnectionStatus('error');
+            
+            // Provide specific error messages based on where the failure occurred
+            if (error.message?.includes('Firebase')) {
+                showConnectionError('Failed to authenticate with the server');
+            } else if (error.message?.includes('token')) {
+                showConnectionError('Failed to create user session');
+            } else {
+                showConnectionError(error.message || 'Connection failed, please try again');
+            }
         }
     };
 
@@ -108,9 +123,25 @@ export default function Header() {
 
     const checkUserProfile = async () => {
         if (!userProfile && publicKey) {
-          const user = await userService.getUserByWallet(publicKey.toString());
-          setUserProfile(user);
+          try {
+            const user = await userService.getUserByWallet(publicKey.toString());
+            setUserProfile(user);
+          } catch (error) {
+            console.error('Error fetching user profile:', error);
+            showConnectionError('Failed to load user profile');
+          }
         }
+    };
+    
+    // Function to show error toast with message
+    const showConnectionError = (message) => {
+        setErrorMessage(message);
+        setShowErrorToast(true);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            setShowErrorToast(false);
+        }, 5000);
     };
      
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
@@ -152,9 +183,9 @@ export default function Header() {
                         Connecting wallet...
                     </div>
                 )}
-                {connectionStatus === 'error' && (
-                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-sm py-1 px-3 rounded-md shadow-lg whitespace-nowrap">
-                        Connection failed, try again
+                {showErrorToast && (
+                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-sm py-1 px-3 rounded-md shadow-lg whitespace-nowrap z-50">
+                        {errorMessage || 'Connection failed, try again'}
                     </div>
                 )}
             </>
@@ -256,7 +287,23 @@ export default function Header() {
             <WalletConnectionModal 
                 isOpen={showWalletConnectionModal}
                 onClose={() => setShowWalletConnectionModal(false)}
+                onError={showConnectionError}
             />
+            
+            {/* Global error toast for connection issues */}
+            {showErrorToast && (
+                <div className="fixed bottom-4 right-4 bg-red-600 text-white text-sm py-2 px-4 rounded-md shadow-lg z-50 max-w-xs">
+                    <div className="flex items-center justify-between">
+                        <span>{errorMessage}</span>
+                        <button 
+                            onClick={() => setShowErrorToast(false)}
+                            className="ml-2 text-white hover:text-gray-200"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }

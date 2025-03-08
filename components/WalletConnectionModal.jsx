@@ -5,14 +5,23 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 
 export const WalletConnectionModal = ({ isOpen, onClose }) => {
-  const { select, connecting, connected, wallet } = useWallet();
+  const { select, connecting, connected, wallet, publicKey } = useWallet();
   const [selectedWalletName, setSelectedWalletName] = useState(null);
+  const [connectionError, setConnectionError] = useState(null);
   
   useEffect(() => {
-    if (connected) {
+    if (connected && publicKey) {
       onClose();
     }
-  }, [connected, onClose]);
+  }, [connected, publicKey, onClose]);
+  
+  // Reset error when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setConnectionError(null);
+      setSelectedWalletName(null);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -27,8 +36,23 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
 
   const handleWalletSelect = (walletName) => {
     if (!connecting) {
+      setConnectionError(null);
       setSelectedWalletName(walletName);
-      select(walletName);
+      try {
+        select(walletName);
+        
+        // Add timeout to detect if wallet extension isn't responding
+        const connectionTimeout = setTimeout(() => {
+          if (!connected && selectedWalletName === walletName) {
+            setConnectionError('Connection timed out. Please check if your wallet is unlocked.');
+          }
+        }, 15000); // 15 second timeout
+        
+        return () => clearTimeout(connectionTimeout);
+      } catch (error) {
+        console.error('Error selecting wallet:', error);
+        setConnectionError(`Failed to connect: ${error.message || 'Unknown error'}`);
+      }
     }
   };
 
@@ -49,6 +73,13 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
         {connecting && (
           <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
             Connecting to {selectedWalletName}... Please check your wallet extension.
+          </div>
+        )}
+        
+        {/* Error message */}
+        {connectionError && (
+          <div className="mb-4 py-2 px-3 bg-red-700 rounded-md text-white text-center">
+            {connectionError}
           </div>
         )}
         
