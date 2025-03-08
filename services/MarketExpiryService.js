@@ -178,8 +178,13 @@ class ExpiryService {
 
       if (currentPhase !== market.phase) {
         if (currentPhase === 'OBSERVATION') {
+
+          console.log('Current phase == OBSERVATION');
           await this.processCutoff(marketId);
+
         } else if (currentPhase === 'RESOLVED') {
+
+          console.log('Current phase == RESOLVED');
           const updatedMarket = await this.resolveStatusUpdate(marketId, currentPhase);
 
           // Process market resolution if we have the updated market
