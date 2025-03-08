@@ -176,8 +176,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         localStorage.setItem('walletConnectAttempt', sessionId);
 
         // Get the current URL with any query params removed
-        const currentUrl = window.location.href.split('?')[0];
-        const encodedUrl = encodeURIComponent(currentUrl);
+        //const currentUrl = window.location.href.split('?')[0];
+        //const encodedUrl = encodeURIComponent(currentUrl);
 
         // Redirect to Phantom with our URL as the callback
         // Get base URL without query params
@@ -185,9 +185,10 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         const redirectUrl = encodeURIComponent(baseUrl);
 
         // Use the v1 connect endpoint with proper parameters
-        window.location.href = `https://phantom.app/ul/v1/connect?app_url=${redirectUrl}&redirect_url=${redirectUrl}`;
-
-        // Connection will be handled on return via visibilitychange event
+        const currentUrl = window.location.origin + window.location.pathname;
+        const encodedUrl = encodeURIComponent(currentUrl);
+        window.location.href = `https://phantom.app/ul/browse/${encodedUrl}`;
+        
       } catch (error) {
         console.error("Mobile wallet redirect error:", error);
         setIsAttemptingConnect(false);
