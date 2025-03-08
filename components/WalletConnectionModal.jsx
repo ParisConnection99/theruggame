@@ -15,6 +15,16 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
     }
   }, [connected, publicKey, onClose]);
   
+  useEffect(() => {
+    // Hide immediate feedback once connecting state is active
+    if (connecting) {
+      const connectionFeedbackEl = document.getElementById('connection-feedback');
+      if (connectionFeedbackEl) {
+        connectionFeedbackEl.classList.add('hidden');
+      }
+    }
+  }, [connecting]);
+  
   // Reset error when modal opens
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +48,13 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
     if (!connecting) {
       setConnectionError(null);
       setSelectedWalletName(walletName);
+      
+      // Show immediate connection feedback
+      const connectionFeedbackEl = document.getElementById('connection-feedback');
+      if (connectionFeedbackEl) {
+        connectionFeedbackEl.classList.remove('hidden');
+      }
+      
       try {
         select(walletName);
         
@@ -76,6 +93,11 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
           </div>
         )}
         
+        {/* Immediate connection feedback - hidden by default */}
+        <div id="connection-feedback" className="mb-4 py-2 px-3 bg-blue-600 rounded-md text-white text-center hidden">
+          Initializing connection to {selectedWalletName}...
+        </div>
+        
         {/* Error message */}
         {connectionError && (
           <div className="mb-4 py-2 px-3 bg-red-700 rounded-md text-white text-center">
@@ -93,9 +115,11 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
                 p-3 rounded-lg
                 ${connecting && selectedWalletName === walletOption.name
                   ? 'bg-[#3a3a58] border border-blue-400'
-                  : walletOption.detected
-                    ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
-                    : 'bg-gray-700 text-gray-400 opacity-50'}
+                  : selectedWalletName === walletOption.name && !connecting
+                    ? 'bg-[#2d2d45] border border-blue-300'
+                    : walletOption.detected
+                      ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
+                      : 'bg-gray-700 text-gray-400 opacity-50'}
                 relative
               `}
             >
@@ -111,9 +135,17 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
                 <span>{walletOption.detected ? 'Detected' : 'Not Detected'}</span>
               </div>
               
-              {/* Loading indicator */}
+              {/* Status indicators */}
               {connecting && selectedWalletName === walletOption.name && (
                 <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+              )}
+              
+              {selectedWalletName === walletOption.name && !connecting && (
+                <div className="absolute right-3 flex items-center justify-center">
+                  <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </span>
+                </div>
               )}
             </div>
           ))}
