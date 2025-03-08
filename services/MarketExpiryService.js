@@ -174,6 +174,7 @@ class ExpiryService {
       );
 
       console.log(`Current phase: ${currentPhase}`);
+      console.log(`Market phase: ${market.phase}`);
 
       if (currentPhase !== market.phase) {
         if (currentPhase === 'OBSERVATION') {

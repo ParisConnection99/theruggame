@@ -12,8 +12,8 @@ class MarketCreationService {
         this.activeMarkets = [];
         //this.TOTAL_MARKET_CAPACITY = 15;
         this.MAXIMUM_ATTEMPTS = 5;
-        this.ACTIVE_MARKETS_LIMIT = 10;
-        this.MARKET_DURATION = 2;
+        this.ACTIVE_MARKETS_LIMIT = 3;
+        this.MARKET_DURATION = 3;
     }
 
     // Purpose: Fetch a filtered coin to become a market
