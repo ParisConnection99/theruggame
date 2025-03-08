@@ -174,7 +174,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
               appIdentity: {
                 name: 'The Rug Game',
                 uri: window.location.origin,
-                icon: '/your-app-icon.png', // Path to your app icon
+                icon: '/images/logo1.png', // Path to your app icon
               },
               cluster: 'mainnet-beta',
             });
