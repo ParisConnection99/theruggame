@@ -1,78 +1,6 @@
-// 'use client';
-
-// import React, { useEffect } from 'react';
-// import { useWallet } from '@solana/wallet-adapter-react';
-// import Image from 'next/image';
-
-// export const WalletConnectionModal = ({ isOpen, onClose }) => {
-//   const { select, connected } = useWallet();
-
-//   useEffect(() => {
-//     if (connected) {
-//       onClose();
-//     }
-//   }, [connected, onClose]);
-
-//   if (!isOpen) return null;
-
-//   const wallets = [
-//     { 
-//       name: 'Phantom', 
-//       detected: true, 
-//       logo: '/images/phantom_wallet.png'
-//     }
-//   ];
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-//       <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ minWidth: '24rem' }}>
-//         <div className="flex justify-between items-center mb-4">
-//           <h2 className="text-white text-xl">Connect a wallet on Solana</h2>
-//           <button 
-//             onClick={onClose}
-//             className="text-white hover:text-gray-300"
-//           >
-//             ✕
-//           </button>
-//         </div>
-        
-//         <div className="space-y-2">
-//           {wallets.map((wallet) => (
-//             <div 
-//               key={wallet.name}
-//               onClick={() => wallet.detected && select(wallet.name)}
-//               className={`
-//                 flex items-center gap-3 
-//                 p-3 rounded-lg 
-//                 ${wallet.detected 
-//                   ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white' 
-//                   : 'bg-gray-700 text-gray-400 opacity-50'}
-//               `}
-//             >
-//               <Image 
-//                 src={wallet.logo} 
-//                 alt={`${wallet.name} logo`} 
-//                 width={24} 
-//                 height={24} 
-//                 className="rounded-full"
-//               />
-//               <div className="flex justify-between flex-1">
-//                 <span>{wallet.name}</span>
-//                 <span>{wallet.detected ? 'Detected' : 'Not Detected'}</span>
-//               </div>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default WalletConnectionModal;
-
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 
@@ -80,37 +8,78 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
   const { select, connecting, connected } = useWallet();
   const [connectionStatus, setConnectionStatus] = useState('idle'); // 'idle', 'connecting', 'success', 'error'
   const [errorMessage, setErrorMessage] = useState('');
+  const connectionTimeoutRef = useRef(null);
 
+  // Reset status and clear any existing timeouts when modal opens/closes
   useEffect(() => {
-    // Reset status when modal opens
     if (isOpen) {
       setConnectionStatus('idle');
       setErrorMessage('');
     }
+    
+    return () => {
+      // Clean up any timeouts when component unmounts or modal closes
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+      }
+    };
   }, [isOpen]);
 
+  // Track wallet connection states
   useEffect(() => {
-    // Track wallet connection states
+    // Clear any existing timeout when connection state changes
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current);
+      connectionTimeoutRef.current = null;
+    }
+
     if (connecting) {
       setConnectionStatus('connecting');
+      
+      // Set a timeout to show an error if connection takes too long (5 seconds)
+      connectionTimeoutRef.current = setTimeout(() => {
+        if (connectionStatus === 'connecting') {
+          setConnectionStatus('error');
+          setErrorMessage('Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
+        }
+      }, 5000); // Reduced from 10-15 seconds to 5 seconds
     } else if (connected) {
       setConnectionStatus('success');
       // Auto close after successful connection with a slight delay
-      const timer = setTimeout(() => onClose(), 1500);
+      const timer = setTimeout(() => onClose(), 1000); // Reduced from 1500ms to 1000ms
       return () => clearTimeout(timer);
     }
-  }, [connecting, connected, onClose]);
+  }, [connecting, connected, onClose, connectionStatus]);
 
   if (!isOpen) return null;
 
   const handleWalletSelect = (walletName) => {
     try {
+      // Reset any previous errors
       setConnectionStatus('connecting');
+      setErrorMessage('');
+      
+      // Start new connection timeout
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+      }
+      
+      connectionTimeoutRef.current = setTimeout(() => {
+        if (connectionStatus === 'connecting') {
+          setConnectionStatus('error');
+          setErrorMessage('Connection is taking longer than expected. Please check your wallet extension for any pending approval requests or try again.');
+        }
+      }, 5000);
+      
       select(walletName);
     } catch (error) {
       console.error('Error selecting wallet:', error);
       setConnectionStatus('error');
       setErrorMessage(error.message || 'Failed to connect to wallet');
+      
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+      }
     }
   };
 
@@ -161,6 +130,15 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
               <span>Connection failed</span>
             </div>
             {errorMessage && <p className="mt-1 text-sm">{errorMessage}</p>}
+            <button 
+              onClick={() => {
+                setConnectionStatus('idle');
+                setErrorMessage('');
+              }}
+              className="mt-2 px-3 py-1 bg-red-800 hover:bg-red-700 rounded text-sm"
+            >
+              Try Again
+            </button>
           </div>
         )}
         
@@ -168,7 +146,7 @@ export const WalletConnectionModal = ({ isOpen, onClose }) => {
           {wallets.map((wallet) => (
             <div 
               key={wallet.name}
-              onClick={() => wallet.detected && handleWalletSelect(wallet.name)}
+              onClick={() => wallet.detected && connectionStatus !== 'connecting' && handleWalletSelect(wallet.name)}
               className={`
                 flex items-center gap-3 
                 p-3 rounded-lg 
