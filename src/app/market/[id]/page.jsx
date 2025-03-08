@@ -55,6 +55,9 @@ export default function MarketPage() {
   // Added state for price history 
   const [priceHistory, setPriceHistory] = useState([]);
 
+  // Added state for outcome
+  const [marketOutcome, setMarketOutcome] = useState(null);
+
 
   // Fetching the market data + initial token price
 
@@ -154,9 +157,21 @@ export default function MarketPage() {
           break;
         case 'OUTCOME UPDATE':
           if (updatedMarket.payload.id === market.id) {
-            // Use functional update to avoid dependency on market itself
-            console.log(`outcome: ${updatedMarket.payload.outcome}`);
-            alert(`MARKET OUTCOME: ${JSON.stringify(updatedMarket.payload)}`);
+            // Validate the outcome is one of the expected values
+            if (
+              updatedMarket.payload.outcome === 'PUMP' || 
+              updatedMarket.payload.outcome === 'RUG' || 
+              updatedMarket.payload.outcome === 'HOUSE'
+            ) {
+              setMarketOutcome(updatedMarket.payload.outcome);
+              // Update other relevant states
+              setTimerLabel('Market Result:');
+              setTimeLeft('');  // Clear the timer
+              setIsExpired(true);
+              setIsBettingClosed(true);
+            } else {
+              console.error(`Received unexpected outcome: ${updatedMarket.payload.outcome}`);
+            }
           }
           break;
       }
@@ -591,9 +606,9 @@ export default function MarketPage() {
             className="rounded-full"
           />
           <h1 className="text-2xl font-semibold">
-          {questionStart}
-          <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
-          {questionEnd}
+            {questionStart}
+            <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
+            {questionEnd}
           </h1>
         </div>
       </div>
@@ -613,7 +628,7 @@ export default function MarketPage() {
       <div className="mt-10 flex gap-8 text-gray-400">
         <p className="text-green-500 font-semibold">SOL Wagered: {formattedTotalWagered} SOL</p>
         {/* Countdown Timer - Replaced static text with dynamic countdown */}
-        <div className="text-sm flex items-center">
+        {/* <div className="text-sm flex items-center">
           <span className="mr-2">⏱️ {timerLabel}</span>
           <span className={`font-bold ${isExpired
             ? 'text-red-500'
@@ -623,6 +638,27 @@ export default function MarketPage() {
             }`}>
             {timeLeft}
           </span>
+        </div> */}
+        {/* Countdown Timer or Outcome Display */}
+        <div className="text-sm flex items-center">
+          <span className="mr-2">⏱️ {timerLabel}</span>
+          {marketOutcome ? (
+            <span className={`font-bold text-lg ${marketOutcome === 'PUMP' ? 'text-green-500' :
+                marketOutcome === 'RUG' ? 'text-red-500' :
+                  'text-amber-400' // For HOUSE outcome
+              }`}>
+              {marketOutcome === 'PUMP' ? 'PUMP WON' :
+                marketOutcome === 'RUG' ? 'RUG WON' :
+                  'HOUSE WON'}
+            </span>
+          ) : (
+            <span className={`font-bold ${isExpired ? 'text-red-500' :
+                isBettingClosed ? 'text-orange-400' :
+                  'text-yellow-400 animate-pulse'
+              }`}>
+              {timeLeft}
+            </span>
+          )}
         </div>
       </div>
 
