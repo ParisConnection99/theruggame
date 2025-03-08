@@ -7,6 +7,9 @@ import Image from 'next/image';
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected, wallet } = useWallet();
   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
+  // Add these variables for reconnection
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const maxReconnectAttempts = 3;
   
   // Detect if user is on mobile device
   const isMobileDevice = () => {
@@ -35,27 +38,85 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   }, [isOpen]);
   
   // Handle mobile visibility changes (app switching)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden && !connected && isAttemptingConnect) {
-        // User returned from wallet app, attempt to refresh connection
-        console.log("User returned from wallet app, checking connection");
-        // Give a short delay to allow connection to be established
-        setTimeout(() => {
-          if (!connected && isAttemptingConnect) {
-            // If still not connected after returning, show a helpful error
-            if (onError) {
-              onError('Connection not established after returning from wallet app. Please try again.');
-            }
-            setIsAttemptingConnect(false);
-          }
-        }, 1000);
+  // Handle mobile visibility changes (app switching)
+useEffect(() => {
+  const attemptReconnection = () => {
+    if (reconnectAttempts < maxReconnectAttempts) {
+      setReconnectAttempts(prev => prev + 1);
+      console.log(`Reconnection attempt ${reconnectAttempts + 1}...`);
+      
+      // Try to manually reconnect to wallet
+      try {
+        // For Phantom specifically
+        if (window.phantom?.solana && !connected) {
+          window.phantom.solana.connect({ onlyIfTrusted: true })
+            .catch(e => console.log("Reconnection failed:", e));
+        }
+      } catch (e) {
+        console.error("Reconnection error:", e);
       }
-    };
+      
+      // Schedule another attempt with exponential backoff
+      setTimeout(attemptReconnection, 1000 * (2 ** (reconnectAttempts + 1)));
+    } else if (reconnectAttempts >= maxReconnectAttempts && !connected) {
+      // If all reconnection attempts fail
+      console.log("All reconnection attempts failed");
+      if (onError) {
+        onError('Connection not established after multiple attempts. Please try again.');
+      }
+      setIsAttemptingConnect(false);
+      setReconnectAttempts(0);
+    }
+  };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [connected, isAttemptingConnect, onError]);
+  const handleVisibilityChange = () => {
+    if (!document.hidden && !connected && isAttemptingConnect) {
+      // User returned from wallet app, attempt to refresh connection
+      console.log("User returned from wallet app, checking connection");
+      
+      // Reset reconnection attempts
+      setReconnectAttempts(0);
+      
+      // Start reconnection process
+      attemptReconnection();
+      
+      // Original timeout as fallback
+      setTimeout(() => {
+        if (!connected && isAttemptingConnect) {
+          // If still not connected after returning and no reconnection succeeded
+          if (onError && reconnectAttempts >= maxReconnectAttempts) {
+            onError('Connection not established after returning from wallet app. Please try again.');
+          }
+          setIsAttemptingConnect(false);
+        }
+      }, 5000);
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+}, [connected, isAttemptingConnect, onError, reconnectAttempts]);
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (!document.hidden && !connected && isAttemptingConnect) {
+  //       // User returned from wallet app, attempt to refresh connection
+  //       console.log("User returned from wallet app, checking connection");
+  //       // Give a short delay to allow connection to be established
+  //       setTimeout(() => {
+  //         if (!connected && isAttemptingConnect) {
+  //           // If still not connected after returning, show a helpful error
+  //           if (onError) {
+  //             onError('Connection not established after returning from wallet app. Please try again.');
+  //           }
+  //           setIsAttemptingConnect(false);
+  //         }
+  //       }, 1000);
+  //     }
+  //   };
+
+  //   document.addEventListener('visibilitychange', handleVisibilityChange);
+  //   return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  // }, [connected, isAttemptingConnect, onError]);
 
   if (!isOpen) return null;
 
