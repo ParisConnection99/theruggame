@@ -10,20 +10,20 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const maxReconnectAttempts = 5; // Increased from 3
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
-  
+
   // Detect if user is on mobile device
   const isMobileDevice = () => {
     if (typeof navigator === 'undefined') return false;
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
-  
+
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // Set mobile state on client side
   useEffect(() => {
     setIsMobile(isMobileDevice());
   }, []);
-  
+
   // Close modal when connected successfully
   useEffect(() => {
     if (connected) {
@@ -33,7 +33,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       setReconnectAttempts(0);
     }
   }, [connected, onClose]);
-  
+
   // Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
@@ -46,30 +46,30 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   useEffect(() => {
     if (isMobile && isOpen) {
       const urlParams = new URLSearchParams(window.location.search);
-      const hasWalletParams = urlParams.has('phantom_encryption_public_key') || 
-                             urlParams.has('errorCode') ||
-                             urlParams.has('phantom_connector_id');
-      
+      const hasWalletParams = urlParams.has('phantom_encryption_public_key') ||
+        urlParams.has('errorCode') ||
+        urlParams.has('phantom_connector_id');
+
       if (hasWalletParams) {
         console.log("Detected return from Phantom app via URL params");
         // Clear the URL params to prevent issues on refresh
         window.history.replaceState({}, document.title, window.location.pathname);
-        
+
         // Force a reconnection attempt when we detect return via URL params
         attemptPhantomConnection();
       }
     }
   }, [isOpen]);
-  
+
   // Function to manually attempt Phantom connection
   const attemptPhantomConnection = async () => {
     console.log("Attempting manual Phantom connection");
     setLastConnectionAttempt(Date.now());
-    
+
     try {
       if (window.phantom?.solana) {
         console.log("Phantom detected, attempting connect");
-        
+
         // First try with onlyIfTrusted for auto-connect
         try {
           await window.phantom.solana.connect({ onlyIfTrusted: true });
@@ -78,7 +78,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         } catch (e) {
           console.log("Trusted connection failed, trying regular connect");
         }
-        
+
         // If that fails, try regular connection
         try {
           await window.phantom.solana.connect();
@@ -93,10 +93,10 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     } catch (error) {
       console.error("Phantom connection error:", error);
     }
-    
+
     return false;
   };
-  
+
   // Improved reconnection logic
   const attemptReconnection = async () => {
     // Prevent too frequent reconnection attempts (at least 1.5s apart)
@@ -105,13 +105,13 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       console.log("Skipping reconnection attempt (too soon)");
       return;
     }
-    
+
     if (reconnectAttempts < maxReconnectAttempts) {
       setReconnectAttempts(prev => prev + 1);
       console.log(`Reconnection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`);
-      
+
       const success = await attemptPhantomConnection();
-      
+
       if (!success && reconnectAttempts < maxReconnectAttempts - 1) {
         // Schedule another attempt with a more gentle backoff
         const backoffTime = Math.min(1000 * (reconnectAttempts + 1), 3000);
@@ -134,7 +134,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       // Only react when becoming visible AND we were attempting to connect
       if (!document.hidden && isAttemptingConnect) {
         console.log("User returned from wallet app, checking connection");
-        
+
         // Give a small delay for the wallet to initialize
         setTimeout(() => {
           if (!connected) {
@@ -166,7 +166,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     // Set attempting state immediately for visual feedback
     setIsAttemptingConnect(true);
     setReconnectAttempts(0);
-    
+
     if (isMobile) {
       try {
         // For mobile, handle deep linking to Phantom
@@ -174,16 +174,19 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         const sessionId = Date.now().toString();
         // Store that we're attempting to connect
         localStorage.setItem('walletConnectAttempt', sessionId);
-        
+
         // Get the current URL with any query params removed
         const currentUrl = window.location.href.split('?')[0];
         const encodedUrl = encodeURIComponent(currentUrl);
-        
+
         // Redirect to Phantom with our URL as the callback
-        //window.location.href = `https://phantom.app/ul/browse/${encodedUrl}`;
-        const dappUrl = encodeURIComponent(window.location.href);
-        window.location.href = `https://phantom.app/ul/connect?dapp_url=${dappUrl}`;
-        
+        // Get base URL without query params
+        const baseUrl = window.location.origin + window.location.pathname;
+        const redirectUrl = encodeURIComponent(baseUrl);
+
+        // Use the v1 connect endpoint with proper parameters
+        window.location.href = `https://phantom.app/ul/v1/connect?app_url=${redirectUrl}&redirect_url=${redirectUrl}`;
+
         // Connection will be handled on return via visibilitychange event
       } catch (error) {
         console.error("Mobile wallet redirect error:", error);
@@ -217,23 +220,23 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
             ✕
           </button>
         </div>
-        
+
         {/* Mobile-specific instructions */}
         {isMobile && (
           <div className="mb-4 py-2 px-3 bg-blue-900/30 rounded-md text-white text-sm">
             You'll be redirected to the Phantom app. After connecting, return to this browser to continue.
           </div>
         )}
-        
+
         {/* Connection status */}
         {(connecting || isAttemptingConnect) && (
           <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
-            {isMobile 
+            {isMobile
               ? "Opening wallet app... If nothing happens, please ensure Phantom is installed."
               : "Connecting to wallet... Check your wallet extension."}
           </div>
         )}
-        
+
         <div className="space-y-2">
           {wallets.map((walletOption) => (
             <div
@@ -263,7 +266,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
                   {isMobile ? 'Mobile App' : (walletOption.detected ? 'Detected' : 'Not Detected')}
                 </span>
               </div>
-              
+
               {/* Simple loading indicator */}
               {(connecting || isAttemptingConnect) && (
                 <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
@@ -271,7 +274,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
             </div>
           ))}
         </div>
-        
+
         {/* Fallback instruction for mobile users */}
         {isMobile && (
           <div className="mt-4 text-xs text-gray-400">
