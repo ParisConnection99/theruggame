@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
+import { transact } from '@solana-mobile/wallet-adapter-mobile';
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected, wallet } = useWallet();
