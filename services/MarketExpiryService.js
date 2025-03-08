@@ -1,5 +1,3 @@
-
-
 class ExpiryService {
   constructor(supabase, refundService, db, marketResolveService, payoutService) {
     this.supabase = supabase;
