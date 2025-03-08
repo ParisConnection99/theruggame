@@ -180,7 +180,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         const encodedUrl = encodeURIComponent(currentUrl);
         
         // Redirect to Phantom with our URL as the callback
-        window.location.href = `https://phantom.app/ul/browse/${encodedUrl}`;
+        //window.location.href = `https://phantom.app/ul/browse/${encodedUrl}`;
+        const dappUrl = encodeURIComponent(window.location.href);
+        window.location.href = `https://phantom.app/ul/connect?dapp_url=${dappUrl}`;
         
         // Connection will be handled on return via visibilitychange event
       } catch (error) {
