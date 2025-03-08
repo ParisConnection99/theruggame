@@ -11,15 +11,15 @@ import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
 
-
 const userService = new UserService(supabase);
 
 export default function Header() {
-    const { publicKey, connected, wallet } = useWallet();
+    const { publicKey, connected, wallet, connecting } = useWallet();
     const { auth } = useAuth(); 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
+    const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error
 
     useEffect(() => {
         if (connected && publicKey && auth) {
@@ -27,23 +27,38 @@ export default function Header() {
             handleWalletConnection();
         }
     }, [connected, publicKey, auth]);
+
+    // Watch connection status changes
+    useEffect(() => {
+        if (connecting) {
+            setConnectionStatus('connecting');
+        } else if (connected) {
+            setConnectionStatus('success');
+            // Reset status after showing success
+            const timer = setTimeout(() => {
+                setConnectionStatus('idle');
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [connecting, connected]);
     
     const handleWalletConnection = async () => {
         try {
             console.log("Starting wallet connection process");
+            setConnectionStatus('connecting');
+            
             if (!publicKey || !auth) {
                 console.log("Wallet connection aborted: publicKey or auth not available");
+                setConnectionStatus('error');
                 return;
             }
 
             console.log(`Checking user in supabase...`);
             const user = await userService.getUserByWallet(publicKey.toString());
 
-            console.log(`User: ${user}`);
-
             if(!user) {
                 console.log("Creating new user...");
-                // Create new user if doesnt exist
+                // Create new user if doesn't exist
                 await userService.createUser({
                     wallet_ca: publicKey.toString(),
                     username: getDefaultUsername()
@@ -59,9 +74,9 @@ export default function Header() {
             });
     
             const data = await response.json();
-            console.log("Response from auth endpoint:", data);
     
             if (data.error) {
+                setConnectionStatus('error');
                 throw new Error(data.error);
             }
     
@@ -71,9 +86,11 @@ export default function Header() {
 
             // Then check and update userprofile
             await checkUserProfile();
+            setConnectionStatus('success');
     
         } catch (error) {
             console.error('Error during authentication:', error);
+            setConnectionStatus('error');
         }
     };
 
@@ -94,7 +111,7 @@ export default function Header() {
           const user = await userService.getUserByWallet(publicKey.toString());
           setUserProfile(user);
         }
-      };
+    };
      
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
         return (
@@ -105,7 +122,7 @@ export default function Header() {
                             closeMenu(); // Close the burger menu
                             setShowWalletConnectionModal(true);
                         }}
-                        className="text-white text-md hover:scale-105 hover:underline cursor-pointer"
+                        className="text-white text-md hover:scale-105 hover:underline cursor-pointer relative"
                     >
                         CONNECT WALLET
                     </div>
@@ -113,7 +130,7 @@ export default function Header() {
                     <Link 
                         href="/profile"
                         onClick={closeMenu} // Close the burger menu when clicking profile
-                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer border border-white hover:scale-105"
+                        className="flex items-center gap-2 px-2 py-1 rounded cursor-pointer border border-white hover:scale-105 relative"
                     >
                         <Image
                             src="/images/cool_ruggy.svg"
@@ -122,10 +139,23 @@ export default function Header() {
                             height={20}
                             className="rounded-full"
                         />
-                        {/* <span className="text-white text-sm">
-                            {getDefaultUsername()}
-                        </span> */}
+                        {/* No wallet address displayed as per original design */}
+                        {connectionStatus === 'success' && (
+                            <span className="absolute -top-2 -right-2 h-4 w-4 bg-green-500 rounded-full animate-pulse" />
+                        )}
                     </Link>
+                )}
+
+                {/* Connection status indicators */}
+                {connectionStatus === 'connecting' && (
+                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-[#1c1c28] text-white text-sm py-1 px-3 rounded-md shadow-lg whitespace-nowrap">
+                        Connecting wallet...
+                    </div>
+                )}
+                {connectionStatus === 'error' && (
+                    <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-sm py-1 px-3 rounded-md shadow-lg whitespace-nowrap">
+                        Connection failed, try again
+                    </div>
                 )}
             </>
         );
@@ -162,8 +192,6 @@ export default function Header() {
 
     return (
         <header className="w-full relative">
-            {/* Top Banner */}
-
             {/* Navigation Container */}
             <div className="flex justify-between items-center w-full px-5 mt-5">
                 {/* Logo */}
