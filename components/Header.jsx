@@ -143,7 +143,7 @@ export default function Header() {
                     HOW IT WORKS
                 </Link>
                 <a
-                    href="https://t.me/theruggamegroup"
+                    href="https://t.me/theruggamesupport"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-white text-md hover:scale-105 hover:underline"
@@ -195,7 +195,7 @@ export default function Header() {
                         HOW IT WORKS
                     </Link>
                     <a
-                        href="https://t.me/theruggamegroup"
+                        href="https://t.me/theruggamesupport"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-white text-md hover:scale-105 hover:underline"
