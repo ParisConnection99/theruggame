@@ -5,8 +5,17 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 
 export const WalletConnectionModal = ({ isOpen, onClose }) => {
-  const { select, connected } = useWallet();
+  const { select, connecting, connected, wallet }  = useWallet();
 
+  useEffect(() => {
+    console.log("Connecting state changed:", connecting);
+  }, [connecting]);
+  
+  // Add this to monitor wallet object
+  useEffect(() => {
+    console.log("Current wallet state:", wallet);
+  }, [wallet]);
+  
   useEffect(() => {
     if (connected) {
       onClose();
