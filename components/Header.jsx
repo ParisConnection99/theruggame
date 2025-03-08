@@ -22,6 +22,44 @@ export default function Header() {
     const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorToast, setShowErrorToast] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
+
+    // Detect if user is on mobile device
+    useEffect(() => {
+        const checkMobile = () => {
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+            setIsMobile(isMobileDevice);
+        };
+        
+        checkMobile();
+    }, []);
+
+    // Handle visibility changes for mobile wallet connections
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            // If we're becoming visible again and we're on mobile
+            if (!document.hidden && isMobile && connectionStatus === 'connecting') {
+                console.log("Returning from wallet app, checking connection...");
+                setReturningFromWalletApp(true);
+                
+                // Give a moment for connection to establish
+                setTimeout(() => {
+                    if (!connected) {
+                        // If still not connected after returning
+                        showConnectionError('Wallet connection not completed. Please try again.');
+                        setConnectionStatus('error');
+                    }
+                    setReturningFromWalletApp(false);
+                }, 2000);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [isMobile, connectionStatus, connected]);
 
     useEffect(() => {
         if (connected && publicKey && auth) {
@@ -180,7 +218,9 @@ export default function Header() {
                 {/* Connection status indicators */}
                 {connectionStatus === 'connecting' && (
                     <div className="absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-[#1c1c28] text-white text-sm py-1 px-3 rounded-md shadow-lg whitespace-nowrap">
-                        Connecting wallet...
+                        {returningFromWalletApp 
+                            ? "Completing connection..." 
+                            : "Connecting wallet..."}
                     </div>
                 )}
                 {showErrorToast && (
@@ -289,6 +329,13 @@ export default function Header() {
                 onClose={() => setShowWalletConnectionModal(false)}
                 onError={showConnectionError}
             />
+            
+            {/* Mobile-specific instructions for wallet connection */}
+            {isMobile && connected && connectionStatus === 'connecting' && (
+                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm py-2 px-4 rounded-md shadow-lg z-50 max-w-xs text-center">
+                    <p>After approving in your wallet app, return to this browser</p>
+                </div>
+            )}
             
             {/* Global error toast for connection issues */}
             {showErrorToast && (
