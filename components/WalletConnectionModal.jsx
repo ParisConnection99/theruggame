@@ -9,7 +9,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected, wallet } = useWallet();
   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const maxReconnectAttempts = 5; // Increased from 3
+  const maxReconnectAttempts = 5;
   const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
 
   // Detect if user is on mobile device
@@ -18,11 +18,19 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
+  // Detect if device is iOS
+  const isIOSDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  };
+
   const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   // Set mobile state on client side
   useEffect(() => {
     setIsMobile(isMobileDevice());
+    setIsIOS(isIOSDevice());
   }, []);
 
   // Close modal when connected successfully
@@ -163,47 +171,113 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     // Add other wallets as needed
   ];
 
-  const handleWalletSelect = (walletName) => {
-    setIsAttemptingConnect(true);
-    
-    if (isMobile) {
-      try {
-        // For Phantom mobile app
-        const onIdentityRequest = async (identityRequest) => {
-          try {
-            const authResult = await identityRequest({
-              appIdentity: {
-                name: 'The Rug Game',
-                uri: window.location.origin,
-                icon: '/images/logo1.png', // Path to your app icon
-              },
-              cluster: 'mainnet-beta',
-            });
-            
-            console.log('Connected with public key:', authResult.publicKey);
-            // Handle successful connection
-            
-            return authResult;
-          } catch (error) {
-            console.error('Error during identity request:', error);
-            throw error;
+  // Function to handle deep linking to Phantom
+  const connectWithDeepLink = () => {
+    try {
+      console.log("Attempting deep link connection");
+      
+      // Generate complete URLs with proper encoding
+      const appUrl = encodeURIComponent(window.location.origin);
+      const redirectUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}`);
+      const appLogo = encodeURIComponent(`${window.location.origin}/images/logo1.png`);
+      
+      // Store connection attempt in localStorage for tracking
+      localStorage.setItem('walletConnectAttempt', Date.now().toString());
+      
+      // Full deep link URL with all required parameters
+      const deepLinkUrl = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_url=${redirectUrl}&app_logo=${appLogo}`;
+      
+      console.log("Opening deep link:", deepLinkUrl);
+      window.location.href = deepLinkUrl;
+      
+      return true;
+    } catch (error) {
+      console.error("Deep link error:", error);
+      return false;
+    }
+  };
+
+  // Function for mobile wallet adapter connection (primarily Android)
+  const connectWithMobileAdapter = async () => {
+    try {
+      console.log("Attempting mobile wallet adapter connection");
+      
+      // Check if transact is available and properly imported
+      if (typeof transact !== 'function') {
+        console.error("Mobile wallet adapter not properly imported");
+        return false;
+      }
+      
+      // Use mobile wallet adapter
+      await transact(async (wallet) => {
+        try {
+          if (!wallet.identify) {
+            console.error("Wallet identify method not available");
+            return false;
           }
-        };
-        
-        // Using transact from the mobile wallet adapter
-        transact(async (wallet) => {
-          await onIdentityRequest(wallet.identify);
-        });
-        
-      } catch (error) {
-        console.error("Mobile wallet adapter error:", error);
+          
+          const authResult = await wallet.identify({
+            appIdentity: {
+              name: 'The Rug Game',
+              uri: window.location.origin,
+              icon: `${window.location.origin}/images/logo1.png`,
+            },
+            cluster: 'mainnet-beta',
+          });
+          
+          console.log('Connected with public key:', authResult.publicKey);
+          return true;
+        } catch (error) {
+          console.error("Wallet identity error:", error);
+          return false;
+        }
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Mobile adapter error:", error);
+      return false;
+    }
+  };
+
+  const handleWalletSelect = async (walletName) => {
+    // Set attempting state immediately for visual feedback
+    setIsAttemptingConnect(true);
+    setReconnectAttempts(0);
+
+    if (isMobile) {
+      console.log("Mobile device detected. iOS:", isIOS);
+      
+      let connectionSuccess = false;
+      
+      // For iOS, always use deep linking
+      if (isIOS) {
+        connectionSuccess = connectWithDeepLink();
+      } else {
+        // For Android, try mobile wallet adapter first, then fall back to deep linking
+        try {
+          connectionSuccess = await connectWithMobileAdapter();
+          
+          // If mobile adapter fails, fall back to deep linking
+          if (!connectionSuccess) {
+            console.log("Mobile adapter failed, trying deep link");
+            connectionSuccess = connectWithDeepLink();
+          }
+        } catch (error) {
+          console.error("Mobile connection error:", error);
+          connectionSuccess = connectWithDeepLink(); // Fall back to deep linking
+        }
+      }
+      
+      if (!connectionSuccess) {
+        console.error("All mobile connection methods failed");
         setIsAttemptingConnect(false);
         if (onError) {
-          onError('Failed to connect to wallet. Please ensure Phantom is installed.');
+          onError('Failed to connect to wallet. Please ensure Phantom is installed and try again.');
         }
       }
     } else {
-      // Your existing desktop flow
+      // Desktop flow
       setTimeout(() => {
         try {
           select(walletName);
@@ -217,49 +291,6 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       }, 50);
     }
   };
-
-  // const handleWalletSelect = (walletName) => {
-  //   // Set attempting state immediately for visual feedback
-  //   setIsAttemptingConnect(true);
-  //   setReconnectAttempts(0);
-
-  //   if (isMobile) {
-  //     try {
-  //       // For mobile, handle deep linking to Phantom
-  //       // Generate a unique identifier to track this session
-  //       const sessionId = Date.now().toString();
-  //       // Store that we're attempting to connect
-  //       localStorage.setItem('walletConnectAttempt', sessionId);
-
-  //       // Get the current URL with any query params removed
-  //       // Get current URL without query params
-  //       const dappUrl = encodeURIComponent(window.location.origin + window.location.pathname);
-
-  //       // Try the v1 connection endpoint
-  //       window.location.href = `https://phantom.app/ul/v1/connect?app_url=${dappUrl}&redirect_url=${dappUrl}`;
-
-  //     } catch (error) {
-  //       console.error("Mobile wallet redirect error:", error);
-  //       setIsAttemptingConnect(false);
-  //       if (onError) {
-  //         onError('Failed to open wallet app. Please ensure Phantom is installed.');
-  //       }
-  //     }
-  //   } else {
-  //     // Desktop flow
-  //     setTimeout(() => {
-  //       try {
-  //         select(walletName);
-  //       } catch (error) {
-  //         console.error("Wallet selection error:", error);
-  //         setIsAttemptingConnect(false);
-  //         if (onError) {
-  //           onError('Failed to connect to wallet. Please try again.');
-  //         }
-  //       }
-  //     }, 50);
-  //   }
-  // };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
