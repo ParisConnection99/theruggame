@@ -392,8 +392,10 @@ class MarketCreationService {
                 console.log(`Filtered token liquidity: ${liquidityUsd}, volume: ${volume24h}, ageInDays: ${ageInDays}`);
 
                 return (
-                    liquidityUsd >= 20000 &&
-                    volume24h >= 70000 &&
+                    //liquidityUsd >= 20000 &&
+                    //volume24h >= 70000 &&
+                    liquidityUsd >= 8000 &&
+                    volume24h >= 50000 &&
                     ageInDays < 10  // Only fresh high-risk tokens
                 );
             });
