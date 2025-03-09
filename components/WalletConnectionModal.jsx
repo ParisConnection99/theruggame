@@ -198,7 +198,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       const params = new URLSearchParams({
         app_url: "https://theruggame.fun",
         redirect_url: "https://theruggame.fun",
-        app_logo: "https://theruggame.fun/images/logo1.png"
+        app_logo: "https://theruggame.fun/images/logo1.png",
+        cluster: "mainnet-beta"
       }).toString();
       
       const deepLinkUrl = `https://phantom.app/ul/v1/connect?${params}`;
