@@ -37,9 +37,9 @@ export const WalletProviderComponent = ({ children }) => {
             projectId: '9561050902e6bf6802cafcbb285d47ea', // Replace with your WalletConnect project ID
             metadata: {
               name: 'The Rug Game',
-              description: 'The Rug Game Memecoin Prediction',
-              url: typeof window !== 'undefined' ? window.location.origin : '',
-              icons: [typeof window !== 'undefined' ? `https://theruggame.fun/images/logo1.png` : '']
+              description: 'The #1 Memecoin Prediction Market',
+              url: "https://theruggame.fun",
+              icons: `https://theruggame.fun/images/logo1.png`
             }
           }
         });

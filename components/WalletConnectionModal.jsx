@@ -196,9 +196,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       // window.location.href = deepLinkUrl;
       
       const params = new URLSearchParams({
-        app_url: "https://theruggame.fun",
-        redirect_url: "https://theruggame.fun",
-        app_logo: "https://theruggame.fun/images/logo1.png",
+        app_url: encodeURIComponent("https://theruggame.fun"),
+        redirect_url: encodeURIComponent("https://theruggame.fun"),
+        app_logo: encodeURIComponent("https://theruggame.fun/images/logo1.png"),
         cluster: "mainnet-beta"
       }).toString();
       
