@@ -152,11 +152,11 @@ class MarketResolveService {
                 // Keep the extreme liquidity drop as an immediate RUG condition
                 result = 'RUG';  // 90%+ liquidity drop
             }
-            else if (adjustedCombinedMovement >= 1.10) {
+            else if (adjustedCombinedMovement >= 1.15) {
                 // Combined movement is 10% or more up
                 result = 'PUMP';
             }
-            else if (adjustedCombinedMovement <= 0.90) {
+            else if (adjustedCombinedMovement <= 0.85) {
                 // Combined movement is 10% or more down
                 result = 'RUG';
             }
