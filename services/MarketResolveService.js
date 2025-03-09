@@ -23,39 +23,39 @@ class MarketResolveService {
      - evaluate the out come using the function
      - return the winner 
      */
-     async resolveMarket(market) {
+    async resolveMarket(market) {
         if (!market.id) {
             throw new Error('Error processing Market.');
         }
-        
+
         if (market.phase !== 'RESOLVED') {
             throw new Error('Market is not ready to be resolved.');
         }
-        
+
         console.log(`Resolving market: ${JSON.stringify(market, null, 2)}`);
         // Fetch token details
         const token = await OracleService.fetchTokenDetails([market.token_address]);
-        
+
         console.log('--- Market Resolution ---');
         // Debug the market object to see what properties are available
         console.log('Market object:', JSON.stringify(market, null, 2));
-        
+
         // Debug the token response
         console.log('Token response:', JSON.stringify(token, null, 2));
-        
+
         // Use proper property names - they might be snake_case in your database
         const initialData = {
             liquidity: parseFloat(market.initial_liquidity) || 0,
             price: parseFloat(market.initial_coin_price) || 0,
             marketCap: parseFloat(market.initial_market_cap) || 0,
-            txns: { 
-                buys: parseInt(market.initial_buy_txns) || 0, 
-                sells: parseInt(market.initial_sell_txns) || 0 
+            txns: {
+                buys: parseInt(market.initial_buy_txns) || 0,
+                sells: parseInt(market.initial_sell_txns) || 0
             },
             timestamp: new Date(market.created_at),
             duration: parseInt(market.duration) || 0
         };
-        
+
         // Ensure token data is properly accessed
         const finalData = {
             liquidity: parseFloat(token[0].liquidity) || 0,
@@ -67,23 +67,23 @@ class MarketResolveService {
             },
             timestamp: Date.now()
         };
-        
+
         // Make sure both objects have valid data before evaluation
         if (initialData.liquidity === undefined || finalData.liquidity === undefined) {
-            console.error('Liquidity data is missing:', { 
+            console.error('Liquidity data is missing:', {
                 initialLiquidity: market.initial_liquidity,
-                tokenLiquidity: token.liquidity 
+                tokenLiquidity: token.liquidity
             });
             throw new Error('Missing liquidity data for market evaluation');
         }
-        
+
         const result = await this.evaluateMarketOutcome(initialData, finalData);
 
         console.log(`Final price: ${finalData.price}`);
-        
+
         return { result: result, price: finalData.price };
     }
-   
+
     async fetchBets(marketId) {
         if (!marketId) {
             throw new Error('Error processing MarketId.');
@@ -106,39 +106,59 @@ class MarketResolveService {
         if (!initialData || !finalData || typeof initialData !== 'object' || typeof finalData !== 'object') {
             throw new Error('Invalid market data');
         }
-    
+
         const requiredFields = ['liquidity', 'price', 'marketCap', 'txns', 'timestamp'];
         for (const field of requiredFields) {
             if (!initialData[field] || !finalData[field]) {
                 throw new Error(`Missing required field: ${field}`);
             }
         }
-    
+
         try {
             // Calculate percentage changes
             const liquidityChange = (finalData.liquidity / initialData.liquidity);
             const priceChange = ((finalData.price - initialData.price) / initialData.price) * 100;
-    
+
             // Calculate total transaction volumes
             const totalBuys = finalData.txns.buys - initialData.txns.buys;
             const totalSells = finalData.txns.sells - initialData.txns.sells;
-    
+
             // Determine the outcome result
             let result = 'HOUSE'; // Default result
-    
-            // RUG conditions
-            if (liquidityChange <= 0.1) result = 'RUG';  // 90%+ liquidity drop
-            else if (priceChange <= -80) result = 'RUG';      // 80%+ price drop
-            // PUMP conditions
-            else if (priceChange >= 50) result = 'PUMP';      // 50%+ price increase
-            else if (totalBuys / Math.max(totalSells, 1) >= 5) result = 'PUMP';  // 5x buy volume
-    
+
+            // // RUG conditions
+            // if (liquidityChange <= 0.1) result = 'RUG';  // 90%+ liquidity drop
+            // else if (priceChange <= -80) result = 'RUG';      // 80%+ price drop
+            // // PUMP conditions
+            // else if (priceChange >= 50) result = 'PUMP';      // 50%+ price increase
+            // else if (totalBuys / Math.max(totalSells, 1) >= 5) result = 'PUMP';  // 5x buy volume
+
+            const combinedMovement = liquidityChange + (priceChange / 100); // Convert price change % to decimal
+
+            // Determine outcome based on combined movement
+            if (liquidityChange <= 0.1) {
+                // Keep the extreme liquidity drop as an immediate RUG condition
+                result = 'RUG';  // 90%+ liquidity drop
+            }
+            else if (combinedMovement >= 1.10) {
+                // Combined movement is 10% or more up
+                result = 'PUMP';
+            }
+            else if (combinedMovement <= 0.90) {
+                // Combined movement is 10% or more down
+                result = 'RUG';
+            }
+            else {
+                // Default result if none of the above conditions are met
+                result = 'HOUSE';
+            }
+
             // Log the result before returning
             console.log(`Market outcome: ${result}`);
             console.log(`Liquidity change: ${liquidityChange}`);
             console.log(`Price change: ${priceChange}%`);
             console.log(`Buy/Sell ratio: ${totalBuys}/${totalSells}`);
-    
+
             return result;
         } catch (error) {
             throw new Error(`Error evaluating market: ${error.message}`);
