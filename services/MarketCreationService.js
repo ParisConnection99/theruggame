@@ -13,7 +13,7 @@ class MarketCreationService {
         //this.TOTAL_MARKET_CAPACITY = 15;
         this.MAXIMUM_ATTEMPTS = 5;
         this.ACTIVE_MARKETS_LIMIT = 5;
-        this.MARKET_DURATION = 30;
+        this.MARKET_DURATION = 15;
     }
 
     // Purpose: Fetch a filtered coin to become a market
@@ -421,9 +421,9 @@ class MarketCreationService {
                 return (
                     //liquidityUsd >= 20000 &&
                     //volume24h >= 70000 &&
-                    liquidityUsd >= 8000 &&
-                    volume24h >= 50000 &&
-                    ageInDays < 10  // Only fresh high-risk tokens
+                    liquidityUsd <= 5000 &&
+                    //volume24h >= 50000 &&
+                    ageInDays < 5  // Only fresh high-risk tokens
                 );
             });
 
