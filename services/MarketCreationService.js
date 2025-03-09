@@ -421,9 +421,9 @@ class MarketCreationService {
                 return (
                     //liquidityUsd >= 20000 &&
                     //volume24h >= 70000 &&
-                    liquidityUsd <= 5000 &&
+                    liquidityUsd <= 40000 &&
                     //volume24h >= 50000 &&
-                    ageInDays < 5  // Only fresh high-risk tokens
+                    ageInDays < 2  // Only fresh high-risk tokens
                 );
             });
 
