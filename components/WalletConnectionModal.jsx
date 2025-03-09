@@ -35,7 +35,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
           projectId: '9561050902e6bf6802cafcbb285d47ea',
           metadata: {
             name: 'The Rug Game',
-            description: '#1 Memecoin Prediction Market',
+            description: 'Connect to The Rug Game',
             url: 'https://theruggame.fun',
             icons: ['https://theruggame.fun/images/logo1.png']
           }
@@ -135,7 +135,13 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       // For mobile, deep link to Phantom
       if (isMobile) {
         // Deep link to Phantom with WalletConnect URI
-        window.location.href = `https://phantom.app/ul/wc?uri=${encodeURIComponent(uri)}`;
+        // Using the correct URI format for Phantom WalletConnect
+        window.location.href = `phantom://wc?uri=${encodeURIComponent(uri)}`;
+        
+        // Fallback for if the phantom:// protocol doesn't work
+        setTimeout(() => {
+          window.location.href = `https://phantom.app/ul/browse/wc?uri=${encodeURIComponent(uri)}`;
+        }, 1000);
       } else {
         // For desktop, we'd typically show a QR code
         // But since you mentioned you don't want QR codes, we'll just try to open Phantom extension
