@@ -22,6 +22,7 @@
     "@supabase/supabase-js": "^2.48.1",
     "@upstash/qstash": "^2.7.22",
     "@vercel/edge": "^1.2.1",
+    "@walletconnect/sign-client": "^2.19.0",
     "axios": "^1.7.9",
     "big.js": "^6.2.2",
     "decimal": "^0.0.2",
