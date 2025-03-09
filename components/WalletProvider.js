@@ -39,7 +39,7 @@ export const WalletProviderComponent = ({ children }) => {
               name: 'The Rug Game',
               description: 'The Rug Game Memecoin Prediction',
               url: typeof window !== 'undefined' ? window.location.origin : '',
-              icons: [typeof window !== 'undefined' ? `${window.location.origin}/images/logo1.png` : '']
+              icons: [typeof window !== 'undefined' ? `https://theruggame.fun/images/logo1.png` : '']
             }
           }
         });

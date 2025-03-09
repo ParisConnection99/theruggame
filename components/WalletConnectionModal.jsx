@@ -177,19 +177,33 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       console.log("Attempting deep link connection");
       
       // Generate complete URLs with proper encoding
-      const appUrl = encodeURIComponent(window.location.origin);
-      const redirectUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}`);
-      const appLogo = encodeURIComponent(`${window.location.origin}/images/logo1.png`);
+      // const appUrl = encodeURIComponent(window.location.origin);
+      // const redirectUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}`);
+      // const appLogo = encodeURIComponent(`${window.location.origin}/images/logo1.png`);
       
-      // Store connection attempt in localStorage for tracking
-      localStorage.setItem('walletConnectAttempt', Date.now().toString());
+      // // Store connection attempt in localStorage for tracking
+      // localStorage.setItem('walletConnectAttempt', Date.now().toString());
+
+      // const params = {
+      //   cluster: 'mainnet-beta',
+      //   app_url: "https://theruggame.fun"
+      // };
       
-      // Full deep link URL with all required parameters
-      const deepLinkUrl = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_url=${redirectUrl}&app_logo=${appLogo}`;
+      // // Full deep link URL with all required parameters
+      // const deepLinkUrl = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_url=${redirectUrl}&app_logo=${appLogo}`;
       
-      console.log("Opening deep link:", deepLinkUrl);
+      // console.log("Opening deep link:", deepLinkUrl);
+      // window.location.href = deepLinkUrl;
+      
+      const params = new URLSearchParams({
+        app_url: "https://theruggame.fun",
+        redirect_url: "https://theruggame.fun",
+        app_logo: "https://theruggame.fun/images/logo1.png"
+      }).toString();
+      
+      const deepLinkUrl = `https://phantom.app/ul/v1/connect?${params}`;
       window.location.href = deepLinkUrl;
-      
+
       return true;
     } catch (error) {
       console.error("Deep link error:", error);
