@@ -201,6 +201,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         app_logo: encodeURIComponent("https://theruggame.fun/images/logo1.png"),
         cluster: "mainnet-beta"
       }).toString();
+
+      alert(`After creating the params: `);
       
       const deepLinkUrl = `https://phantom.app/ul/v1/connect?${params}`;
       window.location.href = deepLinkUrl;
@@ -208,6 +210,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       return true;
     } catch (error) {
       console.error("Deep link error:", error);
+      alert(`Error: ${error}`);
       return false;
     }
   };
