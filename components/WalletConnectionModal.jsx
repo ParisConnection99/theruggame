@@ -1,36 +1,49 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
+import { transact } from '@solana-mobile/wallet-adapter-mobile';
 import { SignClient } from '@walletconnect/sign-client';
-import { Web3Provider } from '@solana/web3.js';
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
+  const { select, connecting, connected, wallet } = useWallet();
+  const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const maxReconnectAttempts = 5;
+  const [lastConnectionAttempt, setLastConnectionAttempt] = useState(0);
   const [signClient, setSignClient] = useState(null);
-  const [connected, setConnected] = useState(false);
-  const [connecting, setConnecting] = useState(false);
-  const [publicKey, setPublicKey] = useState(null);
-  const [session, setSession] = useState(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  
+  const [wcSession, setWcSession] = useState(null);
+  const [isInitializingWC, setIsInitializingWC] = useState(false);
+
   // Detect if user is on mobile device
   const isMobileDevice = () => {
     if (typeof navigator === 'undefined') return false;
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
+  // Detect if device is iOS
+  const isIOSDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  };
+
   const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   // Set mobile state on client side
   useEffect(() => {
     setIsMobile(isMobileDevice());
+    setIsIOS(isIOSDevice());
   }, []);
 
-  // Initialize WalletConnect client
+  // Initialize WalletConnect when on mobile
   useEffect(() => {
     const initWalletConnect = async () => {
+      if (!isMobile || signClient) return;
+      
       try {
-        setIsInitializing(true);
+        setIsInitializingWC(true);
         const client = await SignClient.init({
           projectId: '9561050902e6bf6802cafcbb285d47ea',
           metadata: {
@@ -48,74 +61,167 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         if (existingSessions.length > 0) {
           // Use the most recent session
           const latestSession = existingSessions[existingSessions.length - 1];
-          setSession(latestSession);
-          
-          // Extract Solana account if available
-          if (latestSession.namespaces.solana?.accounts?.length > 0) {
-            const accountId = latestSession.namespaces.solana.accounts[0];
-            // Format: solana:mainnet:publicKey
-            const publicKey = accountId.split(':')[2];
-            setPublicKey(publicKey);
-            setConnected(true);
-          }
+          setWcSession(latestSession);
         }
       } catch (error) {
         console.error("Error initializing WalletConnect:", error);
-        if (onError) {
-          onError('Failed to initialize wallet connection. Please try again.');
-        }
       } finally {
-        setIsInitializing(false);
+        setIsInitializingWC(false);
       }
     };
 
-    if (isOpen) {
+    if (isOpen && isMobile) {
       initWalletConnect();
     }
-  }, [isOpen, onError]);
-
-  // Setup event listeners
-  useEffect(() => {
-    if (!signClient) return;
-
-    const handleSessionUpdate = (updatedSession) => {
-      console.log("Session updated:", updatedSession);
-      setSession(updatedSession);
-    };
-
-    const handleSessionDelete = () => {
-      console.log("Session deleted");
-      setConnected(false);
-      setPublicKey(null);
-      setSession(null);
-    };
-
-    signClient.on('session_update', handleSessionUpdate);
-    signClient.on('session_delete', handleSessionDelete);
-
-    return () => {
-      signClient.off('session_update', handleSessionUpdate);
-      signClient.off('session_delete', handleSessionDelete);
-    };
-  }, [signClient]);
+  }, [isOpen, isMobile, signClient]);
 
   // Close modal when connected successfully
   useEffect(() => {
     if (connected) {
       console.log("Connection detected, closing modal");
       onClose();
+      setIsAttemptingConnect(false);
+      setReconnectAttempts(0);
     }
   }, [connected, onClose]);
 
-  // Function to connect with WalletConnect
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsAttemptingConnect(false);
+      setReconnectAttempts(0);
+    }
+  }, [isOpen]);
+
+  // Check URL params on component mount to handle deep link returns
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasWalletParams = urlParams.has('phantom_encryption_public_key') ||
+        urlParams.has('errorCode') ||
+        urlParams.has('phantom_connector_id');
+
+      if (hasWalletParams) {
+        console.log("Detected return from Phantom app via URL params");
+        // Clear the URL params to prevent issues on refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Force a reconnection attempt when we detect return via URL params
+        attemptPhantomConnection();
+      }
+    }
+  }, [isOpen]);
+
+  // Function to manually attempt Phantom connection
+  const attemptPhantomConnection = async () => {
+    console.log("Attempting manual Phantom connection");
+    setLastConnectionAttempt(Date.now());
+
+    try {
+      if (window.phantom?.solana) {
+        console.log("Phantom detected, attempting connect");
+
+        // First try with onlyIfTrusted for auto-connect
+        try {
+          await window.phantom.solana.connect({ onlyIfTrusted: true });
+          console.log("Connected with trusted connection");
+          return true;
+        } catch (e) {
+          console.log("Trusted connection failed, trying regular connect");
+        }
+
+        // If that fails, try regular connection
+        try {
+          await window.phantom.solana.connect();
+          console.log("Connected with regular connection");
+          return true;
+        } catch (e) {
+          console.error("Regular connection failed:", e);
+        }
+      } else {
+        console.log("Phantom not available in window");
+      }
+    } catch (error) {
+      console.error("Phantom connection error:", error);
+    }
+
+    return false;
+  };
+
+  // Improved reconnection logic
+  const attemptReconnection = async () => {
+    // Prevent too frequent reconnection attempts (at least 1.5s apart)
+    const now = Date.now();
+    if (now - lastConnectionAttempt < 1500) {
+      console.log("Skipping reconnection attempt (too soon)");
+      return;
+    }
+
+    if (reconnectAttempts < maxReconnectAttempts) {
+      setReconnectAttempts(prev => prev + 1);
+      console.log(`Reconnection attempt ${reconnectAttempts + 1}/${maxReconnectAttempts}`);
+
+      const success = await attemptPhantomConnection();
+
+      if (!success && reconnectAttempts < maxReconnectAttempts - 1) {
+        // Schedule another attempt with a more gentle backoff
+        const backoffTime = Math.min(1000 * (reconnectAttempts + 1), 3000);
+        console.log(`Scheduling next attempt in ${backoffTime}ms`);
+        setTimeout(attemptReconnection, backoffTime);
+      } else if (!success) {
+        console.log("All reconnection attempts failed");
+        if (onError) {
+          onError('Connection not established. Please try again or restart your wallet app.');
+        }
+        setIsAttemptingConnect(false);
+        setReconnectAttempts(0);
+      }
+    }
+  };
+
+  // Improved visibility change handler
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      // Only react when becoming visible AND we were attempting to connect
+      if (!document.hidden && isAttemptingConnect) {
+        console.log("User returned from wallet app, checking connection");
+
+        // Give a small delay for the wallet to initialize
+        setTimeout(() => {
+          if (!connected) {
+            console.log("Not connected after return, starting reconnection process");
+            // Reset reconnection counter when we detect a return
+            setReconnectAttempts(0);
+            attemptReconnection();
+          }
+        }, 500);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [connected, isAttemptingConnect, onError, reconnectAttempts]);
+
+  if (!isOpen) return null;
+
+  const wallets = [
+    {
+      name: 'Phantom',
+      detected: true,
+      logo: '/images/phantom_wallet.png'
+    }
+    // Add other wallets as needed
+  ];
+
+  // Connect with WalletConnect (for mobile)
   const connectWithWalletConnect = async () => {
     if (!signClient) {
       console.error("WalletConnect client not initialized");
-      return;
+      return false;
     }
     
     try {
-      setConnecting(true);
+      console.log("Attempting WalletConnect connection");
       
       // Create connection request
       const { uri, approval } = await signClient.connect({
@@ -132,91 +238,150 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         throw new Error("Failed to generate connection URI");
       }
       
-      // For mobile, deep link to Phantom
-      if (isMobile) {
-        // Deep link to Phantom with WalletConnect URI
-        // Using the correct URI format for Phantom WalletConnect
-        window.location.href = `phantom://wc?uri=${encodeURIComponent(uri)}`;
-        
-        // Fallback for if the phantom:// protocol doesn't work
-        setTimeout(() => {
-          window.location.href = `https://phantom.app/ul/browse/wc?uri=${encodeURIComponent(uri)}`;
-        }, 1000);
-      } else {
-        // For desktop, we'd typically show a QR code
-        // But since you mentioned you don't want QR codes, we'll just try to open Phantom extension
-        if (window.phantom?.solana) {
-          // If Phantom extension is available, try to connect directly
-          await window.phantom.solana.connect();
-        } else {
-          alert("Please install Phantom browser extension or scan the QR code with your Phantom mobile app");
-          // Here you would normally display a QR code with the URI
-        }
-      }
+      // Deep link to Phantom with WalletConnect URI
+      // Using the correct URI format for Phantom WalletConnect
+      window.location.href = `phantom://wc?uri=${encodeURIComponent(uri)}`;
       
-      // Wait for approval
-      const newSession = await approval();
-      console.log('Connected with WalletConnect', newSession);
+      // Fallback for if the phantom:// protocol doesn't work
+      setTimeout(() => {
+        window.location.href = `https://phantom.app/ul/browse/wc?uri=${encodeURIComponent(uri)}`;
+      }, 1000);
       
-      // Get accounts
-      if (newSession.namespaces.solana?.accounts?.length > 0) {
-        const accountId = newSession.namespaces.solana.accounts[0];
-        // Format: solana:mainnet:publicKey
-        const publicKey = accountId.split(':')[2];
-        setPublicKey(publicKey);
-        setConnected(true);
-        setSession(newSession);
-      }
-      
+      return true;
     } catch (error) {
       console.error('Error connecting with WalletConnect', error);
-      if (onError) {
-        onError('Failed to connect to wallet. Please try again.');
-      }
-    } finally {
-      setConnecting(false);
+      return false;
     }
   };
 
-  // Function to disconnect
-  const disconnectWallet = async () => {
-    if (signClient && session) {
-      try {
-        await signClient.disconnect({
-          topic: session.topic,
-          reason: { code: 6000, message: 'User disconnected' }
-        });
-        
-        setConnected(false);
-        setPublicKey(null);
-        setSession(null);
-      } catch (error) {
-        console.error("Error disconnecting:", error);
-      }
+  // Function to handle deep linking to Phantom (original method)
+  const connectWithDeepLink = () => {
+    try {
+      console.log("Attempting deep link connection");
+      
+      const params = new URLSearchParams({
+        app_url: "https://theruggame.fun",
+        redirect_url: "https://theruggame.fun",
+        app_logo: "https://theruggame.fun/images/logo1.png",
+        cluster: "mainnet-beta"
+      }).toString();
+ 
+      const deepLinkUrl = `https://phantom.app/ul/v1/connect?${params}`;
+      window.location.href = deepLinkUrl;
+
+      return true;
+    } catch (error) {
+      console.error("Deep link error:", error);
+      alert(`Error: ${error}`);
+      return false;
     }
   };
 
-  if (!isOpen) return null;
-
-  const wallets = [
-    {
-      name: 'Phantom',
-      detected: true,
-      logo: '/images/phantom_wallet.png'
+  // Function for mobile wallet adapter connection (primarily Android)
+  const connectWithMobileAdapter = async () => {
+    try {
+      console.log("Attempting mobile wallet adapter connection");
+      
+      // Check if transact is available and properly imported
+      if (typeof transact !== 'function') {
+        console.error("Mobile wallet adapter not properly imported");
+        return false;
+      }
+      
+      // Use mobile wallet adapter
+      await transact(async (wallet) => {
+        try {
+          if (!wallet.identify) {
+            console.error("Wallet identify method not available");
+            return false;
+          }
+          
+          const authResult = await wallet.identify({
+            appIdentity: {
+              name: 'The Rug Game',
+              uri: window.location.origin,
+              icon: `${window.location.origin}/images/logo1.png`,
+            },
+            cluster: 'mainnet-beta',
+          });
+          
+          console.log('Connected with public key:', authResult.publicKey);
+          return true;
+        } catch (error) {
+          console.error("Wallet identity error:", error);
+          return false;
+        }
+      });
+      
+      return true;
+    } catch (error) {
+      console.error("Mobile adapter error:", error);
+      return false;
     }
-    // Add other wallets as needed
-  ];
+  };
 
   const handleWalletSelect = async (walletName) => {
-    if (connecting || isInitializing) return;
-    
-    try {
-      await connectWithWalletConnect();
-    } catch (error) {
-      console.error("Wallet connection error:", error);
-      if (onError) {
-        onError('Failed to connect to wallet. Please try again.');
+    // Set attempting state immediately for visual feedback
+    setIsAttemptingConnect(true);
+    setReconnectAttempts(0);
+
+    if (isMobile) {
+      console.log("Mobile device detected. iOS:", isIOS);
+      
+      // Try WalletConnect first for all mobile devices
+      let connectionSuccess = false;
+      
+      try {
+        // Try WalletConnect first
+        connectionSuccess = await connectWithWalletConnect();
+        
+        // If WalletConnect fails, fall back to previous methods
+        if (!connectionSuccess) {
+          console.log("WalletConnect failed, trying previous methods");
+          
+          // For iOS, use deep linking
+          if (isIOS) {
+            connectionSuccess = connectWithDeepLink();
+          } else {
+            // For Android, try mobile wallet adapter first, then fall back to deep linking
+            try {
+              connectionSuccess = await connectWithMobileAdapter();
+              
+              // If mobile adapter fails, fall back to deep linking
+              if (!connectionSuccess) {
+                console.log("Mobile adapter failed, trying deep link");
+                connectionSuccess = connectWithDeepLink();
+              }
+            } catch (error) {
+              console.error("Mobile connection error:", error);
+              connectionSuccess = connectWithDeepLink(); // Fall back to deep linking
+            }
+          }
+        }
+      } catch (error) {
+        console.error("All mobile connection methods failed:", error);
       }
+      
+      if (!connectionSuccess) {
+        console.error("All mobile connection methods failed");
+        setIsAttemptingConnect(false);
+        if (onError) {
+          onError('Failed to connect to wallet. Please ensure Phantom is installed and try again.');
+        }
+      }
+    } else {
+      // Desktop flow - use original wallet adapter implementation
+      setTimeout(() => {
+        try {
+          select(walletName);
+        } catch (error) {
+          console.error("Wallet selection error:", error);
+          setIsAttemptingConnect(false);
+          if (onError) {
+            onError('Failed to connect to wallet. Please try again.');
+          }
+        }
+      }, 50);
     }
   };
 
@@ -238,9 +403,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         )}
 
         {/* Connection status */}
-        {(connecting || isInitializing) && (
+        {(connecting || isAttemptingConnect || isInitializingWC) && (
           <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
-            {isInitializing 
+            {isInitializingWC 
               ? "Initializing wallet connection..."
               : isMobile
                 ? "Opening wallet app... If nothing happens, please ensure Phantom is installed."
@@ -252,11 +417,11 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
           {wallets.map((walletOption) => (
             <div
               key={walletOption.name}
-              onClick={() => walletOption.detected && !connecting && !isInitializing && handleWalletSelect(walletOption.name)}
+              onClick={() => walletOption.detected && !connecting && !isAttemptingConnect && !isInitializingWC && handleWalletSelect(walletOption.name)}
               className={`
                 flex items-center gap-3 
                 p-3 rounded-lg
-                ${(connecting || isInitializing)
+                ${(connecting || isAttemptingConnect || isInitializingWC)
                   ? 'bg-[#3a3a58] border border-blue-400'
                   : walletOption.detected
                     ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
@@ -279,7 +444,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
               </div>
 
               {/* Simple loading indicator */}
-              {(connecting || isInitializing) && (
+              {(connecting || isAttemptingConnect || isInitializingWC) && (
                 <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
               )}
             </div>
