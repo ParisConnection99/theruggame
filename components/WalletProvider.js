@@ -19,35 +19,30 @@ export const WalletProviderComponent = ({ children }) => {
   useEffect(() => {
     setIsClient(true);
     
-    // Check if we're on mobile
-    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
-    
-    // Set up appropriate wallet adapters
+    // Set up basic wallet adapters
     const walletAdapters = [new PhantomWalletAdapter()];
     
-    // Add WalletConnect adapter for better mobile support
-    if (isMobileDevice) {
-      try {
-        // Note: You'll need to register for a WalletConnect project ID
-        const walletConnectAdapter = new WalletConnectWalletAdapter({
-          network,
-          options: {
-            projectId: '9561050902e6bf6802cafcbb285d47ea', // Replace with your WalletConnect project ID
-            metadata: {
-              name: 'The Rug Game',
-              description: 'The #1 Memecoin Prediction Market',
-              url: "https://theruggame.fun",
-              icons: `https://theruggame.fun/images/logo1.png`
-            }
-          }
-        });
-        
-        walletAdapters.push(walletConnectAdapter);
-      } catch (error) {
-        console.error("Error setting up WalletConnect adapter:", error);
-      }
+    // Add WalletConnect adapter for all devices
+    // It provides a good fallback even for desktop users
+    try {
+      const walletConnectAdapter = new WalletConnectWalletAdapter({
+        network,
+        options: {
+          projectId: '9561050902e6bf6802cafcbb285d47ea',
+          metadata: {
+            name: 'The Rug Game',
+            description: 'The #1 Memecoin Prediction Market',
+            url: "https://theruggame.fun",
+            icons: ["https://theruggame.fun/images/logo1.png"] // Fix: icons must be an array
+          },
+          // Add relay URL to ensure good connectivity
+          relayUrl: 'wss://relay.walletconnect.org'
+        }
+      });
+      
+      walletAdapters.push(walletConnectAdapter);
+    } catch (error) {
+      console.error("Error setting up WalletConnect adapter:", error);
     }
     
     setWallets(walletAdapters);
