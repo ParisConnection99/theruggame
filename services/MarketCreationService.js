@@ -66,48 +66,48 @@ class MarketCreationService {
         }
     }
 
-    shuffleArray(array) {
-        // Create a copy of the array to avoid modifying the original
-        const shuffled = [...array];
-
-        // First, sort by liquidity (lowest first)
-        shuffled.sort((a, b) => {
-            return a.liquidity - b.liquidity;
-        });
-
-        // Then add some randomness while preserving the general trend
-        // This biases lower liquidity tokens to stay near the top
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            // Calculate a biased random index that favors staying closer to sorted position
-            // The higher in the array (lower index), the less likely to move far
-            const maxSwapDistance = Math.ceil(i / 2); // Limit how far an item can move
-            const swapDistance = Math.floor(Math.random() * maxSwapDistance);
-            const j = Math.max(0, i - swapDistance);
-
-            // Swap elements at i and j with diminishing probability based on liquidity difference
-            if (Math.random() < 0.5) { // 50% chance to swap, adjust as needed
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-        }
-
-        return shuffled;
-    }
-
     // shuffleArray(array) {
     //     // Create a copy of the array to avoid modifying the original
     //     const shuffled = [...array];
 
-    //     // Start from the last element and swap one by one
-    //     for (let i = shuffled.length - 1; i > 0; i--) {
-    //         // Pick a random index from 0 to i
-    //         const j = Math.floor(Math.random() * (i + 1));
+    //     // First, sort by liquidity (lowest first)
+    //     shuffled.sort((a, b) => {
+    //         return a.liquidity - b.liquidity;
+    //     });
 
-    //         // Swap elements at i and j
-    //         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    //     // Then add some randomness while preserving the general trend
+    //     // This biases lower liquidity tokens to stay near the top
+    //     for (let i = shuffled.length - 1; i > 0; i--) {
+    //         // Calculate a biased random index that favors staying closer to sorted position
+    //         // The higher in the array (lower index), the less likely to move far
+    //         const maxSwapDistance = Math.ceil(i / 2); // Limit how far an item can move
+    //         const swapDistance = Math.floor(Math.random() * maxSwapDistance);
+    //         const j = Math.max(0, i - swapDistance);
+
+    //         // Swap elements at i and j with diminishing probability based on liquidity difference
+    //         if (Math.random() < 0.5) { // 50% chance to swap, adjust as needed
+    //             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    //         }
     //     }
 
     //     return shuffled;
     // }
+
+    shuffleArray(array) {
+        // Create a copy of the array to avoid modifying the original
+        const shuffled = [...array];
+
+        // Start from the last element and swap one by one
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            // Pick a random index from 0 to i
+            const j = Math.floor(Math.random() * (i + 1));
+
+            // Swap elements at i and j
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        return shuffled;
+    }
 
     async fetchTokens(totalCount) {
         const tokens = await this.startTokenFetchCycle(totalCount);
@@ -421,7 +421,6 @@ class MarketCreationService {
                 return (
                     liquidityUsd >= 8000 &&
                     volume24h >= 20000 &&
-                    //volume24h >= 50000 &&
                     ageInDays < 7  // Only fresh high-risk tokens
                 );
             });
