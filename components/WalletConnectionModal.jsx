@@ -294,7 +294,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ minWidth: '24rem', maxWidth: '90vw' }}>
+      <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ width: isMobile ? '85%' : '24rem', maxWidth: '420px' }}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-white text-xl">Connect a wallet on Solana</h2>
           <button onClick={onClose} className="text-white hover:text-gray-300">
