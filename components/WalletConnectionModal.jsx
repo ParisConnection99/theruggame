@@ -1,254 +1,193 @@
-import { useWallet } from "@solana/wallet-adapter-react";
-import {
-  WalletMultiButton,
-} from "@solana/wallet-adapter-react-ui";
-import { useEffect } from "react";
-require("@solana/wallet-adapter-react-ui/styles.css");
+'use client';
 
-export const WalletConnectionModal = ({ isOpen, onClose, onError, onConnect }) => {
-  const { connected, connecting } = useWallet();
+import React, { useState, useEffect } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import Image from 'next/image';
+
+export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
+  const { select, connecting, connected } = useWallet();
+  const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
   
-  // Handle successful connection
-  useEffect(() => {
-    if (connected && !connecting && isOpen) {
-      // Close the modal
-      if (onClose) onClose();
-      
-      // Call the onConnect callback if provided
-      if (onConnect) onConnect();
-    }
-  }, [connected, connecting, isOpen, onClose, onConnect]);
+  // Detect if user is on mobile device
+  const isMobileDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
 
-  // Handle potential errors
-  useEffect(() => {
-    const handleError = (event) => {
-      if (event.detail && onError) {
-        onError(event.detail);
-      }
-    };
+  const [isMobile, setIsMobile] = useState(false);
+  const [reconnectAttempted, setReconnectAttempted] = useState(false);
 
-    window.addEventListener('wallet-error', handleError);
-    return () => window.removeEventListener('wallet-error', handleError);
-  }, [onError]);
-
-  // Check for return from redirect
+  // Set mobile state on client side
   useEffect(() => {
-    const checkUrlForWalletReturn = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const hasWalletParams = urlParams.has('phantom_encryption_public_key') || 
-                            urlParams.has('errorCode');
-      
-      if (hasWalletParams) {
-        console.log('Detected return from wallet via URL parameters');
-        // Clean up URL if desired
-        if (window.history && window.history.replaceState) {
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
-    };
-    
-    checkUrlForWalletReturn();
+    setIsMobile(isMobileDevice());
   }, []);
 
+  // Listen for wallet return reconnect events
+  useEffect(() => {
+    const handleWalletReturnReconnect = () => {
+      console.log("Wallet return reconnect event received");
+      setReconnectAttempted(true);
+      
+      // Reset after a few seconds
+      setTimeout(() => {
+        setReconnectAttempted(false);
+      }, 3000);
+    };
+    
+    window.addEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
+    return () => window.removeEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
+  }, []);
+
+  // Close modal when connected successfully
+  useEffect(() => {
+    if (connected) {
+      console.log("Connection detected, closing modal");
+      onClose();
+      setIsAttemptingConnect(false);
+      
+      // Clear any pending connection flags when successfully connected
+      localStorage.removeItem('wallet_connect_pending');
+      localStorage.removeItem('wallet_connect_timestamp');
+    }
+  }, [connected, onClose]);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsAttemptingConnect(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
-  
+
+  const wallets = [
+    {
+      name: 'Phantom',
+      detected: true,
+      logo: '/images/phantom_wallet.png'
+    }
+  ];
+
+  const handleWalletSelect = async (walletName) => {
+    // Set attempting state immediately for visual feedback
+    setIsAttemptingConnect(true);
+
+    try {
+      // For mobile, dispatch an event to set connection pending flags
+      if (isMobile) {
+        window.dispatchEvent(new Event('wallet-connect-start'));
+      }
+      
+      // Use wallet adapter select - simplifying to match the tutorial approach
+      select(walletName);
+    } catch (error) {
+      console.error("Wallet selection error:", error);
+      setIsAttemptingConnect(false);
+      if (onError) {
+        onError('Failed to connect to wallet. Please try again.');
+      }
+    }
+  };
+
+  // Option for direct Phantom deep link on mobile
+  const handleDirectPhantomLink = () => {
+    if (!isMobile) return;
+    
+    try {
+      // Set pending flags
+      localStorage.setItem('wallet_connect_pending', 'true');
+      localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
+      
+      // Direct link to Phantom with callback to our site
+      window.location.href = `https://phantom.app/ul/browse/https://theruggame.fun/`;
+    } catch (error) {
+      console.error("Direct link error:", error);
+      if (onError) {
+        onError('Failed to open Phantom app. Please try connecting manually.');
+      }
+    }
+  };
+
   return (
-    <WalletMultiButton />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ width: isMobile ? '85%' : '24rem', maxWidth: '420px' }}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-white text-xl">Connect a wallet on Solana</h2>
+          <button onClick={onClose} className="text-white hover:text-gray-300">
+            ✕
+          </button>
+        </div>
+
+        {/* Mobile-specific instructions */}
+        {isMobile && (
+          <div className="mb-4 py-2 px-3 bg-blue-900/30 rounded-md text-white text-sm">
+            {reconnectAttempted 
+              ? "Completing connection... If you approved in your wallet, you'll be connected shortly."
+              : "You'll be redirected to the Phantom app. After connecting, return to this browser to continue."}
+          </div>
+        )}
+
+        {/* Connection status */}
+        {(connecting || isAttemptingConnect) && (
+          <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
+            {isMobile
+              ? "Opening wallet app... If nothing happens, please ensure Phantom is installed."
+              : "Connecting to wallet... Check your wallet extension."}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {wallets.map((walletOption) => (
+            <div
+              key={walletOption.name}
+              onClick={() => walletOption.detected && !connecting && !isAttemptingConnect && 
+                (isMobile ? handleDirectPhantomLink() : handleWalletSelect(walletOption.name))}
+              className={`
+                flex items-center gap-3 
+                p-3 rounded-lg
+                ${(connecting || isAttemptingConnect)
+                  ? 'bg-[#3a3a58] border border-blue-400'
+                  : walletOption.detected
+                    ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
+                    : 'bg-gray-700 text-gray-400 opacity-50'}
+                relative
+              `}
+            >
+              <Image
+                src={walletOption.logo}
+                alt={`${walletOption.name} logo`}
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+              <div className="flex justify-between flex-1">
+                <span>{walletOption.name}</span>
+                <span>
+                  {isMobile ? 'Mobile App' : (walletOption.detected ? 'Detected' : 'Not Detected')}
+                </span>
+              </div>
+
+              {/* Simple loading indicator */}
+              {(connecting || isAttemptingConnect) && (
+                <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Fallback instruction for mobile users */}
+        {isMobile && (
+          <div className="mt-4 text-xs text-gray-400">
+            If you don't have Phantom installed, you can download it from the App Store or Google Play.
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
 export default WalletConnectionModal;
-
 // 'use client';
-
-// import React, { useState, useEffect } from 'react';
-// import { useWallet } from '@solana/wallet-adapter-react';
-// import Image from 'next/image';
-
-// export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
-//   const { select, connecting, connected } = useWallet();
-//   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
-  
-//   // Detect if user is on mobile device
-//   const isMobileDevice = () => {
-//     if (typeof navigator === 'undefined') return false;
-//     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-//   };
-
-//   const [isMobile, setIsMobile] = useState(false);
-//   const [reconnectAttempted, setReconnectAttempted] = useState(false);
-
-//   // Set mobile state on client side
-//   useEffect(() => {
-//     setIsMobile(isMobileDevice());
-//   }, []);
-
-//   // Listen for wallet return reconnect events
-//   useEffect(() => {
-//     const handleWalletReturnReconnect = () => {
-//       console.log("Wallet return reconnect event received");
-//       setReconnectAttempted(true);
-      
-//       // Reset after a few seconds
-//       setTimeout(() => {
-//         setReconnectAttempted(false);
-//       }, 3000);
-//     };
-    
-//     window.addEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
-//     return () => window.removeEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
-//   }, []);
-
-//   // Close modal when connected successfully
-//   useEffect(() => {
-//     if (connected) {
-//       console.log("Connection detected, closing modal");
-//       onClose();
-//       setIsAttemptingConnect(false);
-      
-//       // Clear any pending connection flags when successfully connected
-//       localStorage.removeItem('wallet_connect_pending');
-//       localStorage.removeItem('wallet_connect_timestamp');
-//     }
-//   }, [connected, onClose]);
-
-//   // Reset state when modal closes
-//   useEffect(() => {
-//     if (!isOpen) {
-//       setIsAttemptingConnect(false);
-//     }
-//   }, [isOpen]);
-
-//   if (!isOpen) return null;
-
-//   const wallets = [
-//     {
-//       name: 'Phantom',
-//       detected: true,
-//       logo: '/images/phantom_wallet.png'
-//     }
-//   ];
-
-//   const handleWalletSelect = async (walletName) => {
-//     // Set attempting state immediately for visual feedback
-//     setIsAttemptingConnect(true);
-
-//     try {
-//       // For mobile, dispatch an event to set connection pending flags
-//       if (isMobile) {
-//         window.dispatchEvent(new Event('wallet-connect-start'));
-//       }
-      
-//       // Use wallet adapter select - simplifying to match the tutorial approach
-//       select(walletName);
-//     } catch (error) {
-//       console.error("Wallet selection error:", error);
-//       setIsAttemptingConnect(false);
-//       if (onError) {
-//         onError('Failed to connect to wallet. Please try again.');
-//       }
-//     }
-//   };
-
-//   // Option for direct Phantom deep link on mobile
-//   const handleDirectPhantomLink = () => {
-//     if (!isMobile) return;
-    
-//     try {
-//       // Set pending flags
-//       localStorage.setItem('wallet_connect_pending', 'true');
-//       localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
-      
-//       // Direct link to Phantom with callback to our site
-//       window.location.href = `https://phantom.app/ul/browse/https://theruggame.fun/`;
-//     } catch (error) {
-//       console.error("Direct link error:", error);
-//       if (onError) {
-//         onError('Failed to open Phantom app. Please try connecting manually.');
-//       }
-//     }
-//   };
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-//       <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ width: isMobile ? '85%' : '24rem', maxWidth: '420px' }}>
-//         <div className="flex justify-between items-center mb-4">
-//           <h2 className="text-white text-xl">Connect a wallet on Solana</h2>
-//           <button onClick={onClose} className="text-white hover:text-gray-300">
-//             ✕
-//           </button>
-//         </div>
-
-//         {/* Mobile-specific instructions */}
-//         {isMobile && (
-//           <div className="mb-4 py-2 px-3 bg-blue-900/30 rounded-md text-white text-sm">
-//             {reconnectAttempted 
-//               ? "Completing connection... If you approved in your wallet, you'll be connected shortly."
-//               : "You'll be redirected to the Phantom app. After connecting, return to this browser to continue."}
-//           </div>
-//         )}
-
-//         {/* Connection status */}
-//         {(connecting || isAttemptingConnect) && (
-//           <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
-//             {isMobile
-//               ? "Opening wallet app... If nothing happens, please ensure Phantom is installed."
-//               : "Connecting to wallet... Check your wallet extension."}
-//           </div>
-//         )}
-
-//         <div className="space-y-2">
-//           {wallets.map((walletOption) => (
-//             <div
-//               key={walletOption.name}
-//               onClick={() => walletOption.detected && !connecting && !isAttemptingConnect && 
-//                 (isMobile ? handleDirectPhantomLink() : handleWalletSelect(walletOption.name))}
-//               className={`
-//                 flex items-center gap-3 
-//                 p-3 rounded-lg
-//                 ${(connecting || isAttemptingConnect)
-//                   ? 'bg-[#3a3a58] border border-blue-400'
-//                   : walletOption.detected
-//                     ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
-//                     : 'bg-gray-700 text-gray-400 opacity-50'}
-//                 relative
-//               `}
-//             >
-//               <Image
-//                 src={walletOption.logo}
-//                 alt={`${walletOption.name} logo`}
-//                 width={24}
-//                 height={24}
-//                 className="rounded-full"
-//               />
-//               <div className="flex justify-between flex-1">
-//                 <span>{walletOption.name}</span>
-//                 <span>
-//                   {isMobile ? 'Mobile App' : (walletOption.detected ? 'Detected' : 'Not Detected')}
-//                 </span>
-//               </div>
-
-//               {/* Simple loading indicator */}
-//               {(connecting || isAttemptingConnect) && (
-//                 <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
-//               )}
-//             </div>
-//           ))}
-//         </div>
-
-//         {/* Fallback instruction for mobile users */}
-//         {isMobile && (
-//           <div className="mt-4 text-xs text-gray-400">
-//             If you don't have Phantom installed, you can download it from the App Store or Google Play.
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default WalletConnectionModal;
-// // 'use client';
 
 // import React, { useState, useEffect } from 'react';
 // import { useWallet } from '@solana/wallet-adapter-react';
