@@ -27,7 +27,7 @@ export const WalletProviderComponent = ({ children }) => {
       appIdentity: {
         name: "The Rug Game", // Replace with your app name
       },
-      redirectUrl: currentUrl // This is the key part for redirecting back to your site
+      redirectUrl: "https://www.theruggame.fun/" // This is the key part for redirecting back to your site
     });
     
     setWallets([phantomAdapter]);
