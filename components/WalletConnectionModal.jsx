@@ -110,8 +110,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       localStorage.setItem('wallet_connect_pending', 'true');
       localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
 
-      const appUrl = encodeURIComponent('https://theruggame.fun/');
-      const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
+      const appUrl = 'https://theruggame.fun/';
+      const redirectUrl = 'https://theruggame.fun/wallet-callback';
 
       const params = new URLSearchParams({
         dapp_encryption_public_key: dappEncryptionPublicKey,
