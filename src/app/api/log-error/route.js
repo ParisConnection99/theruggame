@@ -12,22 +12,13 @@ export async function POST(request) {
       errorData.timestamp = new Date().toISOString();
     }
     
-    // Format the error for logging
-    const logEntry = JSON.stringify({
+    const enhancedErrorData = {
       ...errorData,
       userAgent: request.headers.get('user-agent'),
       ip: request.headers.get('x-forwarded-for') || 'unknown',
-    });
+    };
     
-    // Create logs directory if it doesn't exist
-    const logsDir = path.join(process.cwd(), 'logs');
-    await fs.mkdir(logsDir, { recursive: true });
-    
-    // Append to log file (one error per line for easy parsing)
-    const logFile = path.join(logsDir, 'error-log.jsonl');
-    await fs.appendFile(logFile, logEntry + '\n');
-    
-    console.error('Client error logged:', errorData.message);
+    console.error('CLIENT ERROR:', JSON.stringify(enhancedErrorData, null, 2));
     
     return NextResponse.json({ success: true });
   } catch (error) {
