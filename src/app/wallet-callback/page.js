@@ -100,6 +100,11 @@ export default function WalletCallbackPage() {
       }
       const dappPrivateKey = bs58.decode(storedPrivateKey);
 
+      logInfo('Decrypt Phantom Data', {
+        component: 'WalletCallBackPage',
+        publicKey: dappPrivateKey
+      });
+
       // Decode the base58 encoded inputs
       const phantomPublicKey = bs58.decode(phantomEncryptionPublicKey);
       const nonceDecoded = bs58.decode(nonce);
