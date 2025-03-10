@@ -8,7 +8,6 @@ import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
-import ErrorBoundary from './ErrorBoundary';
 
 
 export default function Header() {
@@ -322,7 +321,7 @@ export default function Header() {
      
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
         return (
-            <ErrorBoundary>
+            <div>
                 {!connected ? (
                     <div 
                         onClick={() => {
@@ -366,7 +365,7 @@ export default function Header() {
                         {errorMessage || 'Connection failed, try again'}
                     </div>
                 )}
-            </ErrorBoundary>
+            </div>
         );
     };
 
@@ -400,7 +399,6 @@ export default function Header() {
     );
 
     return (
-        <ErrorBoundary>
         <header className="w-full relative">
             {/* Navigation Container */}
             <div className="flex justify-between items-center w-full px-5 mt-5">
@@ -491,6 +489,5 @@ export default function Header() {
                 </div>
             )}
         </header>
-        </ErrorBoundary>
     );
 }

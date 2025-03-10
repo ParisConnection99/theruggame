@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 import nacl from 'tweetnacl';
-import ErrorBoundary from './ErrorBoundary'; 
 import bs58 from 'bs58';
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
@@ -138,7 +137,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     }
   };
 
-  // Content component wrapped by ErrorBoundary
+  // Content component
   const ModalContent = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ width: isMobile ? '85%' : '24rem', maxWidth: '420px' }}>
@@ -216,12 +215,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     </div>
   );
 
-  // Return the entire modal wrapped in an ErrorBoundary
-  return (
-    <ErrorBoundary>
-      <ModalContent />
-    </ErrorBoundary>
-  );
+  // Return the modal
+  return <ModalContent />;
 };
 
 export default WalletConnectionModal;
