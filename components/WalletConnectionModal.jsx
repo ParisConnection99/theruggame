@@ -7,13 +7,23 @@ import {
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError}) => {
+  if (!isOpen) return null;
+  
   return (
-    <WalletModalProvider>
-      <WalletMultiButton />
-      <WalletDisconnectButton />
-    </WalletModalProvider>
+    <div className="wallet-modal-overlay">
+      <div className="wallet-modal-container">
+        <div className="wallet-modal-header">
+          <h3>Connect your wallet</h3>
+          <button onClick={onClose} className="close-button">×</button>
+        </div>
+        <div className="wallet-modal-content">
+          <WalletMultiButton />
+          <p className="wallet-instructions">Click the button above to connect your wallet</p>
+        </div>
+      </div>
+    </div>
   );
-}
+};
 
 // 'use client';
 
