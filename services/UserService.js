@@ -32,11 +32,15 @@ class UserService {
      * @returns {Promise<Object|null>} User object or null if not found
      */
     async getUserByWallet(walletAddress) {
+        console.log(`Searching for wallet: "${walletAddress}"`);
+        
         const { data, error } = await this.supabase
             .from(this.tableName)
             .select('*')
             .eq('wallet_ca', walletAddress)
             .single();
+
+            console.log('Query result:', { data, error }); // Log the complete response
     
         if (error) {
             console.error(`Error in user service: ${error}`);
