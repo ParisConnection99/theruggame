@@ -25,6 +25,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError}) => {
   );
 };
 
+export default WalletConnectionModal;
+
 // 'use client';
 
 // import React, { useState, useEffect } from 'react';
