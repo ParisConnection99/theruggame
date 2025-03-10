@@ -99,8 +99,7 @@ export default function Header() {
             }
         
             console.log(`Checking user in supabase...`);
-            console.log(`Public Key: ${publicKey.toString()}`);
-            const userResponse = await fetch(`/api/users/wallet?wallet=${publicKey.toString()}`, {
+            const userResponse = await fetch(`/api/users?wallet=${publicKey.toString()}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             });
