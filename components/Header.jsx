@@ -10,6 +10,7 @@ import UserService from '@/services/UserService';
 import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
+import ErrorBoundary from './ErrorBoundary';
 
 const userService = new UserService(supabase);
 
@@ -184,7 +185,7 @@ export default function Header() {
      
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
         return (
-            <>
+            <ErrorBoundary>
                 {!connected ? (
                     <div 
                         onClick={() => {
@@ -228,7 +229,7 @@ export default function Header() {
                         {errorMessage || 'Connection failed, try again'}
                     </div>
                 )}
-            </>
+            </ErrorBoundary>
         );
     };
 
@@ -262,6 +263,7 @@ export default function Header() {
     );
 
     return (
+        <ErrorBoundary>
         <header className="w-full relative">
             {/* Navigation Container */}
             <div className="flex justify-between items-center w-full px-5 mt-5">
@@ -352,5 +354,6 @@ export default function Header() {
                 </div>
             )}
         </header>
+        </ErrorBoundary>
     );
 }

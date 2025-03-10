@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 import nacl from 'tweetnacl';
+import ErrorBoundary from './ErrorBoundary'; 
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected } = useWallet();
@@ -114,9 +115,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
 
       const params = new URLSearchParams({
         dapp_encryption_public_key: dappEncryptionPublicKey,
-        cluster: "mainnet-beta",
-        app_url: "https://phantom.app",
-        redirect_link: redirectUrl
+        app_url: "https://theruggame.fun",
+        redirect_link: "https://theruggame.fun/wallet-callback"
       });
 
       const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
@@ -131,7 +131,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     }
   };
 
-  return (
+  // Content component wrapped by ErrorBoundary
+  const ModalContent = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ width: isMobile ? '85%' : '24rem', maxWidth: '420px' }}>
         <div className="flex justify-between items-center mb-4">
@@ -206,6 +207,13 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         )}
       </div>
     </div>
+  );
+
+  // Return the entire modal wrapped in an ErrorBoundary
+  return (
+    <ErrorBoundary>
+      <ModalContent />
+    </ErrorBoundary>
   );
 };
 
