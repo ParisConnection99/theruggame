@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { logError } from '@/utils/errorLogger';
 import { logInfo, logError } from '@/utils/logger';
 
 
