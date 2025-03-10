@@ -37,10 +37,27 @@ class UserService {
             .select('*')
             .eq('wallet_ca', walletAddress)
             .single();
-
-        if (error && error.code !== 'PGRST116') throw error;
+    
+        if (error) {
+            // PGRST116 is the "no rows returned" error code for Supabase
+            if (error.code === 'PGRST116') {
+                return null; // Return null when no user is found
+            }
+            throw error; // Still throw for other types of errors
+        }
+        
         return data;
     }
+    // async getUserByWallet(walletAddress) {
+    //     const { data, error } = await this.supabase
+    //         .from(this.tableName)
+    //         .select('*')
+    //         .eq('wallet_ca', walletAddress)
+    //         .single();
+
+    //     if (error && error.code !== 'PGRST116') throw error;
+    //     return data;
+    // }
 
     /**
      * Get user by ID
