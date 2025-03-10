@@ -1,158 +1,221 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { logInfo, logError } from '@/utils/logger';
+import React, { useState, useEffect, useRef } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
+import Image from 'next/image';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 
-export default function WalletCallbackPage() {
-  const router = useRouter();
-  const [status, setStatus] = useState('Connecting wallet...');
-  
+export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
+  const { select, connecting, connected } = useWallet();
+  const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
+  const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
+  const keypairRef = useRef(null);
+
+  // Detect if user is on mobile device
+  const isMobileDevice = () => {
+    if (typeof navigator === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [reconnectAttempted, setReconnectAttempted] = useState(false);
+
+  // Set mobile state on client side
   useEffect(() => {
-    async function processCallback() {
-      try {
-        // Parse query parameters from the URL
-        const queryParams = new URLSearchParams(window.location.search);
-        
-        // Get the parameters from Phantom's response
-        const phantomEncryptionPublicKey = queryParams.get('phantom_encryption_public_key');
-        const nonce = queryParams.get('nonce');
-        const encryptedData = queryParams.get('data');
-        
-        logInfo('Received wallet callback parameters', {
-          component: 'WalletCallbackPage',
-          hasPhantomKey: !!phantomEncryptionPublicKey,
-          hasNonce: !!nonce,
-          hasData: !!encryptedData
-        });
-        
-        if (!phantomEncryptionPublicKey || !nonce || !encryptedData) {
-          setStatus('Missing required parameters');
-          throw new Error('Missing required connection parameters');
-        }
+    // Generate encryption keypair
+    const keypair = nacl.box.keyPair();
+    keypairRef.current = keypair;
 
-        // Retrieve the private key that was stored during connection initiation
-        const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-        if (!storedPrivateKey) {
-          setStatus('Encryption key not found');
-          throw new Error('Encryption private key not found in localStorage');
-        }
+    // Store the public key in base58 format for Phantom
+    const publicKeyBase58 = bs58.encode(keypair.publicKey);
+    setDappEncryptionPublicKey(publicKeyBase58);
 
-        // Decrypt the data from Phantom
-        const decryptedData = await decryptPhantomData(
-          phantomEncryptionPublicKey, 
-          nonce, 
-          encryptedData, 
-          storedPrivateKey
-        );
-        
-        // Parse the decrypted JSON data
-        const { public_key, session } = JSON.parse(decryptedData);
-        
-        logInfo('Successfully decrypted data', {
-          component: 'WalletCallbackPage',
-          publicKey: public_key,
-        });
-        
-        if (public_key && session) {
-          // Store the connection details in localStorage
-          localStorage.setItem('phantomPublicKey', public_key);
-          localStorage.setItem('phantomSession', session);
-          localStorage.setItem('wallet_return_reconnect', 'true');
-          localStorage.setItem('wallet_return_timestamp', Date.now().toString());
-          
-          // Dispatch custom event with wallet data before redirecting
-          const walletEvent = new CustomEvent('wallet-callback-event', {
-            detail: {
-              publicKey: public_key,
-              session
-            }
-          });
-          
-          console.log('Dispatching wallet-callback-event with public key:', public_key);
-          window.dispatchEvent(walletEvent);
-          
-          setStatus('Connected successfully! Redirecting...');
-          
-          // Short delay to ensure event is processed before redirecting
-          setTimeout(() => {
-            // Redirect the user to the main app page
-            router.push('/');
-          }, 1000);
-        } else {
-          setStatus('Missing data in decrypted payload');
-          throw new Error('Missing required data in decrypted payload');
-        }
-      } catch (error) {
-        // Catch any errors that might occur
-        logError(error, {
-          component: 'WalletCallBackPage',
-          action: 'processing wallet callback'
-        });
-        console.error('Error processing wallet callback:', error.message);
-        
-        // Set error status but still redirect after a delay
-        setStatus(`Error: ${error.message}`);
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
-      }
+    // Store the private key securely (e.g., in state or context)
+    const privateKeyBase58 = bs58.encode(keypair.secretKey);
+    localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+
+    setIsMobile(isMobileDevice());
+  }, []);
+
+  // Listen for wallet return reconnect events
+  useEffect(() => {
+    const handleWalletReturnReconnect = () => {
+      console.log("Wallet return reconnect event received");
+      setReconnectAttempted(true);
+
+      // Reset after a few seconds
+      setTimeout(() => {
+        setReconnectAttempted(false);
+      }, 3000);
+    };
+
+    window.addEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
+    return () => window.removeEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
+  }, []);
+
+  // Close modal when connected successfully
+  useEffect(() => {
+    if (connected) {
+      console.log("Connection detected, closing modal");
+      onClose();
+      setIsAttemptingConnect(false);
+
+      // Clear any pending connection flags when successfully connected
+      localStorage.removeItem('wallet_connect_pending');
+      localStorage.removeItem('wallet_connect_timestamp');
     }
+  }, [connected, onClose]);
 
-    processCallback();
-  }, [router]);
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsAttemptingConnect(false);
+    }
+  }, [isOpen]);
 
-  /**
-   * Decrypts data from Phantom
-   * @param {string} phantomEncryptionPublicKey - The encryption public key from Phantom
-   * @param {string} nonce - The nonce from Phantom
-   * @param {string} encryptedData - The encrypted data from Phantom
-   * @param {string} storedPrivateKey - The stored private key in base58 format
-   * @returns {string} - The decrypted data as a string
-   */
-  async function decryptPhantomData(phantomEncryptionPublicKey, nonce, encryptedData, storedPrivateKey) {
+  if (!isOpen) return null;
+
+  const wallets = [
+    {
+      name: 'Phantom',
+      detected: true,
+      logo: '/images/phantom_wallet.png'
+    }
+  ];
+
+  const handleWalletSelect = async (walletName) => {
+    // Set attempting state immediately for visual feedback
+    setIsAttemptingConnect(true);
+
     try {
-      console.log('Attempting to decrypt Phantom data');
-      
-      // Decode the base58 encoded inputs
-      const phantomPublicKey = bs58.decode(phantomEncryptionPublicKey);
-      const nonceDecoded = bs58.decode(nonce);
-      const dataDecoded = bs58.decode(encryptedData);
-      const dappPrivateKey = bs58.decode(storedPrivateKey);
-      
-      // Log lengths to debug potential issues
-      console.log('Key lengths:', {
-        phantomPublicKey: phantomPublicKey.length,
-        nonce: nonceDecoded.length,
-        data: dataDecoded.length,
-        privateKey: dappPrivateKey.length
-      });
-      
-      // Create shared secret using nacl box
-      const sharedSecret = nacl.box.before(phantomPublicKey, dappPrivateKey);
-      
-      // Decrypt the data
-      const decryptedData = nacl.box.open.after(dataDecoded, nonceDecoded, sharedSecret);
-      
-      if (!decryptedData) {
-        throw new Error('Failed to decrypt data');
+      // For mobile, dispatch an event to set connection pending flags
+      if (isMobile) {
+        window.dispatchEvent(new Event('wallet-connect-start'));
       }
-      
-      // Convert the decrypted data to a string
-      return new TextDecoder().decode(decryptedData);
-    } catch (error) {
-      console.error('Decryption error:', error);
-      logError(error, {
-        component: 'WalletCallBackPage',
-        action: 'decrypting phantom data'
-      });
-      throw new Error('Failed to decrypt Phantom data: ' + error.message);
-    }
-  }
 
-  return (
-    <div></div>
+      // Use wallet adapter select - simplifying to match the tutorial approach
+      select(walletName);
+    } catch (error) {
+      console.error("Wallet selection error:", error);
+      setIsAttemptingConnect(false);
+      if (onError) {
+        onError('Failed to connect to wallet. Please try again.');
+      }
+    }
+  };
+  // Option for direct Phantom deep link on mobile
+  const handleDirectPhantomLink = () => {
+    if (!isMobile) return;
+
+    try {
+      // Set pending flags
+      localStorage.setItem('wallet_connect_pending', 'true');
+      localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
+
+      const appUrl = 'https://theruggame.fun/';
+      const redirectUrl = 'https://theruggame.fun/wallet-callback';
+      const appIcon = 'https://theruggame.fun/images/logo1.png';
+
+      const params = new URLSearchParams({
+        dapp_encryption_public_key: dappEncryptionPublicKey,
+        cluster: "mainnet-beta",
+        app_url: appUrl,
+        redirect_link: redirectUrl
+      });
+
+      const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
+
+      // Direct link to Phantom with callback to our site
+      window.location.href = deepLink;
+    } catch (error) {
+      console.error("Direct link error:", error);
+      if (onError) {
+        onError('Failed to open Phantom app. Please try connecting manually.');
+      }
+    }
+  };
+
+  // Content component
+  const ModalContent = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-[#1c1c28] rounded-lg p-6 border border-white" style={{ width: isMobile ? '85%' : '24rem', maxWidth: '420px' }}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-white text-xl">Connect a wallet on Solana</h2>
+          <button onClick={onClose} className="text-white hover:text-gray-300">
+            ✕
+          </button>
+        </div>
+
+        {/* Mobile-specific instructions */}
+        {isMobile && (
+          <div className="mb-4 py-2 px-3 bg-blue-900/30 rounded-md text-white text-sm">
+            {reconnectAttempted
+              ? "Completing connection... If you approved in your wallet, you'll be connected shortly."
+              : "You'll be redirected to the Phantom app. After connecting, return to this browser to continue."}
+          </div>
+        )}
+
+        {/* Connection status */}
+        {(connecting || isAttemptingConnect) && (
+          <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
+            {isMobile
+              ? "Opening wallet app... If nothing happens, please ensure Phantom is installed."
+              : "Connecting to wallet... Check your wallet extension."}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {wallets.map((walletOption) => (
+            <div
+              key={walletOption.name}
+              onClick={() => walletOption.detected && !connecting && !isAttemptingConnect &&
+                (isMobile ? handleDirectPhantomLink() : handleWalletSelect(walletOption.name))}
+              className={`
+                flex items-center gap-3 
+                p-3 rounded-lg
+                ${(connecting || isAttemptingConnect)
+                  ? 'bg-[#3a3a58] border border-blue-400'
+                  : walletOption.detected
+                    ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
+                    : 'bg-gray-700 text-gray-400 opacity-50'}
+                relative
+              `}
+            >
+              <Image
+                src={walletOption.logo}
+                alt={`${walletOption.name} logo`}
+                width={24}
+                height={24}
+                className="rounded-full"
+              />
+              <div className="flex justify-between flex-1">
+                <span>{walletOption.name}</span>
+                <span>
+                  {isMobile ? 'Mobile App' : (walletOption.detected ? 'Detected' : 'Not Detected')}
+                </span>
+              </div>
+
+              {/* Simple loading indicator */}
+              {(connecting || isAttemptingConnect) && (
+                <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Fallback instruction for mobile users */}
+        {isMobile && (
+          <div className="mt-4 text-xs text-gray-400">
+            If you don't have Phantom installed, you can download it from the App Store or Google Play.
+          </div>
+        )}
+      </div>
+    </div>
   );
-}
+
+  // Return the modal
+  return <ModalContent />;
+};
+
+export default WalletConnectionModal;
