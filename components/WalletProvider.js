@@ -92,7 +92,7 @@ export const WalletProviderComponent = ({ children }) => {
             },
             relayUrl: 'wss://relay.walletconnect.com',
             // Use a dedicated callback page
-            redirectUrl: `https://theruggame.fun/wallet-callback`,
+            redirectUrl: `https://theruggame.fun`,
             storageOptions: {
               storageId: 'theruggame-wallet-connect'
             },
