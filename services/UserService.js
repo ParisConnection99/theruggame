@@ -32,15 +32,11 @@ class UserService {
      * @returns {Promise<Object|null>} User object or null if not found
      */
     async getUserByWallet(walletAddress) {
-        console.log(`Searching for wallet: "${walletAddress}"`);
-        
         const { data, error } = await this.supabase
             .from(this.tableName)
             .select('*')
             .eq('wallet_ca', walletAddress)
             .single();
-
-            console.log('Query result:', { data, error }); // Log the complete response
     
         if (error) {
             console.error(`Error in user service: ${error}`);
@@ -53,17 +49,7 @@ class UserService {
         
         return data;
     }
-    // async getUserByWallet(walletAddress) {
-    //     const { data, error } = await this.supabase
-    //         .from(this.tableName)
-    //         .select('*')
-    //         .eq('wallet_ca', walletAddress)
-    //         .single();
-
-    //     if (error && error.code !== 'PGRST116') throw error;
-    //     return data;
-    // }
-
+  
     /**
      * Get user by ID
      * @param {string} userId - User UUID
