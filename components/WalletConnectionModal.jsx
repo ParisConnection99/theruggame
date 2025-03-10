@@ -97,9 +97,14 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       // Set pending flags
       localStorage.setItem('wallet_connect_pending', 'true');
       localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
+
+      const appUrl = encodeURIComponent('https://theruggame.fun');
+      const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
+
+      const deepLink = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectUrl}`;
       
       // Direct link to Phantom with callback to our site
-      window.location.href = `https://phantom.app/ul/browse/https://theruggame.fun/`;
+      window.location.href = deepLink;
     } catch (error) {
       console.error("Direct link error:", error);
       if (onError) {

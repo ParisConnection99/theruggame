@@ -1,29 +1,39 @@
-'use client';
+// app/wallet-callback/page.js
+'use client'; // Mark this as a Client Component
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function WalletCallback() {
+export default function WalletCallbackPage() {
   const router = useRouter();
-  
+
   useEffect(() => {
-    // Verify we have a pending connection
-    const pendingConnection = localStorage.getItem('wallet_connect_pending');
-    
-    console.log('Processing wallet callback', pendingConnection);
-    
-    // Short delay to ensure localStorage is available and router is ready
-    setTimeout(() => {
-      // Keep the flag set - we'll clear it after reconnection attempt
-      // Redirect back to main page
+    // Parse query parameters from the URL
+    const queryParams = new URLSearchParams(window.location.search);
+    const publicKey = queryParams.get('publicKey');
+    const session = queryParams.get('session');
+    const signature = queryParams.get('signature');
+
+    if (publicKey && session && signature) {
+      // Store the connection details in localStorage
+      localStorage.setItem('phantomPublicKey', publicKey);
+      localStorage.setItem('phantomSession', session);
+      localStorage.setItem('phantomSignature', signature);
+
+      // Redirect the user to the main app page
       router.push('/');
-    }, 800);
+    } else {
+      // If any of the required parameters are missing, show an error or redirect
+      console.error('Missing required query parameters');
+      router.push('/');
+    }
   }, [router]);
-  
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-      <div className="text-white text-xl">
-        Returning to application...
+    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Connecting to Phantom Wallet...</h1>
+        <p className="text-gray-400">Please wait while we complete the connection.</p>
       </div>
     </div>
   );
