@@ -110,13 +110,13 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       localStorage.setItem('wallet_connect_pending', 'true');
       localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
 
-      const appUrl = encodeURIComponent('https://theruggame.fun');
+      const appUrl = encodeURIComponent('https://theruggame.fun/');
       const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
 
       const params = new URLSearchParams({
         dapp_encryption_public_key: dappEncryptionPublicKey,
         app_url: appUrl,
-        redirect_link: redirectUrl
+        redirect_link: appUrl
       });
 
       const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
