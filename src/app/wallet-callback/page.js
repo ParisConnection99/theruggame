@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { logError } from '@/app/utils/errorLogger';
 
 export default function WalletCallbackPage() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function WalletCallbackPage() {
       }, 100);
     } else {
       // If any of the required parameters are missing, show an error
+      logError(error, { component: 'WalletCallBackPage', action: 'saving key + dispatching event'});
       console.error('Missing required connection details.');
       router.push('/');
     }

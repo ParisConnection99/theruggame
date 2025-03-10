@@ -8,6 +8,8 @@ import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
+import { logError } from '@/app/utils/errorLogger';
+
 
 
 export default function Header() {
@@ -83,6 +85,16 @@ export default function Header() {
                 // Show error message to user
                 const errorMessage = !walletData.publicKey ? "Wallet not connected properly" : "Authentication service unavailable";
                 showConnectionError(errorMessage);
+                logError(
+                    new Error(errorMessage), 
+                    {
+                      component: 'Header',
+                      method: 'handleWalletCallbackConnection',
+                      publicKeyAvailable: !!walletData.publicKey,
+                      authAvailable: !!auth,
+                      connectionStatus: 'error'
+                    }
+                  );
                 return;
             }
         
