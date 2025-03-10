@@ -8,7 +8,7 @@ import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
-import { logError } from '@/app/utils/errorLogger';
+import { logError } from '@/utils/errorLogger';
 
 
 

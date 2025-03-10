@@ -19,3 +19,5 @@ export function logError(error, context = {}) {
       }).catch(e => console.error('Failed to log error', e));
     }
   }
+
+  

@@ -7,7 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import ActivityBanner from '@/components/ActivityBanner'; 
-import { logError } from './utils/errorLogger';
+import { logError } from '@/utils/errorLogger';
 
 
 const geistSans = Geist({

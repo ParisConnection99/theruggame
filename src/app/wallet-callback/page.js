@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { logError } from '@/app/utils/errorLogger';
+import { logError } from '@/utils/errorLogger';
 
 export default function WalletCallbackPage() {
   const router = useRouter();
