@@ -1,12 +1,55 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
-  WalletDisconnectButton,
-  WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
+import { useEffect } from "react";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
-export const WalletConnectionModal = ({ isOpen, onClose, onError}) => {
+export const WalletConnectionModal = ({ isOpen, onClose, onError, onConnect }) => {
+  const { connected, connecting } = useWallet();
+  
+  // Handle successful connection
+  useEffect(() => {
+    if (connected && !connecting && isOpen) {
+      // Close the modal
+      if (onClose) onClose();
+      
+      // Call the onConnect callback if provided
+      if (onConnect) onConnect();
+    }
+  }, [connected, connecting, isOpen, onClose, onConnect]);
+
+  // Handle potential errors
+  useEffect(() => {
+    const handleError = (event) => {
+      if (event.detail && onError) {
+        onError(event.detail);
+      }
+    };
+
+    window.addEventListener('wallet-error', handleError);
+    return () => window.removeEventListener('wallet-error', handleError);
+  }, [onError]);
+
+  // Check for return from redirect
+  useEffect(() => {
+    const checkUrlForWalletReturn = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasWalletParams = urlParams.has('phantom_encryption_public_key') || 
+                            urlParams.has('errorCode');
+      
+      if (hasWalletParams) {
+        console.log('Detected return from wallet via URL parameters');
+        // Clean up URL if desired
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    };
+    
+    checkUrlForWalletReturn();
+  }, []);
+
   if (!isOpen) return null;
   
   return (
