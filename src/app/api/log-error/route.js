@@ -12,13 +12,13 @@ export async function POST(request) {
       errorData.timestamp = new Date().toISOString();
     }
     
-    // const enhancedErrorData = {
-    //   ...errorData,
-    //   userAgent: request.headers.get('user-agent'),
-    //   ip: request.headers.get('x-forwarded-for') || 'unknown',
-    // };
+    const enhancedErrorData = {
+      ...errorData,
+      userAgent: request.headers.get('user-agent'),
+      ip: request.headers.get('x-forwarded-for') || 'unknown',
+    };
     
-    console.error('CLIENT ERROR:', JSON.stringify(errorData, null, 2));
+    console.error('CLIENT ERROR:', JSON.stringify(enhancedErrorData, null, 2));
     
     return NextResponse.json({ success: true });
   } catch (error) {

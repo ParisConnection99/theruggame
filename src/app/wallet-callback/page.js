@@ -23,6 +23,13 @@ export default function WalletCallbackPage() {
         localStorage.setItem('phantomSignature', signature);
         localStorage.setItem('wallet_return_reconnect', 'true');
         localStorage.setItem('wallet_return_timestamp', Date.now().toString());
+
+        logInfo('Connection details', {
+          component: 'WalletCallbackPage',
+          publicKey: publicKey,
+          session: session,
+          signature: signature
+        });
         
         // Dispatch custom event with wallet data before redirecting
         const walletEvent = new CustomEvent('wallet-callback-event', {
