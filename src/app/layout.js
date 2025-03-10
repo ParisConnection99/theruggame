@@ -7,7 +7,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import ActivityBanner from '@/components/ActivityBanner'; 
-import { logError } from '@/utils/errorLogger';
+import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
+
 
 
 const geistSans = Geist({
@@ -56,31 +57,6 @@ export const metadata = {
   },
 };
 
-export function GlobalErrorHandler({ children }) {
-  useEffect(() => {
-    // Capture unhandled promise rejections
-    const handleUnhandledRejection = (event) => {
-      logError(event.reason, { type: 'unhandledRejection' });
-    };
-    
-    // Capture uncaught errors
-    const handleError = (event) => {
-      logError(event.error, { type: 'uncaughtError' });
-      // Prevent the default browser error handler
-      event.preventDefault();
-    };
-    
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    window.addEventListener('error', handleError);
-    
-    return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      window.removeEventListener('error', handleError);
-    };
-  }, []);
-  
-  return children;
-}
 
 export default function RootLayout({ children }) {
   return (
