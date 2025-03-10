@@ -21,11 +21,11 @@ export default function WalletCallbackPage() {
       localStorage.setItem('phantomSignature', signature);
 
       // Redirect the user to the main app page
-      router.push('/');
+      //router.push('/');
     } else {
       // If any of the required parameters are missing, show an error
       console.error('Missing required connection details.');
-      router.push('/');
+      //router.push('/');
     }
   }, [router]);
 
