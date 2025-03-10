@@ -115,8 +115,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
 
       const params = new URLSearchParams({
         dapp_encryption_public_key: dappEncryptionPublicKey,
-        app_url: "https://theruggame.fun",
-        redirect_link: "https://theruggame.fun/wallet-callback"
+        app_url: appUrl,
+        redirect_link: appUrl
       });
 
       const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
