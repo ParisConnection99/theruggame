@@ -28,6 +28,8 @@ export default function WalletCallbackPage() {
         encryptedData: encryptedData
       });
 
+      router.push('/');
+
       // Need to implement decryption of the data using your app's private key
       // and the phantom_encryption_public_key to create a shared secret
       // This is a placeholder for where you would decrypt the data
