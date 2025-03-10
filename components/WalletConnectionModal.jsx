@@ -6,7 +6,7 @@ import {
 } from "@solana/wallet-adapter-react-ui";
 require("@solana/wallet-adapter-react-ui/styles.css");
 
-export const SolanaConnect = () => {
+export const WalletConnectionModal = ({ isOpen, onClose, onError}) => {
   return (
     <WalletModalProvider>
       <WalletMultiButton />
