@@ -99,7 +99,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
       
       // Direct link to Phantom with callback to our site
-      window.location.href = `https://phantom.app/ul/browse/${window.location.origin}/wallet-callback`;
+      window.location.href = `https://phantom.app/ul/browse/https://theruggame.fun/wallet-callback`;
     } catch (error) {
       console.error("Direct link error:", error);
       if (onError) {

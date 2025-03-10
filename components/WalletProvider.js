@@ -87,12 +87,12 @@ export const WalletProviderComponent = ({ children }) => {
             metadata: {
               name: 'The Rug Game',
               description: 'The #1 Memecoin Prediction Market',
-              url: window.location.origin,
-              icons: [`${window.location.origin}/images/logo1.png`]
+              url: "https://theruggame.fun",
+              icons: [`$https://theruggame.fun/images/logo1.png`]
             },
             relayUrl: 'wss://relay.walletconnect.com',
             // Use a dedicated callback page
-            redirectUrl: `${window.location.origin}/wallet-callback`,
+            redirectUrl: `https://theruggame.fun/wallet-callback`,
             storageOptions: {
               storageId: 'theruggame-wallet-connect'
             },
@@ -116,8 +116,8 @@ export const WalletProviderComponent = ({ children }) => {
             metadata: {
               name: 'The Rug Game',
               description: 'The #1 Memecoin Prediction Market',
-              url: window.location.origin,
-              icons: [`${window.location.origin}/images/logo1.png`]
+              url: "https://theruggame.fun",
+              icons: [`https://theruggame.fun/images/logo1.png`]
             },
             relayUrl: 'wss://relay.walletconnect.com'
           }
