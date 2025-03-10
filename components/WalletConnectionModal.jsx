@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
 import nacl from 'tweetnacl';
 import ErrorBoundary from './ErrorBoundary'; 
+import bs58 from 'bs58';
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected } = useWallet();
   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
   const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
+  const keypairRef = useRef(null);
   
   // Detect if user is on mobile device
   const isMobileDevice = () => {
@@ -24,12 +26,15 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   useEffect(() => {
     // Generate encryption keypair
     const keypair = nacl.box.keyPair();
-    const publicKey = Buffer.from(keypair.publicKey).toString('base64');
-    setDappEncryptionPublicKey(publicKey);
+    keypairRef.current = keypair;
+    
+    // Store the public key in base58 format for Phantom
+    const publicKeyBase58 = bs58.encode(keypair.publicKey);
+    setDappEncryptionPublicKey(publicKeyBase58);
 
     // Store the private key securely (e.g., in state or context)
-    const privateKey = Buffer.from(keypair.secretKey).toString('base64');
-    localStorage.setItem('dappEncryptionPrivateKey', privateKey);
+    const privateKeyBase58 = bs58.encode(keypair.secretKey);
+    localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
 
     setIsMobile(isMobileDevice());
   }, []);
@@ -115,10 +120,11 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
 
       const params = new URLSearchParams({
         dapp_encryption_public_key: dappEncryptionPublicKey,
+        cluster: "mainnet-beta",
         app_url: appUrl,
-        redirect_link: appUrl
+        redirect_link: redirectUrl
       });
-
+      
       const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
       
       // Direct link to Phantom with callback to our site
