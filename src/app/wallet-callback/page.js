@@ -33,11 +33,6 @@ export default function WalletCallbackPage() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Connecting to Phantom Wallet...</h1>
-        <p className="text-gray-400">Please wait while we complete the connection.</p>
-      </div>
-    </div>
+    <div></div>
   );
 }

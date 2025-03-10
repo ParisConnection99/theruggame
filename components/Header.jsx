@@ -6,13 +6,10 @@ import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
 import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
-import UserService from '@/services/UserService';
-import { supabase } from '@/lib/supabaseClient';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
 import ErrorBoundary from './ErrorBoundary';
 
-const userService = new UserService(supabase);
 
 export default function Header() {
     const { publicKey, connected, wallet, connecting } = useWallet();
@@ -173,82 +170,6 @@ export default function Header() {
         }
     };
 
-    // const handleWalletConnection = async () => {
-    //     try {
-    //         console.log("Starting wallet connection process");
-    //         setConnectionStatus('connecting');
-            
-    //         if (!publicKey || !auth) {
-    //             console.log("Wallet connection aborted: publicKey or auth not available");
-    //             setConnectionStatus('error');
-    //             // Show error message to user
-    //             const errorMessage = !publicKey ? "Wallet not connected properly" : "Authentication service unavailable";
-    //             showConnectionError(errorMessage);
-    //             return;
-    //         }
-
-    //         console.log(`Checking user in supabase...`);
-    //         //const user = await userService.getUserByWallet(publicKey.toString());
-    //         const userResponse = await fetch(`/api/users/wallet?wallet=${publicKey.toString()}`, {
-    //             method: 'GET',
-    //             headers: { 'Content-Type': 'application/json' }
-    //           });
-
-    //         if (!userResponse.ok) {
-    //             const errorData = await userResponse.json();
-    //             throw new Error(errorData.error || 'Failed to fetch user.');
-    //         }
-
-    //         const user = await userResponse.json();
-
-    //         if(!user) {
-    //             console.log("Creating new user...");
-    //             // Create new user if doesn't exist
-    //             await userService.createUser({
-    //                 wallet_ca: publicKey.toString(),
-    //                 username: getDefaultUsername()
-    //             });
-    //         }
-    
-    //         // Get Firebase custom token
-    //         console.log("Getting Firebase token for:", publicKey.toString());
-    //         const response = await fetch('/api/auth', {
-    //             method: 'POST',
-    //             headers: { 'Content-Type': 'application/json' },
-    //             body: JSON.stringify({ publicKey: publicKey.toString() })
-    //         });
-    
-    //         const data = await response.json();
-    
-    //         if (data.error) {
-    //             setConnectionStatus('error');
-    //             showConnectionError(`Authentication error: ${data.error}`);
-    //             throw new Error(data.error);
-    //         }
-    
-    //         console.log("Signing in with custom token...");
-    //         await signInWithCustomToken(auth, data.token);
-    //         console.log("Firebase sign in successful");
-
-    //         // Then check and update userprofile
-    //         await checkUserProfile();
-    //         setConnectionStatus('success');
-    
-    //     } catch (error) {
-    //         console.error('Error during authentication:', error);
-    //         setConnectionStatus('error');
-            
-    //         // Provide specific error messages based on where the failure occurred
-    //         if (error.message?.includes('Firebase')) {
-    //             showConnectionError('Failed to authenticate with the server');
-    //         } else if (error.message?.includes('token')) {
-    //             showConnectionError('Failed to create user session');
-    //         } else {
-    //             showConnectionError(error.message || 'Connection failed, please try again');
-    //         }
-    //     }
-    // };
-
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -261,18 +182,6 @@ export default function Header() {
         return publicKey ? publicKey.toBase58().slice(0, 6) : '';
     };
 
-    const checkUserProfile = async () => {
-        if (!userProfile && publicKey) {
-          try {
-            const user = await userService.getUserByWallet(publicKey.toString());
-            setUserProfile(user);
-          } catch (error) {
-            console.error('Error fetching user profile:', error);
-            showConnectionError('Failed to load user profile');
-          }
-        }
-    };
-    
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
