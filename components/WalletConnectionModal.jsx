@@ -153,12 +153,6 @@ export default function WalletCallbackPage() {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-blue-900">
-      <div className="text-white text-center max-w-md px-4">
-        <h1 className="text-2xl mb-4">Wallet Connection</h1>
-        <p className="mb-2">{status}</p>
-        <div className="animate-pulse h-1 bg-blue-500 rounded"></div>
-      </div>
-    </div>
+    <div></div>
   );
 }
