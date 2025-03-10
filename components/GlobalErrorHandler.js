@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { logError } from '@/utils/errorLogger'; // Adjust path as needed
+import { logError } from '@/utils/logger'; // Adjust path as needed
 
 export function GlobalErrorHandler({ children }) {
   useEffect(() => {

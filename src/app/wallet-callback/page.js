@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { logError } from '@/utils/errorLogger';
+import { logInfo, logError } from '@/utils/logger';
+
 
 export default function WalletCallbackPage() {
   const router = useRouter();
@@ -33,6 +35,12 @@ export default function WalletCallbackPage() {
         });
         
         console.log('Dispatching wallet-callback-event with public key:', publicKey);
+
+        logInfo('Dispatching wallet callback-event', { 
+          component: 'WalletCallBackPage', 
+          publicKey: publicKey
+        });
+
         window.dispatchEvent(walletEvent);
         
         // Short delay to ensure event is processed before redirecting
