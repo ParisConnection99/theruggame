@@ -20,6 +20,8 @@ export default function WalletCallbackPage() {
       localStorage.setItem('phantomSession', session);
       localStorage.setItem('phantomSignature', signature);
 
+      // Add this right before router.push('/');
+      window.dispatchEvent(new Event('wallet-return-reconnect'));
       // Redirect the user to the main app page
       router.push('/');
     } else {
