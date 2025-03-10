@@ -1,5 +1,5 @@
 // app/wallet-callback/page.js
-'use client'; // Mark this as a Client Component
+'use client';
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -23,8 +23,8 @@ export default function WalletCallbackPage() {
       // Redirect the user to the main app page
       router.push('/');
     } else {
-      // If any of the required parameters are missing, show an error or redirect
-      console.error('Missing required query parameters');
+      // If any of the required parameters are missing, show an error
+      console.error('Missing required connection details.');
       router.push('/');
     }
   }, [router]);
