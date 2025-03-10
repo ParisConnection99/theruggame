@@ -1,112 +1,43 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
+import nacl from 'tweetnacl';
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected } = useWallet();
   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
-  
-  // Detect if user is on mobile device
-  const isMobileDevice = () => {
-    if (typeof navigator === 'undefined') return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  };
-
   const [isMobile, setIsMobile] = useState(false);
-  const [reconnectAttempted, setReconnectAttempted] = useState(false);
+  const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
 
-  // Set mobile state on client side
   useEffect(() => {
-    setIsMobile(isMobileDevice());
+    // Generate encryption keypair
+    const keypair = nacl.box.keyPair();
+    const publicKey = Buffer.from(keypair.publicKey).toString('base64');
+    setDappEncryptionPublicKey(publicKey);
+
+    // Store the private key securely (e.g., in state or context)
+    const privateKey = Buffer.from(keypair.secretKey).toString('base64');
+    localStorage.setItem('dappEncryptionPrivateKey', privateKey);
+
+    // Detect if the user is on a mobile device
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+    setIsMobile(isMobileDevice);
   }, []);
 
-  // Listen for wallet return reconnect events
-  useEffect(() => {
-    const handleWalletReturnReconnect = () => {
-      console.log("Wallet return reconnect event received");
-      setReconnectAttempted(true);
-      
-      // Reset after a few seconds
-      setTimeout(() => {
-        setReconnectAttempted(false);
-      }, 3000);
-    };
-    
-    window.addEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
-    return () => window.removeEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
-  }, []);
-
-  // Close modal when connected successfully
-  useEffect(() => {
-    if (connected) {
-      console.log("Connection detected, closing modal");
-      onClose();
-      setIsAttemptingConnect(false);
-      
-      // Clear any pending connection flags when successfully connected
-      localStorage.removeItem('wallet_connect_pending');
-      localStorage.removeItem('wallet_connect_timestamp');
-    }
-  }, [connected, onClose]);
-
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setIsAttemptingConnect(false);
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const wallets = [
-    {
-      name: 'Phantom',
-      detected: true,
-      logo: '/images/phantom_wallet.png'
-    }
-  ];
-
-  const handleWalletSelect = async (walletName) => {
-    // Set attempting state immediately for visual feedback
-    setIsAttemptingConnect(true);
-
-    try {
-      // For mobile, dispatch an event to set connection pending flags
-      if (isMobile) {
-        window.dispatchEvent(new Event('wallet-connect-start'));
-      }
-      
-      // Use wallet adapter select - simplifying to match the tutorial approach
-      select(walletName);
-    } catch (error) {
-      console.error("Wallet selection error:", error);
-      setIsAttemptingConnect(false);
-      if (onError) {
-        onError('Failed to connect to wallet. Please try again.');
-      }
-    }
-  };
-
-  // Option for direct Phantom deep link on mobile
   const handleDirectPhantomLink = () => {
     if (!isMobile) return;
-    
-    try {
-      // Set pending flags
-      localStorage.setItem('wallet_connect_pending', 'true');
-      localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
 
+    try {
       const appUrl = encodeURIComponent('https://theruggame.fun');
       const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
+      const deepLink = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectUrl}&dapp_encryption_public_key=${dappEncryptionPublicKey}`;
 
-      const deepLink = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectUrl}`;
-      
-      // Direct link to Phantom with callback to our site
+      // Open the deep link
       window.location.href = deepLink;
     } catch (error) {
-      console.error("Direct link error:", error);
+      console.error('Direct link error:', error);
       if (onError) {
         onError('Failed to open Phantom app. Please try connecting manually.');
       }
@@ -126,66 +57,29 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         {/* Mobile-specific instructions */}
         {isMobile && (
           <div className="mb-4 py-2 px-3 bg-blue-900/30 rounded-md text-white text-sm">
-            {reconnectAttempted 
-              ? "Completing connection... If you approved in your wallet, you'll be connected shortly."
-              : "You'll be redirected to the Phantom app. After connecting, return to this browser to continue."}
+            You'll be redirected to the Phantom app. After connecting, return to this browser to continue.
           </div>
         )}
 
-        {/* Connection status */}
-        {(connecting || isAttemptingConnect) && (
-          <div className="mb-4 py-2 px-3 bg-[#2a2a38] rounded-md text-white text-center">
-            {isMobile
-              ? "Opening wallet app... If nothing happens, please ensure Phantom is installed."
-              : "Connecting to wallet... Check your wallet extension."}
-          </div>
-        )}
-
+        {/* Wallet options */}
         <div className="space-y-2">
-          {wallets.map((walletOption) => (
-            <div
-              key={walletOption.name}
-              onClick={() => walletOption.detected && !connecting && !isAttemptingConnect && 
-                (isMobile ? handleDirectPhantomLink() : handleWalletSelect(walletOption.name))}
-              className={`
-                flex items-center gap-3 
-                p-3 rounded-lg
-                ${(connecting || isAttemptingConnect)
-                  ? 'bg-[#3a3a58] border border-blue-400'
-                  : walletOption.detected
-                    ? 'cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white'
-                    : 'bg-gray-700 text-gray-400 opacity-50'}
-                relative
-              `}
-            >
-              <Image
-                src={walletOption.logo}
-                alt={`${walletOption.name} logo`}
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-              <div className="flex justify-between flex-1">
-                <span>{walletOption.name}</span>
-                <span>
-                  {isMobile ? 'Mobile App' : (walletOption.detected ? 'Detected' : 'Not Detected')}
-                </span>
-              </div>
-
-              {/* Simple loading indicator */}
-              {(connecting || isAttemptingConnect) && (
-                <div className="absolute right-3 w-5 h-5 border-t-2 border-blue-500 rounded-full animate-spin"></div>
-              )}
+          <div
+            onClick={isMobile ? handleDirectPhantomLink : () => select('Phantom')}
+            className="flex items-center gap-3 p-3 rounded-lg cursor-pointer bg-[#2a2a38] hover:bg-[#3a3a48] text-white"
+          >
+            <Image
+              src="/images/phantom_wallet.png" // Replace with your Phantom logo path
+              alt="Phantom Wallet logo"
+              width={24}
+              height={24}
+              className="rounded-full"
+            />
+            <div className="flex justify-between flex-1">
+              <span>Phantom</span>
+              <span>{isMobile ? 'Mobile App' : 'Detected'}</span>
             </div>
-          ))}
-        </div>
-
-        {/* Fallback instruction for mobile users */}
-        {isMobile && (
-          <div className="mt-4 text-xs text-gray-400">
-            If you don't have Phantom installed, you can download it from the App Store or Google Play.
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
