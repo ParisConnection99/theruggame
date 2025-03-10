@@ -82,9 +82,6 @@ export function GlobalErrorHandler({ children }) {
   return children;
 }
 
-import { GlobalErrorHandler } from './GlobalErrorHandler';
-
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
