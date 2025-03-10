@@ -110,11 +110,28 @@ export default function WalletCallbackPage() {
       const nonceDecoded = bs58.decode(nonce);
       const dataDecoded = bs58.decode(encryptedData);
 
+      logInfo('Decrypt Phantom Data', {
+        component: 'WalletCallBackPage',
+        publicKey: phantomPublicKey,
+        nonceDecod: nonceDecoded,
+        dataDecod: dataDecoded
+      });
+
       // Create shared secret using nacl box
       const sharedSecret = nacl.box.before(phantomPublicKey, dappPrivateKey);
 
+      logInfo('Shared Secret', {
+        component: 'WalletCallBackPage',
+        sharedsecr: sharedSecret
+      });
+
       // Decrypt the data
       const decryptedData = nacl.box.open.after(dataDecoded, nonceDecoded, sharedSecret);
+
+      logInfo('Decrypted Data', {
+        component: 'WalletCallBackPage',
+        publicKey: decryptedData
+      });
 
       if (!decryptedData) {
         throw new Error('Failed to decrypt data');
