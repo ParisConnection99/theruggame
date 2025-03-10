@@ -113,9 +113,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
 
       const params = new URLSearchParams({
-        dapp_encryption_public_key: `${dappEncryptionPublicKey}`,
+        dapp_encryption_public_key: dappEncryptionPublicKey,
         cluster: "mainnet-beta",
-        app_url: appUrl,
+        app_url: "https://phantom.app",
         redirect_link: redirectUrl
       });
 
