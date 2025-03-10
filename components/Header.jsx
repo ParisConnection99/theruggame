@@ -83,37 +83,6 @@ export default function Header() {
         }
     }, [connecting, connected]);
 
-    useEffect(() => {
-        const checkWalletReturn = () => {
-          const returnFlag = localStorage.getItem('wallet_return_reconnect');
-          const timestamp = localStorage.getItem('wallet_return_timestamp');
-          
-          if (returnFlag === 'true' && timestamp) {
-            // Only process recent returns (within last 30 seconds)
-            const returnTime = parseInt(timestamp);
-            const now = Date.now();
-            if (now - returnTime < 30000) {
-              console.log("Detected return from wallet app");
-              // Clear the flags
-              localStorage.removeItem('wallet_return_reconnect');
-              localStorage.removeItem('wallet_return_timestamp');
-              
-              // Handle the wallet return (like triggering your handleWalletConnection)
-              if (publicKey) {
-                handleWalletConnection();
-              }
-            }
-          }
-        };
-        
-        // Check on initial mount
-        checkWalletReturn();
-        
-        // Also check periodically (optional)
-        const interval = setInterval(checkWalletReturn, 2000);
-        return () => clearInterval(interval);
-      }, [publicKey, handleWalletConnection]);
-    
     const handleWalletConnection = async () => {
         try {
             console.log("Starting wallet connection process");
@@ -178,6 +147,38 @@ export default function Header() {
             }
         }
     };
+
+    useEffect(() => {
+        const checkWalletReturn = () => {
+          const returnFlag = localStorage.getItem('wallet_return_reconnect');
+          const timestamp = localStorage.getItem('wallet_return_timestamp');
+          
+          if (returnFlag === 'true' && timestamp) {
+            // Only process recent returns (within last 30 seconds)
+            const returnTime = parseInt(timestamp);
+            const now = Date.now();
+            if (now - returnTime < 30000) {
+              console.log("Detected return from wallet app");
+              // Clear the flags
+              localStorage.removeItem('wallet_return_reconnect');
+              localStorage.removeItem('wallet_return_timestamp');
+              
+              // Handle the wallet return (like triggering your handleWalletConnection)
+              if (publicKey) {
+                handleWalletConnection();
+              }
+            }
+          }
+        };
+        
+        // Check on initial mount
+        checkWalletReturn();
+        
+        // Also check periodically (optional)
+        const interval = setInterval(checkWalletReturn, 2000);
+        return () => clearInterval(interval);
+      }, [publicKey, handleWalletConnection]);
+    
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
