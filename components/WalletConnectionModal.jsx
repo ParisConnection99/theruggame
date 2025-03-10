@@ -15,10 +15,27 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   };
 
   const [isMobile, setIsMobile] = useState(false);
+  const [reconnectAttempted, setReconnectAttempted] = useState(false);
 
   // Set mobile state on client side
   useEffect(() => {
     setIsMobile(isMobileDevice());
+  }, []);
+
+  // Listen for wallet return reconnect events
+  useEffect(() => {
+    const handleWalletReturnReconnect = () => {
+      console.log("Wallet return reconnect event received");
+      setReconnectAttempted(true);
+      
+      // Reset after a few seconds
+      setTimeout(() => {
+        setReconnectAttempted(false);
+      }, 3000);
+    };
+    
+    window.addEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
+    return () => window.removeEventListener('wallet-return-reconnect', handleWalletReturnReconnect);
   }, []);
 
   // Close modal when connected successfully
@@ -27,6 +44,10 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       console.log("Connection detected, closing modal");
       onClose();
       setIsAttemptingConnect(false);
+      
+      // Clear any pending connection flags when successfully connected
+      localStorage.removeItem('wallet_connect_pending');
+      localStorage.removeItem('wallet_connect_timestamp');
     }
   }, [connected, onClose]);
 
@@ -52,18 +73,37 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     setIsAttemptingConnect(true);
 
     try {
-      // Use select for both mobile and desktop
-      select(walletName);
-      
-      // For mobile, log the attempt
+      // For mobile, dispatch an event to set connection pending flags
       if (isMobile) {
-        console.log("Mobile wallet connection initiated");
+        window.dispatchEvent(new Event('wallet-connect-start'));
       }
+      
+      // Use wallet adapter select
+      select(walletName);
     } catch (error) {
       console.error("Wallet selection error:", error);
       setIsAttemptingConnect(false);
       if (onError) {
         onError('Failed to connect to wallet. Please try again.');
+      }
+    }
+  };
+
+  // Option for direct Phantom deep link on mobile
+  const handleDirectPhantomLink = () => {
+    if (!isMobile) return;
+    
+    try {
+      // Set pending flags
+      localStorage.setItem('wallet_connect_pending', 'true');
+      localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
+      
+      // Direct link to Phantom with callback to our site
+      window.location.href = `https://phantom.app/ul/browse/${window.location.origin}/wallet-callback`;
+    } catch (error) {
+      console.error("Direct link error:", error);
+      if (onError) {
+        onError('Failed to open Phantom app. Please try connecting manually.');
       }
     }
   };
@@ -81,7 +121,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         {/* Mobile-specific instructions */}
         {isMobile && (
           <div className="mb-4 py-2 px-3 bg-blue-900/30 rounded-md text-white text-sm">
-            You'll be redirected to the Phantom app. After connecting, return to this browser to continue.
+            {reconnectAttempted 
+              ? "Completing connection... If you approved in your wallet, you'll be connected shortly."
+              : "You'll be redirected to the Phantom app. After connecting, return to this browser to continue."}
           </div>
         )}
 
@@ -98,7 +140,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
           {wallets.map((walletOption) => (
             <div
               key={walletOption.name}
-              onClick={() => walletOption.detected && !connecting && !isAttemptingConnect && handleWalletSelect(walletOption.name)}
+              onClick={() => walletOption.detected && !connecting && !isAttemptingConnect && 
+                (isMobile ? handleDirectPhantomLink() : handleWalletSelect(walletOption.name))}
               className={`
                 flex items-center gap-3 
                 p-3 rounded-lg
