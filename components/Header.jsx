@@ -98,7 +98,15 @@ export default function Header() {
             }
 
             console.log(`Checking user in supabase...`);
-            const user = await userService.getUserByWallet(publicKey.toString());
+            //const user = await userService.getUserByWallet(publicKey.toString());
+            const userResponse = await fetch('/api/users');
+
+            if (!userResponse.ok) {
+                const errorData = await userResponse.json();
+                throw new Error(errorData.error || 'Failed to fetch user.');
+            }
+
+            const user = await userResponse.json();
 
             if(!user) {
                 console.log("Creating new user...");
