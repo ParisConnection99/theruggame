@@ -16,12 +16,13 @@ export default function WalletCallbackPage() {
 
     if (publicKey && session && signature) {
       // Store the connection details in localStorage
+      // Instead of dispatching an event
       localStorage.setItem('phantomPublicKey', publicKey);
       localStorage.setItem('phantomSession', session);
       localStorage.setItem('phantomSignature', signature);
+      localStorage.setItem('wallet_return_reconnect', 'true');
+      localStorage.setItem('wallet_return_timestamp', Date.now().toString());
 
-      // Add this right before router.push('/');
-      window.dispatchEvent(new Event('wallet-return-reconnect'));
       // Redirect the user to the main app page
       router.push('/');
     } else {
