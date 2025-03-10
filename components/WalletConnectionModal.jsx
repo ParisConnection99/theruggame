@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import Image from 'next/image';
+import nacl from 'tweetnacl';
 
 export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const { select, connecting, connected } = useWallet();
   const [isAttemptingConnect, setIsAttemptingConnect] = useState(false);
+  const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
   
   // Detect if user is on mobile device
   const isMobileDevice = () => {
@@ -19,6 +21,15 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
 
   // Set mobile state on client side
   useEffect(() => {
+    // Generate encryption keypair
+    const keypair = nacl.box.keyPair();
+    const publicKey = Buffer.from(keypair.publicKey).toString('base64');
+    setDappEncryptionPublicKey(publicKey);
+
+    // Store the private key securely (e.g., in state or context)
+    const privateKey = Buffer.from(keypair.secretKey).toString('base64');
+    localStorage.setItem('dappEncryptionPrivateKey', privateKey);
+
     setIsMobile(isMobileDevice());
   }, []);
 
@@ -101,7 +112,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       const appUrl = encodeURIComponent('https://theruggame.fun');
       const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
 
-      const deepLink = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&redirect_link=${redirectUrl}`;
+      const deepLink = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&dapp_encryption_public_key=${dappEncryptionPublicKey}&redirect_link=${redirectUrl}`;
       
       // Direct link to Phantom with callback to our site
       window.location.href = deepLink;
