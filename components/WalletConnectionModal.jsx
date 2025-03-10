@@ -112,7 +112,14 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       const appUrl = encodeURIComponent('https://theruggame.fun');
       const redirectUrl = encodeURIComponent('https://theruggame.fun/wallet-callback');
 
-      const deepLink = `https://phantom.app/ul/v1/connect?app_url=${appUrl}&dapp_encryption_public_key=${dappEncryptionPublicKey}&redirect_link=${redirectUrl}`;
+      const params = new URLSearchParams({
+        dapp_encryption_public_key: `${dappEncryptionPublicKey}`,
+        cluster: "mainnet-beta",
+        app_url: appUrl,
+        redirect_link: redirectUrl
+      });
+
+      const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
       
       // Direct link to Phantom with callback to our site
       window.location.href = deepLink;
