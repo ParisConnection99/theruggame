@@ -98,11 +98,17 @@ export default function WalletCallbackPage() {
       if (!storedPrivateKey) {
         throw new Error('Encryption private key not found in localStorage');
       }
+
+      logInfo('Stored Private Key', {
+        component: 'WalletCallBackPage',
+        stored_dapp_private_key: storedPrivateKey
+      });
+      
       const dappPrivateKey = bs58.decode(storedPrivateKey);
 
-      logInfo('Decrypt Phantom Data', {
+      logInfo('Decoded Stored Private Key', {
         component: 'WalletCallBackPage',
-        publicKey: dappPrivateKey
+        encoded_dapp_private_key: dappPrivateKey
       });
 
       // Decode the base58 encoded inputs
@@ -131,7 +137,7 @@ export default function WalletCallbackPage() {
       logInfo('Decrypted Data', {
         component: 'WalletCallBackPage',
         publicKey: decryptedData
-      });
+      }); 
 
       if (!decryptedData) {
         throw new Error('Failed to decrypt data');
