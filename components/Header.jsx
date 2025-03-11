@@ -55,7 +55,7 @@ useEffect(() => {
           if (!wallet) {
             select(new PhantomWalletAdapter());
             // Allow time for selection to complete
-            await new Promise(resolve => setTimeout(resolve, 800));
+            await new Promise(resolve => setTimeout(resolve, 1500));
           }
           
           // Now process the connection data without expecting a signature
