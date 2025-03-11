@@ -62,29 +62,51 @@ export const WalletProviderComponent = ({ children }) => {
 
       // Check if returning from wallet connection
       const checkWalletReturn = () => {
-        const pendingConnection = localStorage.getItem('wallet_connect_pending');
+        const pendingConnection = localStorage.getItem('wallet_return_reconnect');
         if (pendingConnection === 'true') {
-          // Clear the pending flag
-          localStorage.removeItem('wallet_connect_pending');
-
-          // Check if we're within a reasonable timeframe (5 minutes)
-          const timestamp = parseInt(localStorage.getItem('wallet_connect_timestamp') || '0');
-          const now = Date.now();
-          const fiveMinutes = 5 * 60 * 1000;
-
-          if (now - timestamp < fiveMinutes) {
-            console.log('Detected return from wallet connection');
-            // We'll attempt a reconnection
+          console.log('Detected return from wallet connection');
+          
+          // Get wallet data
+          const publicKey = localStorage.getItem('phantomPublicKey');
+          const session = localStorage.getItem('phantomSession');
+          
+          if (publicKey && session) {
+            // Dispatch event with available data
+            const walletEvent = new CustomEvent('wallet-callback-event', {
+              detail: { publicKey, session }
+            });
+            
+            // Short delay to ensure component is mounted
             setTimeout(() => {
-              console.log('Attempting to reconnect wallet after return');
-              window.dispatchEvent(new Event('wallet-return-reconnect'));
-            }, 1000); // Short delay to let things initialize
-          } else {
-            // Session probably expired
-            localStorage.removeItem('wallet_connect_timestamp');
+              window.dispatchEvent(walletEvent);
+            }, 1000);
           }
         }
       };
+      // const checkWalletReturn = () => {
+      //   const pendingConnection = localStorage.getItem('wallet_connect_pending');
+      //   if (pendingConnection === 'true') {
+      //     // Clear the pending flag
+      //     localStorage.removeItem('wallet_connect_pending');
+
+      //     // Check if we're within a reasonable timeframe (5 minutes)
+      //     const timestamp = parseInt(localStorage.getItem('wallet_connect_timestamp') || '0');
+      //     const now = Date.now();
+      //     const fiveMinutes = 5 * 60 * 1000;
+
+      //     if (now - timestamp < fiveMinutes) {
+      //       console.log('Detected return from wallet connection');
+      //       // We'll attempt a reconnection
+      //       setTimeout(() => {
+      //         console.log('Attempting to reconnect wallet after return');
+      //         window.dispatchEvent(new Event('wallet-return-reconnect'));
+      //       }, 1000); // Short delay to let things initialize
+      //     } else {
+      //       // Session probably expired
+      //       localStorage.removeItem('wallet_connect_timestamp');
+      //     }
+      //   }
+      // };
 
       checkWalletReturn();
 

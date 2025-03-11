@@ -36,79 +36,146 @@ export default function Header() {
         checkMobile();
     }, []);
 
-    // NEW EFFECT: Listen for wallet-callback event
-    useEffect(() => {
-        const handleWalletCallbackEvent = async (event) => {
-            console.log("Received wallet-callback event:", event.detail);
-
-            logInfo("Received wallet-callback event:", {
-                component: 'Header'
-            });
-
-            // Check if we have the necessary data
-            if (event.detail && event.detail.publicKey) {
-                // Process the wallet connection using the provided data
-                //
-                try {
-                    // Ensure the wallet is selected
-                    if (!wallet) {
-                        select(new PhantomWalletAdapter());
-                    }
-
-                    // Add a short delay to ensure the wallet adapter is ready
-                    await new Promise((resolve) => setTimeout(resolve, 500));
-
-                    logInfo('Selected wallet', {
-                        component: 'Header',
-                        wallet: JSON.stringify(wallet, null, 2)
-                    });
-
-                    logInfo('Attempting to connect wallet...', {
-                        component: 'Header',
-                        wallet: wallet?.name || 'No wallet selected'
-                    });
-
-                    // Call connect()
-                    await connect();
-
-                    handleWalletCallbackConnection(event.detail);
-
-                    logInfo("Wallet connected successfully after callback", {});
-                } catch (error) {
-                    logError(error, {
-                        component: 'Header',
-                        action: 'handling wallet connection'
-                    });
-                    console.error("Failed to connect wallet after callback:", error);
-                    showConnectionError("Failed to connect wallet. Please try again.");
-                }
-            }
-        };
-
-        // Add event listener for our custom event
-        window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
-
-        // Also check localStorage on mount in case we missed the event
-        const shouldReconnect = localStorage.getItem('wallet_return_reconnect');
-        if (shouldReconnect === 'true') {
-            const publicKey = localStorage.getItem('phantomPublicKey');
-            const session = localStorage.getItem('phantomSession');
-            const signature = localStorage.getItem('phantomSignature');
-
-            if (publicKey && session && signature) {
-                console.log("Found wallet data in localStorage, processing...");
-                handleWalletCallbackConnection({ publicKey, session, signature });
-
-                // Clear the reconnect flag to prevent repeated processing
-                localStorage.setItem('wallet_return_reconnect', 'false');
-            }
+    // In Header.jsx - modify the useEffect for wallet-callback-event
+useEffect(() => {
+    const handleWalletCallbackEvent = async (event) => {
+      console.log("Received wallet-callback event:", event.detail);
+      logInfo("Received wallet-callback event:", {
+        component: 'Header'
+      });
+  
+      // Check if we have the necessary data
+      if (event.detail && event.detail.publicKey) {
+        try {
+          // Ensure the wallet adapter is ready before attempting connection
+          // Allow time for the adapter to initialize
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Select the wallet adapter if not already selected
+          if (!wallet) {
+            select(new PhantomWalletAdapter());
+            // Allow time for selection to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          
+          // Now process the connection data without expecting a signature
+          handleWalletCallbackConnection({
+            publicKey: event.detail.publicKey,
+            session: event.detail.session
+          });
+          
+          logInfo("Wallet connected successfully after callback", {});
+        } catch (error) {
+          logError(error, {
+            component: 'Header',
+            action: 'handling wallet connection'
+          });
+          console.error("Failed to connect wallet after callback:", error);
+          showConnectionError("Failed to connect wallet. Please try again.");
         }
+      }
+    };
+  
+    // Add event listener for our custom event
+    window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
+  
+    // Also check localStorage on mount in case we missed the event
+    const shouldReconnect = localStorage.getItem('wallet_return_reconnect');
+    if (shouldReconnect === 'true') {
+      const publicKey = localStorage.getItem('phantomPublicKey');
+      const session = localStorage.getItem('phantomSession');
+  
+      if (publicKey && session) {
+        console.log("Found wallet data in localStorage, processing...");
+        // Add short delay to ensure components are mounted
+        setTimeout(() => {
+          handleWalletCallbackConnection({ publicKey, session });
+        }, 1000);
+        
+        // Clear the reconnect flag to prevent repeated processing
+        localStorage.setItem('wallet_return_reconnect', 'false');
+      }
+    }
+  
+    // Clean up the event listener
+    return () => {
+      window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
+    };
+  }, [wallet, select, auth]); // Include select in dependencies
 
-        // Clean up the event listener
-        return () => {
-            window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
-        };
-    }, [auth]); // Only depends on auth being available
+    // NEW EFFECT: Listen for wallet-callback event
+    // useEffect(() => {
+    //     const handleWalletCallbackEvent = async (event) => {
+    //         console.log("Received wallet-callback event:", event.detail);
+
+    //         logInfo("Received wallet-callback event:", {
+    //             component: 'Header'
+    //         });
+
+    //         await new Promise(resolve => setTimeout(resolve, 1000));
+
+    //         // Check if we have the necessary data
+    //         if (event.detail && event.detail.publicKey) {
+    //             // Process the wallet connection using the provided data
+    //             //
+    //             try {
+    //                 // Ensure the wallet is selected
+    //                 if (!wallet) {
+    //                     select(new PhantomWalletAdapter());
+
+    //                     await new Promise(resolve => setTimeout(resolve, 500));
+    //                 }
+
+    //                 logInfo('Attempting to connect wallet...', {
+    //                     component: 'Header',
+    //                     wallet: wallet?.name || 'No wallet selected'
+    //                 });
+
+    //                 // Call connect()
+    //                 await connect();
+
+    //                 handleWalletCallbackConnection(event.detail);
+
+    //                 logInfo("Wallet connected successfully after callback", {});
+    //             } catch (error) {
+    //                 logError(error, {
+    //                     component: 'Header',
+    //                     action: 'handling wallet connection'
+    //                 });
+    //                 console.error("Failed to connect wallet after callback:", error);
+    //                 showConnectionError("Failed to connect wallet. Please try again.");
+    //             }
+    //         }
+    //     };
+
+    //     // Add event listener for our custom event
+    //     window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
+
+    //     // Also check localStorage on mount in case we missed the event
+    //     const shouldReconnect = localStorage.getItem('wallet_return_reconnect');
+    //     if (shouldReconnect === 'true') {
+    //         const publicKey = localStorage.getItem('phantomPublicKey');
+    //         const session = localStorage.getItem('phantomSession');
+    //         //const signature = localStorage.getItem('phantomSignature');
+
+    //         if (publicKey && session) {
+    //             logInfo("Found wallet data in localStorage, processing...", {
+    //                 component: 'Header'
+    //             });
+
+    //             setTimeout(() => {
+    //                 handleWalletCallbackConnection({ publicKey, session });
+    //             }, 1000)
+    //             // Clear the reconnect flag to prevent repeated processing
+    //             localStorage.setItem('wallet_return_reconnect', 'false');
+    //         }
+    //     }
+
+    //     // Clean up the event listener
+    //     return () => {
+    //         window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
+    //     };
+    // }, [auth]); // Only depends on auth being available
 
     // Function to handle wallet connection from callback data
     const handleWalletCallbackConnection = async (walletData) => {
