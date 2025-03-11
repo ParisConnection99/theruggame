@@ -47,6 +47,9 @@ export const WalletProviderComponent = ({ children }) => {
 
     if (isMobileDevice()) {
       // Handle wallet connection start
+      logInfo('Is Mobile device', {
+        component: 'Wallet Provider'
+      });
       const handleWalletConnectionStart = () => {
         localStorage.setItem('wallet_connect_pending', 'true');
         localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
@@ -65,6 +68,9 @@ export const WalletProviderComponent = ({ children }) => {
         const pendingConnection = localStorage.getItem('wallet_return_reconnect');
         if (pendingConnection === 'true') {
           console.log('Detected return from wallet connection');
+          logInfo('Detected return from wallet connection', {
+            component: 'Wallet Provider'
+          });
           
           // Get wallet data
           const publicKey = localStorage.getItem('phantomPublicKey');
