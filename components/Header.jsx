@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-
 
 
 export default function Header() {
