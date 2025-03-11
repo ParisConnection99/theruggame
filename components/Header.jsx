@@ -49,13 +49,13 @@ useEffect(() => {
         try {
           // Ensure the wallet adapter is ready before attempting connection
           // Allow time for the adapter to initialize
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1500));
           
           // Select the wallet adapter if not already selected
           if (!wallet) {
             select(new PhantomWalletAdapter());
             // Allow time for selection to complete
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 800));
           }
           
           // Now process the connection data without expecting a signature
@@ -70,7 +70,7 @@ useEffect(() => {
             component: 'Header',
             wallet: JSON.stringify(wallet, null, 2)
           })
-          
+
         } catch (error) {
           logError(error, {
             component: 'Header',
