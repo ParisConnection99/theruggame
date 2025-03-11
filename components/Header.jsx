@@ -120,6 +120,10 @@ export default function Header() {
             if (userResponse.status === 404) {
                 // User not found, need to create a new user
                 console.log("User not found, creating new user...");
+
+                logInfo('User not found in database', {
+                    component: "Header"
+                });
                 const createUserResponse = await fetch('/api/users', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -136,6 +140,12 @@ export default function Header() {
 
                 // Fetch the newly created user
                 user = await createUserResponse.json();
+
+                logInfo('Fetched user', {
+                    component: "Header",
+                    user: JSON.stringify(user, null, 2)
+                });
+
             } else if (!userResponse.ok) {
                 // Handle other API errors
                 const errorData = await userResponse.json();
@@ -147,6 +157,11 @@ export default function Header() {
 
             // Get Firebase custom token
             console.log("Getting Firebase token for:", walletData.publicKey);
+            logInfo("Getting Firebase token for:", {
+                component: "Header",
+                publicKey: walletData.publicKey
+            });
+
             const response = await fetch('/api/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -162,8 +177,18 @@ export default function Header() {
             }
 
             console.log("Signing in with custom token...");
+
+            logInfo("Signing in with custom token...", {
+                component: "Header"
+            });
+            
             await signInWithCustomToken(auth, data.token);
             console.log("Firebase sign in successful");
+
+            logInfo("Firebase sign in successful", {
+                component: "Header"
+            });
+
 
             // Set the user profile from the API response
             setUserProfile(user);
