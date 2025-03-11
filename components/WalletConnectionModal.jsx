@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { logInfo, logError } from '@/utils/logger';
 import Image from 'next/image';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -34,6 +35,11 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     // Store the private key securely (e.g., in state or context)
     const privateKeyBase58 = bs58.encode(keypair.secretKey);
     localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+
+    logInfo('dapp_private_key', {
+      component: 'WalletConnectionModal',
+      dappPrivateKey: privateKeyBase58
+    });
 
     setIsMobile(isMobileDevice());
   }, []);
