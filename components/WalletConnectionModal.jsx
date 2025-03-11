@@ -25,38 +25,39 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   // Set mobile state on client side
   useEffect(() => {
     // Check if a keypair already exists in localStorage
+  const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+  if (storedPrivateKey) {
+    // Use the existing keypair
+    const existingKeypair = {
+      publicKey: bs58.decode(localStorage.getItem('dappEncryptionPublicKey')),
+      secretKey: bs58.decode(storedPrivateKey),
+    };
+    keypairRef.current = existingKeypair;
+    setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
+  } else {
+    // Generate a new keypair
+    const keypair = nacl.box.keyPair();
+    keypairRef.current = keypair;
+
+    // Store the public key in base58 format for Phantom
+    const publicKeyBase58 = bs58.encode(keypair.publicKey);
+    setDappEncryptionPublicKey(publicKeyBase58);
+    localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58); // Save public key
+
+    // Store the private key securely in localStorage
+    const privateKeyBase58 = bs58.encode(keypair.secretKey);
+    localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-    if (storedPrivateKey) {
-      // Use the existing keypair
-      const existingKeypair = {
-        publicKey: bs58.decode(localStorage.getItem('dappEncryptionPublicKey')),
-        secretKey: bs58.decode(storedPrivateKey),
-      };
-      keypairRef.current = existingKeypair;
-      setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
-    } else {
-      // Generate a new keypair
-      const keypair = nacl.box.keyPair();
-      keypairRef.current = keypair;
 
-      // Store the public key in base58 format for Phantom
-      const publicKeyBase58 = bs58.encode(keypair.publicKey);
-      setDappEncryptionPublicKey(publicKeyBase58);
+    // Log the private key creation
+    logInfo('dapp_private_key', {
+      component: 'WalletConnectionModal',
+      dappPrivateKey: storedPrivateKey,
+    });
+  }
 
-      // Store the private key securely in localStorage
-      const privateKeyBase58 = bs58.encode(keypair.secretKey);
-      localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
-
-      const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-
-      // Log the private key creation
-      logInfo('dapp_private_key', {
-        component: 'WalletConnectionModal',
-        dappPrivateKey: storedPrivateKey,
-      });
-    }
-
-    setIsMobile(isMobileDevice());
+  setIsMobile(isMobileDevice());
     // Generate encryption keypair
     // const keypair = nacl.box.keyPair();
     // keypairRef.current = keypair;
