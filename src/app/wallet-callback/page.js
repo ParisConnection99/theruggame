@@ -69,7 +69,7 @@ export default function WalletCallbackPage() {
         setTimeout(() => {
           // Redirect the user to the main app page
           router.push('/');
-        }, 300);
+        }, 500);
       } else {
         throw new Error('Missing required data in decrypted payload');
       }

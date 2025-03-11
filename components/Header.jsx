@@ -93,6 +93,7 @@ useEffect(() => {
   
       if (publicKey && session) {
         console.log("Found wallet data in localStorage, processing...");
+        logInfo("Found wallet data in localStorage, processing...");
         // Add short delay to ensure components are mounted
         setTimeout(() => {
           handleWalletCallbackConnection({ publicKey, session });
