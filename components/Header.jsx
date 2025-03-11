@@ -199,7 +199,16 @@ export default function Header() {
             });
 
             // Reconnect
-            await connect();
+            try {
+                await connect();
+            } catch (error) {
+                logError(error, {
+                    component: "Header",
+                    action: "attempting to connect to wallet"
+                });
+                throw error;
+            }
+            
 
         } catch (error) {
             console.error('Error during authentication:', error);
