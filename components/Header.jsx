@@ -181,7 +181,7 @@ export default function Header() {
             logInfo("Signing in with custom token...", {
                 component: "Header"
             });
-            
+
             await signInWithCustomToken(auth, data.token);
             console.log("Firebase sign in successful");
 
@@ -204,6 +204,11 @@ export default function Header() {
         } catch (error) {
             console.error('Error during authentication:', error);
             setConnectionStatus('error');
+
+            logError(error, {
+                component: 'Header',
+                action: 'Error during authentication'
+            });
 
             // Provide specific error messages based on where the failure occurred
             if (error.message?.includes('Firebase')) {
