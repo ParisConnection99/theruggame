@@ -51,9 +51,14 @@ export default function Header() {
                 //
                 try {
                     // Ensure the wallet is selected
-                    if (!wallet) {
+                    if (!wallet) {  
                       select(new PhantomWalletAdapter());
                     }
+
+                    logInfo('Selected wallet', {
+                        component: 'Header',
+                        wallet: JSON.stringify(wallet, null, 2)
+                    });
             
                     // Add a short delay to ensure the wallet adapter is ready
                     await new Promise((resolve) => setTimeout(resolve, 500));
