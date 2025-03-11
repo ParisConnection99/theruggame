@@ -189,10 +189,14 @@ export default function Header() {
                 component: "Header"
             });
 
-
             // Set the user profile from the API response
             setUserProfile(user);
             setConnectionStatus('success');
+
+            logInfo('Checking connected value', {
+                is_connected: connected,
+                component: 'Header'
+            });
 
         } catch (error) {
             console.error('Error during authentication:', error);

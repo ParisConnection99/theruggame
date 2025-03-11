@@ -61,24 +61,6 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
  }
 
  setIsMobile(isMobileDevice());
-    // Generate encryption keypair
-    // const keypair = nacl.box.keyPair();
-    // keypairRef.current = keypair;
-
-    // // Store the public key in base58 format for Phantom
-    // const publicKeyBase58 = bs58.encode(keypair.publicKey);
-    // setDappEncryptionPublicKey(publicKeyBase58);
-
-    // // Store the private key securely (e.g., in state or context)
-    // const privateKeyBase58 = bs58.encode(keypair.secretKey);
-    // localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
-
-    // logInfo('dapp_private_key', {
-    //   component: 'WalletConnectionModal',
-    //   dappPrivateKey: privateKeyBase58
-    // });
-
-    // setIsMobile(isMobileDevice());
   }, []);
 
   // Listen for wallet return reconnect events
