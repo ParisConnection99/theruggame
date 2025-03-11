@@ -43,6 +43,11 @@ useEffect(() => {
       logInfo("Received wallet-callback event:", {
         component: 'Header'
       });
+
+      logInfo('Checking public key', {
+        component: 'Header',
+        publicKey: publicKey
+      });
   
       // Check if we have the necessary data
       if (event.detail && event.detail.publicKey) {
