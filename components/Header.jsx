@@ -13,7 +13,7 @@ import { logInfo, logError } from '@/utils/logger';
 
 
 export default function Header() {
-    const { publicKey, connected, wallet, connecting } = useWallet();
+    const { publicKey, connected, connect, wallet, connecting } = useWallet();
     const { auth } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
@@ -197,6 +197,9 @@ export default function Header() {
                 is_connected: connected,
                 component: 'Header'
             });
+
+            // Reconnect
+            await connect();
 
         } catch (error) {
             console.error('Error during authentication:', error);
