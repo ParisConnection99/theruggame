@@ -65,6 +65,12 @@ useEffect(() => {
           });
           
           logInfo("Wallet connected successfully after callback", {});
+
+          logInfo('Check wallet', {
+            component: 'Header',
+            wallet: JSON.stringify(wallet, null, 2)
+          })
+          
         } catch (error) {
           logError(error, {
             component: 'Header',
