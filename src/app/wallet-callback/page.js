@@ -101,9 +101,9 @@ export default function WalletCallbackPage() {
 
       logInfo('Stored Private Key', {
         component: 'WalletCallBackPage',
-        stored_dapp_private_key: storedPrivateKey
+        fetchedPrivateKey: storedPrivateKey
       });
-      
+
       const dappPrivateKey = bs58.decode(storedPrivateKey);
 
       logInfo('Decoded Stored Private Key', {
