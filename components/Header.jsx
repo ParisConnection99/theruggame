@@ -51,32 +51,37 @@ export default function Header() {
                 //
                 try {
                     // Ensure the wallet is selected
-                    if (!wallet) {  
-                      select(new PhantomWalletAdapter());
+                    if (!wallet) {
+                        select(new PhantomWalletAdapter());
                     }
+
+                    // Add a short delay to ensure the wallet adapter is ready
+                    await new Promise((resolve) => setTimeout(resolve, 500));
 
                     logInfo('Selected wallet', {
                         component: 'Header',
                         wallet: JSON.stringify(wallet, null, 2)
                     });
-            
-                    // Add a short delay to ensure the wallet adapter is ready
-                    await new Promise((resolve) => setTimeout(resolve, 500));
-            
+
+                    logInfo('Attempting to connect wallet...', {
+                        component: 'Header',
+                        wallet: wallet?.name || 'No wallet selected'
+                    });
+
                     // Call connect()
                     await connect();
-            
+
                     handleWalletCallbackConnection(event.detail);
-                    
+
                     logInfo("Wallet connected successfully after callback", {});
-                  } catch (error) {
+                } catch (error) {
                     logError(error, {
                         component: 'Header',
                         action: 'handling wallet connection'
                     });
                     console.error("Failed to connect wallet after callback:", error);
                     showConnectionError("Failed to connect wallet. Please try again.");
-                  }
+                }
             }
         };
 
