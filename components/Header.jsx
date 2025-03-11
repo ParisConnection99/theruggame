@@ -38,7 +38,7 @@ export default function Header() {
 
     // NEW EFFECT: Listen for wallet-callback event
     useEffect(() => {
-        const handleWalletCallbackEvent = (event) => {
+        const handleWalletCallbackEvent = async (event) => {
             console.log("Received wallet-callback event:", event.detail);
 
             logInfo("Received wallet-callback event:", {
@@ -48,7 +48,30 @@ export default function Header() {
             // Check if we have the necessary data
             if (event.detail && event.detail.publicKey) {
                 // Process the wallet connection using the provided data
-                handleWalletCallbackConnection(event.detail);
+                //
+                try {
+                    // Ensure the wallet is selected
+                    if (!wallet) {
+                      select(new PhantomWalletAdapter());
+                    }
+            
+                    // Add a short delay to ensure the wallet adapter is ready
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+            
+                    // Call connect()
+                    await connect();
+            
+                    handleWalletCallbackConnection(event.detail);
+                    
+                    logInfo("Wallet connected successfully after callback", {});
+                  } catch (error) {
+                    logError(error, {
+                        component: 'Header',
+                        action: 'handling wallet connection'
+                    });
+                    console.error("Failed to connect wallet after callback:", error);
+                    showConnectionError("Failed to connect wallet. Please try again.");
+                  }
             }
         };
 
@@ -197,19 +220,6 @@ export default function Header() {
                 is_connected: connected,
                 component: 'Header'
             });
-
-            // Reconnect
-            try {
-                await connect();
-            } catch (error) {
-                logError(error, {
-                    component: "Header",
-                    action: "attempting to connect to wallet"
-                });
-                throw error;
-            }
-            
-
         } catch (error) {
             console.error('Error during authentication:', error);
             setConnectionStatus('error');
