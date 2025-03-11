@@ -5,6 +5,7 @@ import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { clusterApiUrl } from '@solana/web3.js';
+import { logInfo, logError } from '@/utils/logger';
 
 export const WalletProviderComponent = ({ children }) => {
   const network = 'mainnet-beta';
@@ -27,6 +28,11 @@ export const WalletProviderComponent = ({ children }) => {
     const storedPublicKey = localStorage.getItem('wallet_public_key');
     if (storedPublicKey) {
       console.log('Restoring wallet connection for:', storedPublicKey);
+      
+      logInfo('Restoring wallet connection for:', {
+          component: "Wallet Provider",
+          storedPublicKey: storedPublicKey
+      });
 
       setTimeout(() => {
         phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
