@@ -144,15 +144,12 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
 
       const appUrl = 'https://theruggame.fun/';
       const redirectUrl = 'https://theruggame.fun/wallet-callback';
-      const appIcon = 'https://theruggame.fun/images/logo1.png';
-      const elonImage = "https://m.media-amazon.com/images/M/MV5BMDI4OTViNjktYmQwNi00NDVmLTg1OGYtNTM3YzU1Y2Y4N2VmXkEyXkFqcGc@._V1_QL75_UX273_.jpg"
 
       const params = new URLSearchParams({
         dapp_encryption_public_key: dappEncryptionPublicKey,
         cluster: "mainnet-beta",
         app_url: appUrl,
-        redirect_link: redirectUrl,
-        app_icon: elonImage
+        redirect_link: redirectUrl
       });
 
       const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;

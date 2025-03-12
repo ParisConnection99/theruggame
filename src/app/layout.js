@@ -10,7 +10,6 @@ import ActivityBanner from '@/components/ActivityBanner';
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
 
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,22 +25,22 @@ export const metadata = {
   description: "Guess pump or rug correctly & win Big!",
   
   // Add Open Graph metadata for better app representation in Phantom
-  openGraph: {
-    title: "The Rug Game",
-    description: "Guess pump or rug correctly & win Big!",
-    url: "https://theruggame.fun/",
-    siteName: "The Rug Game",
-    images: [
-      {
-        url: "https://theruggame.fun/images/logo1.png", // Update with your actual logo path
-        width: 1200,
-        height: 630,
-        alt: "The Rug Game Logo",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
+  // openGraph: {
+  //   title: "The Rug Game",
+  //   description: "Guess pump or rug correctly & win Big!",
+  //   url: "https://theruggame.fun/",
+  //   siteName: "The Rug Game",
+  //   images: [
+  //     {
+  //       url: "https://theruggame.fun/images/logo1.png", // Update with your actual logo path
+  //       width: 1200,
+  //       height: 630,
+  //       alt: "The Rug Game Logo",
+  //     },
+  //   ],
+  //   locale: "en_US",
+  //   type: "website",
+  // },
   
   // Twitter Card metadata (often used by wallets)
   twitter: {
