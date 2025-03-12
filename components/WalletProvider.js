@@ -19,25 +19,25 @@ export const WalletProviderComponent = ({ children }) => {
   useEffect(() => {
     setIsClient(true);
 
-    // Following the tutorial approach - simple setup with just PhantomWalletAdapter
-    const phantomAdapter = new PhantomWalletAdapter();
-    const walletAdapters = [phantomAdapter];
-    setWallets(walletAdapters);
+    // // Following the tutorial approach - simple setup with just PhantomWalletAdapter
+    // const phantomAdapter = new PhantomWalletAdapter();
+    // const walletAdapters = [phantomAdapter];
+    // setWallets(walletAdapters);
 
-    // Restore connection if wallet was previously connected
-    const storedPublicKey = localStorage.getItem('wallet_public_key');
-    if (storedPublicKey) {
-      console.log('Restoring wallet connection for:', storedPublicKey);
+    // // Restore connection if wallet was previously connected
+    // const storedPublicKey = localStorage.getItem('wallet_public_key');
+    // if (storedPublicKey) {
+    //   console.log('Restoring wallet connection for:', storedPublicKey);
       
-      logInfo('Restoring wallet connection for:', {
-          component: "Wallet Provider",
-          storedPublicKey: storedPublicKey
-      });
+    //   logInfo('Restoring wallet connection for:', {
+    //       component: "Wallet Provider",
+    //       storedPublicKey: storedPublicKey
+    //   });
 
-      setTimeout(() => {
-        phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
-      }, 500); // Delay ensures provider is ready
-    }
+    //   setTimeout(() => {
+    //     phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
+    //   }, 500); // Delay ensures provider is ready
+    // }
 
     // For mobile devices, we'll still handle wallet returns
     const isMobileDevice = () => {
