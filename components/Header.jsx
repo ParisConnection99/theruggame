@@ -720,6 +720,28 @@ export default function Header() {
             logInfo('Recieved wallet-callback event', {
                 component: 'Header'
             })
+
+            // Check if we have the data
+            if (event.detail && event.detail.publicKey) {
+                try {
+                    if (!wallet) {
+                        const phantomAdapter = new PhantomWalletAdapter();
+
+                        setTimeout(() => {
+                            phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
+
+                            logInfo('Wallet connected', {
+                                component: 'Header'
+                            });
+                        }, 500); // Delay ensures provider is ready
+                    }
+                } catch (error) {
+                    logError(error, {
+                        component: 'Header',
+                        action: 'connect wallet after callback'
+                    });
+                }
+            }
         };
 
         window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
