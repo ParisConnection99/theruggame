@@ -1,14 +1,13 @@
-// app/layout.jsx
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import Head from "next/head"; // Ensure this import is here
 import ClientProviders from '@/components/ClientProviders';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import ActivityBanner from '@/components/ActivityBanner'; 
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,56 +19,38 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "The Rug Game",
-  description: "Guess pump or rug correctly & win Big!",
-  manifest: "/manifest.json",
-  
-  // Add Open Graph metadata for better app representation in Phantom
-  openGraph: {
-    title: "The Rug Game",
-    description: "Guess pump or rug correctly & win Big!",
-    url: "https://theruggame.fun/",
-    siteName: "The Rug Game",
-    images: [
-      {
-        url: "https://theruggame.fun/images/logo1.png", // Update with your actual logo path
-        width: 1200,
-        height: 630,
-        alt: "The Rug Game Logo",
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
-  
-  // Twitter Card metadata (often used by wallets)
-  twitter: {
-    card: "summary_large_image",
-    title: "The Rug Game",
-    description: "Guess pump or rug correctly & win Big!",
-    images: ["https://theruggame.fun/images/logo1.png"], // Update with your actual logo path
-  },
-  
-  // Icons for various platforms
-  icons: {
-    icon: "/favicon.ico"
-  },
-};
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900`}
-      >
+      <Head>
+        <title>The Rug Game</title>
+        <meta name="description" content="Guess pump or rug correctly & win Big!" />
+        
+        {/* Open Graph metadata for wallets */}
+        <meta property="og:title" content="The Rug Game" />
+        <meta property="og:description" content="Guess pump or rug correctly & win Big!" />
+        <meta property="og:url" content="https://theruggame.fun/" />
+        <meta property="og:site_name" content="The Rug Game" />
+        <meta property="og:image" content="https://theruggame.fun/images/logo1.png" />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter Card metadata */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="The Rug Game" />
+        <meta name="twitter:description" content="Guess pump or rug correctly & win Big!" />
+        <meta name="twitter:image" content="https://theruggame.fun/images/logo1.png" />
+
+        {/* Favicon & Icons */}
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900`}>
         <GlobalErrorHandler>
-        <ClientProviders>
-          <ActivityBanner />
-          <Header />
-          {children}
-          <Footer />
-        </ClientProviders>
+          <ClientProviders>
+            <ActivityBanner />
+            <Header />
+            {children}
+            <Footer />
+          </ClientProviders>
         </GlobalErrorHandler>
       </body>
     </html>
