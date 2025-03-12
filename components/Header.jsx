@@ -730,57 +730,50 @@ export default function Header() {
 
                     // Select the wallet adapter if not already selected
                     if (!wallet) {
-                        // select(new PhantomWalletAdapter());
-                        // // Allow time for selection to complete
-                        // await new Promise(resolve => setTimeout(resolve, 1500));
-                        // Following the tutorial approach - simple setup with just PhantomWalletAdapter
                         const phantomAdapter = new PhantomWalletAdapter();
-                        const walletAdapters = [phantomAdapter];
-
-
-
+                        
                         setTimeout(() => {
                             phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
                         }, 500); // Delay ensures provider is ready
                     }
 
-                    if (!publicKey) {
-                        console.log("Attempting wallet connection...");
-                        try {
-                            await connect(); // Manually trigger connection
-                        } catch (error) {
-                            console.error("Failed to reconnect wallet:", error);
-                        }
-                    }
+                    // if (!publicKey) {
+                    //     console.log("Attempting wallet connection...");
+                    //     try {
+                    //         await connect(); // Manually trigger connection
+                    //     } catch (error) {
+                    //         console.error("Failed to reconnect wallet:", error);
+                    //     }
+                    // }
 
                     // Manually update the wallet adapter state
-                    if (wallet && wallet.adapter) {
-                        try {
-                            // Create a PublicKey instance from the string
-                            const pubKey = new PublicKey(event.detail.publicKey);
+                    // if (wallet && wallet.adapter) {
+                    //     try {
+                    //         // Create a PublicKey instance from the string
+                    //         const pubKey = new PublicKey(event.detail.publicKey);
 
-                            // Set the public key on the adapter
-                            wallet.adapter.publicKey = pubKey;
+                    //         // Set the public key on the adapter
+                    //         wallet.adapter.publicKey = pubKey;
 
-                            // Update connection state
-                            wallet.adapter.connected = true;
+                    //         // Update connection state
+                    //         wallet.adapter.connected = true;
 
-                            // Emit connect event to notify listeners
-                            if (typeof wallet.adapter.emit === 'function') {
-                                wallet.adapter.emit('connect', pubKey);
-                            }
+                    //         // Emit connect event to notify listeners
+                    //         if (typeof wallet.adapter.emit === 'function') {
+                    //             wallet.adapter.emit('connect', pubKey);
+                    //         }
 
-                            logInfo("Manually updated wallet adapter state", {
-                                component: 'Header',
-                                publicKey: pubKey.toString()
-                            });
-                        } catch (error) {
-                            logError(error, {
-                                component: 'Header',
-                                action: 'manually updating wallet adapter'
-                            });
-                        }
-                    }
+                    //         logInfo("Manually updated wallet adapter state", {
+                    //             component: 'Header',
+                    //             publicKey: pubKey.toString()
+                    //         });
+                    //     } catch (error) {
+                    //         logError(error, {
+                    //             component: 'Header',
+                    //             action: 'manually updating wallet adapter'
+                    //         });
+                    //     }
+                    // }
 
                     // Now process the connection data
                     handleWalletCallbackConnection({
