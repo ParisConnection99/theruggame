@@ -718,7 +718,7 @@ export default function Header() {
 
             logInfo('Checking public key', {
                 component: 'Header',
-                publicKey: publicKey
+                publicKey: event.detail.publicKey
             });
 
             // Check if we have the necessary data
@@ -733,6 +733,15 @@ export default function Header() {
                         select(new PhantomWalletAdapter());
                         // Allow time for selection to complete
                         await new Promise(resolve => setTimeout(resolve, 1500));
+                    }
+
+                    if (!publicKey) {
+                        console.log("Attempting wallet connection...");
+                        try {
+                            await connect(); // Manually trigger connection
+                        } catch (error) {
+                            console.error("Failed to reconnect wallet:", error);
+                        }
                     }
                     
                     // Manually update the wallet adapter state
