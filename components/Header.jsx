@@ -731,21 +731,13 @@ export default function Header() {
                     // Select the wallet adapter if not already selected
                     if (!wallet) {
                         const phantomAdapter = new PhantomWalletAdapter();
+
+                        logInfo();
                         
                         setTimeout(() => {
                             phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
                         }, 500); // Delay ensures provider is ready
                     }
-
-                    // if (!publicKey) {
-                    //     console.log("Attempting wallet connection...");
-                    //     try {
-                    //         await connect(); // Manually trigger connection
-                    //     } catch (error) {
-                    //         console.error("Failed to reconnect wallet:", error);
-                    //     }
-                    // }
-
                     // Manually update the wallet adapter state
                     // if (wallet && wallet.adapter) {
                     //     try {
@@ -802,7 +794,7 @@ export default function Header() {
         // Add event listener for our custom event
         window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
 
-        // Also check localStorage on mount in case we missed the event
+       // Also check localStorage on mount in case we missed the event
         const shouldReconnect = localStorage.getItem('wallet_return_reconnect');
         if (shouldReconnect === 'true') {
             const publicKey = localStorage.getItem('phantomPublicKey');
@@ -811,28 +803,30 @@ export default function Header() {
             if (publicKey && session) {
                 console.log("Found wallet data in localStorage, processing...");
                 logInfo("Found wallet data in localStorage, processing...");
+
+                handleWalletCallbackConnection({ publicKey, session });
                 // Add short delay to ensure components are mounted
-                setTimeout(() => {
-                    handleWalletCallbackConnection({ publicKey, session });
+                // setTimeout(() => {
+                //     handleWalletCallbackConnection({ publicKey, session });
 
-                    // Also manually update the wallet adapter state
-                    if (wallet && wallet.adapter) {
-                        try {
-                            const pubKey = new PublicKey(publicKey);
-                            wallet.adapter.publicKey = pubKey;
-                            wallet.adapter.connected = true;
+                //     // Also manually update the wallet adapter state
+                //     if (wallet && wallet.adapter) {
+                //         try {
+                //             const pubKey = new PublicKey(publicKey);
+                //             wallet.adapter.publicKey = pubKey;
+                //             wallet.adapter.connected = true;
 
-                            if (typeof wallet.adapter.emit === 'function') {
-                                wallet.adapter.emit('connect', pubKey);
-                            }
-                        } catch (error) {
-                            logError(error, {
-                                component: 'Header',
-                                action: 'updating wallet from localStorage'
-                            });
-                        }
-                    }
-                }, 1000);
+                //             if (typeof wallet.adapter.emit === 'function') {
+                //                 wallet.adapter.emit('connect', pubKey);
+                //             }
+                //         } catch (error) {
+                //             logError(error, {
+                //                 component: 'Header',
+                //                 action: 'updating wallet from localStorage'
+                //             });
+                //         }
+                //     }
+                // }, 1000);
 
                 // Clear the reconnect flag to prevent repeated processing
                 localStorage.setItem('wallet_return_reconnect', 'false');
