@@ -51,9 +51,6 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <CustomHead />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900`}>
         <GlobalErrorHandler>
           <ClientProviders>
