@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { logInfo, logError } from '@/utils/logger';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import Image from 'next/image';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
