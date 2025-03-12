@@ -133,6 +133,10 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   const handleDirectPhantomLink = () => {
     if (!isMobile) return;
 
+    logInfo('Handle Direct Phantom Link', {
+      component: 'Wallet connection modal'
+    });
+
     try {
       // Set pending flags
       localStorage.setItem('wallet_connect_pending', 'true');
