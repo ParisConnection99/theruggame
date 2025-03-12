@@ -25,42 +25,42 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   // Set mobile state on client side
   useEffect(() => {
     // Check if a keypair already exists in localStorage
- // Check if a keypair already exists in localStorage
- const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+    // Check if a keypair already exists in localStorage
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
- if (storedPrivateKey) {
-   try {
-     // Use the existing keypair
-     const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-     keypairRef.current = existingKeypair;
-     setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
-   } catch (error) {
-     console.error("Failed to load existing keypair:", error);
-     localStorage.removeItem('dappEncryptionPrivateKey');
-     localStorage.removeItem('dappEncryptionPublicKey');
-   }
- } else {
-   // Generate a new keypair
-   const keypair = nacl.box.keyPair();
-   keypairRef.current = keypair;
+    if (storedPrivateKey) {
+      try {
+        // Use the existing keypair
+        const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
+        keypairRef.current = existingKeypair;
+        setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
+      } catch (error) {
+        console.error("Failed to load existing keypair:", error);
+        localStorage.removeItem('dappEncryptionPrivateKey');
+        localStorage.removeItem('dappEncryptionPublicKey');
+      }
+    } else {
+      // Generate a new keypair
+      const keypair = nacl.box.keyPair();
+      keypairRef.current = keypair;
 
-   // Store the public key
-   const publicKeyBase58 = bs58.encode(keypair.publicKey);
-   setDappEncryptionPublicKey(publicKeyBase58);
-   localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
+      // Store the public key
+      const publicKeyBase58 = bs58.encode(keypair.publicKey);
+      setDappEncryptionPublicKey(publicKeyBase58);
+      localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
 
-   // Store the private key securely (consider an alternative to localStorage)
-   const privateKeyBase58 = bs58.encode(keypair.secretKey);
-   localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+      // Store the private key securely (consider an alternative to localStorage)
+      const privateKeyBase58 = bs58.encode(keypair.secretKey);
+      localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
 
-   // Log key generation
-   logInfo('dapp_private_key', {
-     component: 'WalletConnectionModal',
-     dappPrivateKey: privateKeyBase58,
-   });
- }
+      // Log key generation
+      logInfo('dapp_private_key', {
+        component: 'WalletConnectionModal',
+        dappPrivateKey: privateKeyBase58,
+      });
+    }
 
- setIsMobile(isMobileDevice());
+    setIsMobile(isMobileDevice());
   }, []);
 
   // Listen for wallet return reconnect events
@@ -142,21 +142,27 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       localStorage.setItem('wallet_connect_pending', 'true');
       localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
 
-      const appUrl = 'https://theruggame.fun/';
-      const redirectUrl = 'https://theruggame.fun/wallet-callback';
-      const appIcon = 'https://theruggame.fun/images/logo1.png';
+      const phantomAdapter = new PhantomWalletAdapter();
 
-      const params = new URLSearchParams({
-        dapp_encryption_public_key: dappEncryptionPublicKey,
-        cluster: "mainnet-beta",
-        app_url: appUrl,
-        redirect_link: redirectUrl
-      });
+      setTimeout(() => {
+        phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
+      }, 500);
 
-      const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
+      // const appUrl = 'https://theruggame.fun/';
+      // const redirectUrl = 'https://theruggame.fun/wallet-callback';
+      // const appIcon = 'https://theruggame.fun/images/logo1.png';
 
-      // Direct link to Phantom with callback to our site
-      window.location.href = deepLink;
+      // const params = new URLSearchParams({
+      //   dapp_encryption_public_key: dappEncryptionPublicKey,
+      //   cluster: "mainnet-beta",
+      //   app_url: appUrl,
+      //   redirect_link: redirectUrl
+      // });
+
+      // const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
+
+      // // Direct link to Phantom with callback to our site
+      // window.location.href = deepLink;
     } catch (error) {
       console.error("Direct link error:", error);
       if (onError) {
