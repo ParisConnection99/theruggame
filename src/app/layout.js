@@ -21,8 +21,6 @@ const geistMono = Geist_Mono({
 
 // Export metadata for the app
 export const metadata = {
-  title: "The Rug Game",
-  description: "Guess pump or rug correctly & win Big!",
   openGraph: {
     title: "The Rug Game",
     description: "Guess pump or rug correctly & win Big!",
