@@ -21,6 +21,8 @@ const geistMono = Geist_Mono({
 
 // Export metadata for the app
 export const metadata = {
+  title: "The Rug Game",
+  description: "Guess pump or rug correctly & win Big!",
   openGraph: {
     title: "The Rug Game",
     description: "Guess pump or rug correctly & win Big!",
@@ -49,6 +51,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <meta property="og:title" content="The Rug Game" />
+        <meta property="og:image" content="https://theruggame.fun/images/logo1.png" />
+        <meta property="og:description" content="Guess pump or rug correctly & win Big!" />
+        <meta property="og:url" content="https://theruggame.fun/" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900`}>
         <GlobalErrorHandler>
           <ClientProviders>
