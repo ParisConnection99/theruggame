@@ -21,13 +21,13 @@ const geistMono = Geist_Mono({
 
 // Export metadata for the app
 export const metadata = {
-  title: "Mango Markets",
+  title: "The Rug Game",
   description: "Guess pump or rug correctly & win Big!",
   openGraph: {
-    title: "Mango Markets",
+    title: "The Rug Game",
     description: "Guess pump or rug correctly & win Big!",
     url: "https://theruggame.fun/",
-    siteName: "Mango Markets",
+    siteName: "The Rug Game",
     images: [
       {
         url: "https://theruggame.fun/images/logo1.png",
@@ -39,7 +39,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mango Markets",
+    title: "The Rug Game",
     description: "Guess pump or rug correctly & win Big!",
     images: ["https://theruggame.fun/images/logo1.png"],
   },
@@ -52,7 +52,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <meta property="og:title" content="Mango Markets" />
+        <meta property="og:title" content="The Rug Game" />
         <meta property="og:image" content="https://theruggame.fun/images/logo1.png" />
         <meta property="og:description" content="Guess pump or rug correctly & win Big!" />
         <meta property="og:url" content="https://theruggame.fun/" />
