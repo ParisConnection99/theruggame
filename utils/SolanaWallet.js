@@ -34,6 +34,7 @@ export async function checkSufficientBalance(publicKey, amount, endpoint = RPC_E
     return solBalance >= requiredAmount;
   } catch (error) {
     console.error('Error checking balance:', error);
+    logInfo('Error checking balance', {});
     throw new Error(`Failed to check wallet balance: ${error.message}`);
   }
 }

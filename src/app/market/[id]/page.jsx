@@ -469,6 +469,7 @@ export default function MarketPage() {
         const hasEnough = await checkSufficientBalance(publicKey, betWithFees);
 
         if (!hasEnough) {
+          logInfo('You dont have enough SOL', {});
           alert("You don't have enough SOL to place this bet.");
           setIsBetting(false);
           setLoading(false);
