@@ -404,6 +404,7 @@ export default function Header() {
     };
 
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
+        logInfo(`Checking connected value in the layout: ${isEffectivelyConnected}`);
         return (
             <div>
                 {!isEffectivelyConnected ? (
