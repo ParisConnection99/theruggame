@@ -155,6 +155,11 @@ export async function placeBet(
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
     }
+
+    logInfo('Bet Amount', {
+      amount: betAmount,
+      component: 'Solana wallet'
+    })
     
     // Transfer SOL
     const result = await transferSOL(publicKey, sendTransaction, betAmount);
