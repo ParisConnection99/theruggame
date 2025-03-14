@@ -168,6 +168,10 @@ export default function ProfilePage() {
         try {
             await signOut(auth);
             await disconnect();
+            logInfo('Disconnected', {
+                component: 'Profile Page'
+            });
+            
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);
