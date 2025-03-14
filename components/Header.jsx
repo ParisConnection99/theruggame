@@ -44,18 +44,18 @@ export default function Header() {
         if (connected || (userProfile && userProfile.wallet_ca)) {
             setIsEffectivelyConnected(true);
 
-            logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
+            //logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
         } else {
-            logInfo('Setting isEffectivelyConnected to false ', {
-                component: 'Header'
-            });
+            // logInfo('Setting isEffectivelyConnected to false ', {
+            //     component: 'Header'
+            // });
 
             setIsEffectivelyConnected(false);
 
-            logInfo('IsEffectivelyConneted after update', {
-                isUserConnected: `${isEffectivelyConnected}`,
-                component: 'Header'
-            });
+            // logInfo('IsEffectivelyConneted after update', {
+            //     isUserConnected: `${isEffectivelyConnected}`,
+            //     component: 'Header'
+            // });
 
         }
     }, [connected, userProfile]);
@@ -86,23 +86,23 @@ export default function Header() {
                 component: 'Header'
             });
 
-            logInfo('Check user connection before disconnect', {
-                component: 'Header',
-                isUserConnected: `${connected}`
-            });
+            // logInfo('Check user connection before disconnect', {
+            //     component: 'Header',
+            //     isUserConnected: `${connected}`
+            // });
 
             await disconnect();
 
-            setIsEffectivelyConnected(false);
+            //setIsEffectivelyConnected(false);
 
-            logInfo('Check user connection after disconnect', {
-                component: 'Header',
-                isUserConnected: `${connected}`
-            });
+            // logInfo('Check user connection after disconnect', {
+            //     component: 'Header',
+            //     isUserConnected: `${connected}`
+            // });
         };
 
         window.addEventListener('wallet-disconnect-event', handleWalletDisconnectEvent);
-    }, [connected]);
+    }, []);
 
     // Function to handle wallet connection from callback data
     const handleWalletCallbackConnection = async (walletData) => {
