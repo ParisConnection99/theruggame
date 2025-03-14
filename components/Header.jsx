@@ -12,7 +12,7 @@ import { logInfo, logError } from '@/utils/logger';
 
 
 export default function Header() {
-    const { publicKey, connected, connect, select, wallet, connecting } = useWallet();
+    const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
     const { auth } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
@@ -82,7 +82,11 @@ export default function Header() {
 
     useEffect(() => {
         const handleWalletDisconnectEvent = async (event) => {
-            logInfo('Received wallet disconnect event', {});
+            logInfo('Received wallet disconnect event', {
+                component: 'Header'
+            });
+
+            await disconnect();
 
             setIsEffectivelyConnected(false);
         };
