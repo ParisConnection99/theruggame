@@ -45,15 +45,16 @@ export default function Header() {
     useEffect(() => {
         if (connected || (userProfile && userProfile.wallet_ca)) {
             setIsEffectivelyConnected(true);
+
+            logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
         } else {
-            logInfo('Before user is disconnected ', {
-                isConnected: `${isEffectivelyConnected}`,
+            logInfo('Setting isEffectivelyConnected to false ', {
                 component: 'Header'
             });
 
             setIsEffectivelyConnected(false);
 
-            logInfo('After user is disconnected', {
+            logInfo('IsEffectivelyConneted after update', {
                 isUserConnected: `${isEffectivelyConnected}`,
                 component: 'Header'
             });
