@@ -26,6 +26,9 @@ export default function Header() {
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
 
+    console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
+    logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
+
     // Detect if user is on mobile device
     useEffect(() => {
         const checkMobile = () => {
@@ -43,13 +46,15 @@ export default function Header() {
         if (connected || (userProfile && userProfile.wallet_ca)) {
             setIsEffectivelyConnected(true);
         } else {
-            logInfo('Has disconnected', {
+            logInfo('Before user is disconnected ', {
+                isConnected: `${isEffectivelyConnected}`,
                 component: 'Header'
             });
+
             setIsEffectivelyConnected(false);
 
-            logInfo('Is user connected', {
-                isUserConnected: connected,
+            logInfo('After user is disconnected', {
+                isUserConnected: `${isEffectivelyConnected}`,
                 component: 'Header'
             });
 
