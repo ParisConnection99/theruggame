@@ -2,7 +2,7 @@
 // This file provides functions for Solana wallet interaction including balance checking and transfers
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
-
+import { logInfo, logError } from '@/utils/logger';
 // Constants - Replace with your values in production
 // Use a more reliable devnet RPC with proper WebSocket support
 // Using clusterApiUrl for more reliable connections
@@ -158,9 +158,18 @@ export async function placeBet(
     
     // Transfer SOL
     const result = await transferSOL(publicKey, sendTransaction, betAmount);
+
+    logInfo('Transaction result', {
+      component: 'Solana wallet',
+      transferResult: result
+    });
+
     if (result.success) {
       onSuccess(result);
     } else {
+      logError(result.error, {
+        component: 'Solana wallet'
+      });
       throw new Error(result.error);
     }
   } catch (error) {
