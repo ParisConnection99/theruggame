@@ -282,8 +282,7 @@ export async function transferSOL(
 
 
     //const lamportsAmount = new BN(Math.floor(Number(amount) * LAMPORTS_PER_SOL));
-    const lamportsAmount = BigInt(Math.floor(Number(amount) * LAMPORTS_PER_SOL));
-
+    const lamportsAmount = Math.floor(Number(amount) * LAMPORTS_PER_SOL);
     
     // Log the lamports amount for debugging
     logInfo('Converting amount to lamports', {
