@@ -9,7 +9,8 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 //const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
-const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
+//const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
+const SITE_WALLET_ADDRESS = process.env.SITE_WALLET_ADDRESS;
 
 /**
  * Checks if a user has sufficient SOL balance for a transaction
