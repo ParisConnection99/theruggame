@@ -487,10 +487,6 @@ export default function MarketPage() {
           component: 'Market Page' 
         });
 
-        logInfo(`Public Key: ${publicKey}`, {
-          component: 'Market Page'
-        });
-
         // Use placeBet with proper callbacks
         await new Promise((resolve, reject) => {
           placeBet(
@@ -547,7 +543,7 @@ export default function MarketPage() {
 
                   logInfo('Error creating bet in database', {
                     errorMessage: errorData
-                  })
+                  });
                   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
                   return;
                 }
