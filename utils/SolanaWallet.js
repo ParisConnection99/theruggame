@@ -338,6 +338,11 @@ export async function transferSOL(
     };
   } catch (error) {
     console.error('Transaction failed:', error);
+
+    logError(error, {
+      action: 'Transaction failed',
+      component: 'Solana Wallet'
+    });
     
     // Provide more specific error messaging
     let errorMessage = error.message;
