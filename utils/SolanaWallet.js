@@ -269,7 +269,9 @@ export async function transferSOL(
     });
     
     // Safely convert SOL to lamports
-    const lamportsAmount = new BN(Math.floor(amount * LAMPORTS_PER_SOL));
+    //const lamportsAmount = new BN(Math.floor(amount * LAMPORTS_PER_SOL));
+    const lamportsAmount = new BN(Math.floor(Number(amount) * LAMPORTS_PER_SOL));
+
     
     // Log the lamports amount for debugging
     logInfo('Converting amount to lamports', {
