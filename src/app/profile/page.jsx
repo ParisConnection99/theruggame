@@ -14,7 +14,7 @@ import { UAParser } from 'ua-parser-js';
 import { logInfo, logError } from '@/utils/logger';
 
 export default function ProfilePage() {
-    const { disconnect, connected } = useWallet();
+    //const { disconnect, connected } = useWallet();
     const { user: authUser, auth } = useAuth();
     const parser = new UAParser();
     const analytics = useAnalytics();
@@ -170,7 +170,7 @@ export default function ProfilePage() {
         }
         try {
             await signOut(auth);
-            await disconnect();
+            //await disconnect();
 
             // Add event
             const walletEvent = new CustomEvent('wallet-disconnect-event', {
