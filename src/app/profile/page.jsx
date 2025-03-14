@@ -40,7 +40,7 @@ export default function ProfilePage() {
     // Popup state
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-    logInfo(`Profile Page re-render is user connected: ${connected}`);
+    //logInfo(`Profile Page re-render is user connected: ${connected}`);
 
     // Fetch user data when user auth changes
     useEffect(() => {
