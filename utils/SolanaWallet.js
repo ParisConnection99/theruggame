@@ -6,8 +6,8 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 // Constants - Replace with your values in production
 // Use a more reliable devnet RPC with proper WebSocket support
 // Using clusterApiUrl for more reliable connections
-//const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
-const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
+const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
+//const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
 

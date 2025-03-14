@@ -23,21 +23,21 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "The Rug Game",
   description: "Guess pump or rug correctly & win Big!",
-  // openGraph: {
-  //   title: "The Rug Game",
-  //   description: "Guess pump or rug correctly & win Big!",
-  //   url: "https://theruggame.fun/",
-  //   siteName: "The Rug Game",
-  //   images: [
-  //     {
-  //       url: "https://theruggame.fun/images/logo1.png",
-  //       width: 1200,
-  //       height: 630,
-  //     }
-  //   ],
-  //   locale: 'en_US',
-  //   type: "website",
-  // },
+  openGraph: {
+    title: "The Rug Game",
+    description: "Guess pump or rug correctly & win Big!",
+    url: "https://theruggame.fun/",
+    siteName: "The Rug Game",
+    images: [
+      {
+        url: "https://theruggame.fun/images/logo1.png",
+        width: 1200,
+        height: 630,
+      }
+    ],
+    locale: 'en_US',
+    type: "website",
+  },
   twitter: {
     card: "summary_large_image",
     title: "The Rug Game",

@@ -369,6 +369,7 @@ export default function MarketPage() {
 
   const handleBetClick = async () => {
     console.log('PLACE BET!');
+
     logInfo('PLACE BET', {
       component: 'Market Page'
     });
@@ -469,6 +470,7 @@ export default function MarketPage() {
 
         alert('Your bet has been successfully placed.');
       } else {
+        logInfo('Balance is not enough need to check wallet', {});
         // Need to use wallet payment
         const hasEnough = await checkSufficientBalance(publicKey, betWithFees);
 
