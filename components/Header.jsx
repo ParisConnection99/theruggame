@@ -91,14 +91,15 @@ export default function Header() {
             //     isUserConnected: `${connected}`
             // });
 
+            // check if on mobile
             await disconnect();
 
             //setIsEffectivelyConnected(false);
 
-            // logInfo('Check user connection after disconnect', {
-            //     component: 'Header',
-            //     isUserConnected: `${connected}`
-            // });
+            logInfo('Check user connection after disconnect', {
+                component: 'Header',
+                isUserConnected: `${connected}`
+            });
         };
 
         window.addEventListener('wallet-disconnect-event', handleWalletDisconnectEvent);
