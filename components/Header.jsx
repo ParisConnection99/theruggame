@@ -9,7 +9,6 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import { useWalletContext } from './WalletContext';
 
 
 export default function Header() {
@@ -23,11 +22,10 @@ export default function Header() {
     const [showErrorToast, setShowErrorToast] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
-    const { isEffectivelyConnected } = useWalletContext();
-    //const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
+    const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
 
-    //console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
-    //logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
+    console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
+    logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -44,20 +42,20 @@ export default function Header() {
     // Update effective connection state
     useEffect(() => {
         if (connected || (userProfile && userProfile.wallet_ca)) {
-            //setIsEffectivelyConnected(true);
+            setIsEffectivelyConnected(true);
 
-            //logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
+            logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
         } else {
-            // logInfo('Setting isEffectivelyConnected to false ', {
-            //     component: 'Header'
-            // });
+            logInfo('Setting isEffectivelyConnected to false ', {
+                component: 'Header'
+            });
 
-            // setIsEffectivelyConnected(false);
+            setIsEffectivelyConnected(false);
 
-            // logInfo('IsEffectivelyConneted after update', {
-            //     isUserConnected: `${isEffectivelyConnected}`,
-            //     component: 'Header'
-            // });
+            logInfo('IsEffectivelyConneted after update', {
+                isUserConnected: `${isEffectivelyConnected}`,
+                component: 'Header'
+            });
 
         }
     }, [connected, userProfile]);

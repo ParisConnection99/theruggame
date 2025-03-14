@@ -1,5 +1,5 @@
 'use client';
-//import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from '@/components/FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -12,10 +12,9 @@ import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { UAParser } from 'ua-parser-js';
 import { logInfo, logError } from '@/utils/logger';
-import { useWalletContext } from '@/components/WalletContext';
 
 export default function ProfilePage() {
-    //const { disconnect, connected } = useWallet();
+    const { disconnect, connected } = useWallet();
     const { user: authUser, auth } = useAuth();
     const parser = new UAParser();
     const analytics = useAnalytics();
@@ -41,9 +40,7 @@ export default function ProfilePage() {
     // Popup state
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-    const { handleDisconnect } = useWalletContext();
-
-    //logInfo(`Profile Page re-render is user connected: ${connected}`);
+    logInfo(`Profile Page re-render is user connected: ${connected}`);
 
     // Fetch user data when user auth changes
     useEffect(() => {
@@ -173,8 +170,7 @@ export default function ProfilePage() {
         }
         try {
             await signOut(auth);
-            handleDisconnect
-            //await disconnect();
+            await disconnect();
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);
