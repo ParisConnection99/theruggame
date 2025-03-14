@@ -51,12 +51,11 @@ export default function Header() {
             // });
 
             setIsEffectivelyConnected(false);
-            setConnectionStatus('disconnected');
 
-            // logInfo('IsEffectivelyConneted after update', {
-            //     isUserConnected: `${isEffectivelyConnected}`,
-            //     component: 'Header'
-            // });
+            logInfo('IsEffectivelyConneted after update', {
+                isUserConnected: `${isEffectivelyConnected}`,
+                component: 'Header'
+            });
 
         }
     }, [connected, userProfile]);
@@ -524,9 +523,7 @@ export default function Header() {
                         SUPPORT
                     </a>
 
-                    <WrappedClientWalletLayout
-                    key={connectionStatus ? 'success' : 'disconnected'}
-                    isEffectivelyConnected={isEffectivelyConnected} />
+                    <WrappedClientWalletLayout />
                 </div>
             </div>
 
