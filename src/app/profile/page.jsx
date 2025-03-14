@@ -171,6 +171,14 @@ export default function ProfilePage() {
         try {
             await signOut(auth);
             await disconnect();
+
+            // Add event
+            const walletEvent = new CustomEvent('wallet-disconnect-event', {
+                timestamp: new Date()
+            });
+
+            window.dispatchEvent(walletEvent);
+            
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);

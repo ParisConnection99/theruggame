@@ -80,6 +80,16 @@ export default function Header() {
         window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
 
+    useEffect(() => {
+        const handleWalletDisconnectEvent = async (event) => {
+            logInfo('Received wallet disconnect event', {});
+
+            setIsEffectivelyConnected(false);
+        };
+
+        window.addEventListener('wallet-disconnect-event', handleWalletDisconnectEvent);
+    }, []);
+
     // Function to handle wallet connection from callback data
     const handleWalletCallbackConnection = async (walletData) => {
         try {
