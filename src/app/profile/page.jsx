@@ -11,9 +11,10 @@ import BetShareModal from '@/components/BetShareModal'; // Import the BetShareMo
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { UAParser } from 'ua-parser-js';
+import { logInfo, logError } from '@/utils/logger';
 
 export default function ProfilePage() {
-    const { disconnect } = useWallet();
+    const { disconnect, connected } = useWallet();
     const { user: authUser, auth } = useAuth();
     const parser = new UAParser();
     const analytics = useAnalytics();
@@ -38,6 +39,8 @@ export default function ProfilePage() {
 
     // Popup state
     const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+    logInfo(`Profile Page re-render is user connected: ${connected}`);
 
     // Fetch user data when user auth changes
     useEffect(() => {
