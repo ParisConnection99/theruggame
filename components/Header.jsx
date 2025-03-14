@@ -17,7 +17,7 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
-    const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error
+    const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error, disconnected
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorToast, setShowErrorToast] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -51,6 +51,7 @@ export default function Header() {
             // });
 
             setIsEffectivelyConnected(false);
+            setConnectionStatus('disconnected');
 
             // logInfo('IsEffectivelyConneted after update', {
             //     isUserConnected: `${isEffectivelyConnected}`,
@@ -523,7 +524,9 @@ export default function Header() {
                         SUPPORT
                     </a>
 
-                    <WrappedClientWalletLayout />
+                    <WrappedClientWalletLayout
+                    key={isEffectivelyConnected ? 'success' : 'disconnected'}
+                    isEffectivelyConnected={isEffectivelyConnected} />
                 </div>
             </div>
 
