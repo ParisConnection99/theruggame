@@ -572,6 +572,11 @@ export default function MarketPage() {
         error_message: error.message,
         error_code: error.code || 'unknown'
       });
+
+      logError(error, {
+        action: 'Placing bet',
+        component: 'Market page'
+      });
       alert(`Error placing bet.`);
     } finally {
       setIsBetting(false);
