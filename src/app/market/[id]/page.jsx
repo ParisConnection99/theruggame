@@ -369,6 +369,10 @@ export default function MarketPage() {
 
   const handleBetClick = async () => {
     console.log('PLACE BET!');
+    logInfo('PLACE BET', {
+      component: 'Market Page'
+    });
+    
     if (analytics) {
       logEvent(analytics, 'place_bet_button_click', {
         page: 'market',
