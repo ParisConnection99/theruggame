@@ -149,9 +149,7 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
         dapp_encryption_public_key: dappEncryptionPublicKey,
         cluster: "mainnet-beta",
         app_url: appUrl,
-        redirect_link: redirectUrl,
-        app_logo: "https://theruggame.fun/images/logo1.png",
-        app_title: "The Rug Game"
+        redirect_link: redirectUrl
       });
 
       const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;

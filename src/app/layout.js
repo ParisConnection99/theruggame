@@ -19,34 +19,43 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// export const metadata = {
+//   openGraph: {
+//     title: 'The Rug Game',
+//     description: 'Guess pump or rug correctly & win Big!',
+//     url: 'https://theruggame.fun/',
+//     siteName: 'The Rug Game'
+//   }
+// }
+
 // Export metadata for the app
-export const metadata = {
-  title: "The Rug Game",
-  description: "Guess pump or rug correctly & win Big!",
-  openGraph: {
-    title: "The Rug Game",
-    description: "Guess pump or rug correctly & win Big!",
-    url: "https://theruggame.fun/",
-    siteName: "The Rug Game",
-    images: [
-      {
-        url: "https://theruggame.fun/images/logo1.png",
-        width: 1200,
-        height: 630,
-      }
-    ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "The Rug Game",
-    description: "Guess pump or rug correctly & win Big!",
-    images: ["https://theruggame.fun/images/logo1.png"],
-  },
-  icons: {
-    icon: "/favicon.ico",
-  },
-}
+// export const metadata = {
+//   title: "The Rug Game",
+//   description: "Guess pump or rug correctly & win Big!",
+//   openGraph: {
+//     title: "The Rug Game",
+//     description: "Guess pump or rug correctly & win Big!",
+//     url: "https://theruggame.fun/",
+//     siteName: "The Rug Game",
+//     images: [
+//       {
+//         url: "https://theruggame.fun/images/logo1.png",
+//         width: 1200,
+//         height: 630,
+//       }
+//     ],
+//     type: "website",
+//   },
+//   twitter: {
+//     card: "summary_large_image",
+//     title: "The Rug Game",
+//     description: "Guess pump or rug correctly & win Big!",
+//     images: ["https://theruggame.fun/images/logo1.png"],
+//   },
+//   icons: {
+//     icon: "/favicon.ico",
+//   },
+// }
 
 export default function RootLayout({ children }) {
   return (
