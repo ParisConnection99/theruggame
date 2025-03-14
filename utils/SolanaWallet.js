@@ -298,9 +298,17 @@ export async function transferSOL(
       SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: destinationWallet,
-        lamports: lamportsAmount.toNumber() // Use BN for proper conversion
+        lamports: Number(lamportsAmount.toString()) // Safe conversion
       })
     );
+    
+    // const transaction = new Transaction().add(
+    //   SystemProgram.transfer({
+    //     fromPubkey: publicKey,
+    //     toPubkey: destinationWallet,
+    //     lamports: lamportsAmount.toNumber() // Use BN for proper conversion
+    //   })
+    // );
     
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
