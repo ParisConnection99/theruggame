@@ -257,6 +257,11 @@ export async function transferSOL(
   if (!amount || isNaN(amount) || amount <= 0) {
     return { success: false, error: 'Invalid amount specified' };
   }
+
+  logInfo('Destination address', {
+    address: destinationAddress,
+    component: 'Solana Wallet'
+  });
   
   try {
     // Use connectionless approach to avoid WebSocket issues
