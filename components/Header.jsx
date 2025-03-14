@@ -47,8 +47,9 @@ export default function Header() {
                 component: 'Header'
             });
             setIsEffectivelyConnected(false);
+
         }
-    }, [connected, userProfile]);
+    }, [connected, userProfile, isEffectivelyConnected]);
 
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
