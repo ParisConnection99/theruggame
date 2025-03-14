@@ -476,6 +476,14 @@ export default function MarketPage() {
           return;
         }
 
+        logInfo('Enough money ready to place bet.', {
+          component: 'Market Page'
+        });
+
+        logInfo(`Public Key: ${publicKey}`, {
+          component: 'Market Page'
+        });
+
         // Use placeBet with proper callbacks
         await new Promise((resolve, reject) => {
           placeBet(
