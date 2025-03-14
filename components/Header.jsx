@@ -52,19 +52,19 @@ export default function Header() {
 
             setIsEffectivelyConnected(false);
 
-            logInfo('IsEffectivelyConneted after update', {
-                isUserConnected: `${isEffectivelyConnected}`,
-                component: 'Header'
-            });
+            // logInfo('IsEffectivelyConneted after update', {
+            //     isUserConnected: `${isEffectivelyConnected}`,
+            //     component: 'Header'
+            // });
 
         }
     }, [connected, userProfile]);
 
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
-            logInfo('Recieved wallet-callback event', {
-                component: 'Header'
-            })
+            // logInfo('Recieved wallet-callback event', {
+            //     component: 'Header'
+            // })
 
             // Check if we have the data
             if (event.detail && event.detail.publicKey) {
@@ -96,10 +96,10 @@ export default function Header() {
 
             //setIsEffectivelyConnected(false);
 
-            logInfo('Check user connection after disconnect', {
-                component: 'Header',
-                isUserConnected: `${connected}`
-            });
+            // logInfo('Check user connection after disconnect', {
+            //     component: 'Header',
+            //     isUserConnected: `${connected}`
+            // });
         };
 
         window.addEventListener('wallet-disconnect-event', handleWalletDisconnectEvent);
