@@ -502,6 +502,8 @@ export default function MarketPage() {
               try {
                 console.log("Transfer successful:", transferResult);
 
+                logInfo('Transfer successful', {});
+
                 // Update the users balance 
                 const updatedUserResponse = await fetch(`/api/users`, {
                   method: 'POST',
@@ -517,6 +519,9 @@ export default function MarketPage() {
                 if (!updatedUserResponse.ok) {
                   const errorData = await updatedUserResponse.json();
 
+                  logInfo('Error updating users balance', {
+                    errorMessage: errorData
+                  });
                   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
                   return;
                 }
@@ -539,6 +544,10 @@ export default function MarketPage() {
                 if (!response.ok) {
                   const errorData = await response.json();
                   // If API fails, we should handle this situation
+
+                  logInfo('Error creating bet in database', {
+                    errorMessage: errorData
+                  })
                   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
                   return;
                 }
