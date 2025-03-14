@@ -525,7 +525,7 @@ export default function Header() {
                     </a>
 
                     <WrappedClientWalletLayout
-                    key={isEffectivelyConnected ? 'success' : 'disconnected'}
+                    key={connectionStatus ? 'success' : 'disconnected'}
                     isEffectivelyConnected={isEffectivelyConnected} />
                 </div>
             </div>
