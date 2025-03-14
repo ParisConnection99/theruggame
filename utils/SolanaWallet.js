@@ -259,7 +259,7 @@ export async function transferSOL(
   }
 
   logInfo('Destination address', {
-    address: destinationAddress,
+    address: `${destinationAddress}`,
     component: 'Solana Wallet'
   });
   
