@@ -15,6 +15,7 @@ import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
+import { logInfo, logError } from '@/utils/logger';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
