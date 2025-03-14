@@ -48,8 +48,13 @@ export default function Header() {
             });
             setIsEffectivelyConnected(false);
 
+            logInfo('Is user connected', {
+                isUserConnected: connected,
+                component: 'Header'
+            });
+
         }
-    }, [connected, userProfile, isEffectivelyConnected]);
+    }, [connected, userProfile]);
 
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
