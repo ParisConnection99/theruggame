@@ -477,7 +477,7 @@ export default function MarketPage() {
         }
 
         logInfo('Enough money ready to place bet.', {
-          component: 'Market Page'
+          component: 'Market Page' 
         });
 
         logInfo(`Public Key: ${publicKey}`, {
