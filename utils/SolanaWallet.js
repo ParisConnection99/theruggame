@@ -281,7 +281,8 @@ export async function transferSOL(
 
 
 
-    const lamportsAmount = new BN(Math.floor(Number(amount) * LAMPORTS_PER_SOL));
+    //const lamportsAmount = new BN(Math.floor(Number(amount) * LAMPORTS_PER_SOL));
+    const lamportsAmount = BigInt(Math.floor(Number(amount) * LAMPORTS_PER_SOL));
 
     
     // Log the lamports amount for debugging
@@ -298,7 +299,8 @@ export async function transferSOL(
       SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: destinationWallet,
-        lamports: Number(lamportsAmount.toString()) // Safe conversion
+        lamports: Number(lamportsAmount)
+        //lamports: Number(lamportsAmount.toString()) // Safe conversion
       })
     );
     
