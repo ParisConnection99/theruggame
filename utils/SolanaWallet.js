@@ -299,7 +299,7 @@ export async function transferSOL(
       SystemProgram.transfer({
         fromPubkey: publicKey,
         toPubkey: destinationWallet,
-        lamports: Number(lamportsAmount)
+        lamports: lamportsAmount
         //lamports: Number(lamportsAmount.toString()) // Safe conversion
       })
     );
