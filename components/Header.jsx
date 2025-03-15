@@ -95,6 +95,7 @@ export default function Header() {
             // });
 
             // check if on mobile
+            setIsEffectivelyConnected(true);
             await disconnect();
 
             //setIsEffectivelyConnected(false);
