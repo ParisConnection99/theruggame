@@ -117,6 +117,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       // For mobile, dispatch an event to set connection pending flags
       if (isMobile) {
         window.dispatchEvent(new Event('wallet-connect-start'));
+      } else {
+        window.dispatchEvent(new Event('wallet-connect-request'));
       }
 
       // Use wallet adapter select - simplifying to match the tutorial approach
