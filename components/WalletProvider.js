@@ -132,6 +132,10 @@ export const WalletProviderComponent = ({ children }) => {
                     component: 'Wallet Provider',
                     publicKey: publicKey.toBase58()
                   });
+                } else {
+                    logInfo('There is no public Key', {
+                        component: 'Wallet provider'
+                    });
                 }
               })
               .catch(err => {
