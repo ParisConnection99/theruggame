@@ -95,9 +95,17 @@ export default function Header() {
             // });
 
             // check if on mobile
-            setIsEffectivelyConnected(true);
-            await disconnect();
+            setIsEffectivelyConnected(false);
 
+            try {
+                await disconnect();
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'Disconnecting wallet'
+                })
+            }
+            
             //setIsEffectivelyConnected(false);
 
             // logInfo('Check user connection after disconnect', {
