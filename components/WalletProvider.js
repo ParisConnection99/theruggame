@@ -109,6 +109,42 @@ export const WalletProviderComponent = ({ children }) => {
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    } else {
+        // Desktop-specific logic
+        logInfo('Is Desktop device', {
+            component: 'Wallet Provider'
+        });
+        
+        // Listen for wallet connection request event
+        const handleWalletConnect = () => {
+            console.log('Wallet connect requested on desktop');
+            logInfo('Wallet connect requested on desktop', {
+                component: 'Wallet Provider'
+            });
+            
+            // Explicitly connect to the wallet
+            phantomAdapter.connect()
+              .then(publicKey => {
+                if (publicKey) {
+                  localStorage.setItem('wallet_public_key', publicKey.toBase58());
+                  console.log('Wallet connected successfully');
+                  logInfo('Wallet connected successfully', {
+                    component: 'Wallet Provider',
+                    publicKey: publicKey.toBase58()
+                  });
+                }
+              })
+              .catch(err => {
+                console.error('Failed to connect wallet:', err);
+                logError('Failed to connect wallet', {
+                  component: 'Wallet Provider',
+                  error: err.message
+                });
+              });
+        };
+        
+        window.addEventListener('wallet-connect-request', handleWalletConnect);
+        return () => window.removeEventListener('wallet-connect-request', handleWalletConnect);
     }
 }, []);
 
@@ -127,7 +163,6 @@ export const WalletProviderComponent = ({ children }) => {
     </ConnectionProvider>
   );
 };
-
   // useEffect(() => {
   //   setIsClient(true);
 
