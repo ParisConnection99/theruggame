@@ -46,9 +46,10 @@ export default function Header() {
 
             //logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
         } else {
-            // logInfo('Setting isEffectivelyConnected to false ', {
-            //     component: 'Header'
-            // });
+            logInfo('Connected is false', {
+                component: 'Header',
+                isEffectively: `${isEffectivelyConnected}`
+            });
 
             setIsEffectivelyConnected(false);
 
@@ -92,7 +93,7 @@ export default function Header() {
             // });
 
             // check if on mobile
-            //await disconnect();
+            await disconnect();
 
             //setIsEffectivelyConnected(false);
 
