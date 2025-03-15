@@ -63,8 +63,15 @@ export const WalletProviderComponent = ({ children }) => {
             };
             
             if (!isMobileDevice()) {
-              // We'll rely on the modal for desktop connections
-              console.log('Using wallet modal for reconnection');
+              // For Desktop, we ensure that Phantom wallet is connected automatically
+              console.log('Attempting automatic connection to Phantom wallet');
+              phantomAdapter.connect().catch((err) => {
+                console.error('Auto-reconnect failed:', err);
+                logError('Auto-reconnect failed', {
+                  component: 'Wallet Provider',
+                  error: err.message
+                });
+              });
             } else {
               // Special handling for mobile
               phantomAdapter.connect().catch((err) => {
@@ -186,6 +193,7 @@ export const WalletProviderComponent = ({ children }) => {
       </ConnectionProvider>
     );
   };
+
   // useEffect(() => {
   //   setIsClient(true);
 
