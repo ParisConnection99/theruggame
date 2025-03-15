@@ -43,6 +43,7 @@ export default function Header() {
     // Update effective connection state
     useEffect(() => {
         if (connected || (userProfile && userProfile.wallet_ca)) {
+            logInfo('Use effect is connected.');
             setIsEffectivelyConnected(true);
 
             //logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
