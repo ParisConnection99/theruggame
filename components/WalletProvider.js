@@ -21,7 +21,7 @@ export const WalletProviderComponent = ({ children }) => {
   
       // Initialize PhantomWalletAdapter with proper config
       const phantomAdapter = new PhantomWalletAdapter({
-        appIdentity: { name: "Your App Name" },
+        appIdentity: { name: "The Rug Game" },
         connectOnReady: false
       });
       
