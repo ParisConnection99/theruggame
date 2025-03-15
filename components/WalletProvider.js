@@ -24,19 +24,19 @@ export const WalletProviderComponent = ({ children }) => {
     const walletAdapters = [phantomAdapter];
     setWallets(walletAdapters);
 
-    // // Restore connection if wallet was previously connected
-    // const storedPublicKey = localStorage.getItem('wallet_public_key');
-    // if (storedPublicKey) {
-    //     console.log('Restoring wallet connection for:', storedPublicKey);
-    //     logInfo('Restoring wallet connection for:', {
-    //         component: "Wallet Provider",
-    //         storedPublicKey: storedPublicKey
-    //     });
+    // Restore connection if wallet was previously connected
+    const storedPublicKey = localStorage.getItem('wallet_public_key');
+    if (storedPublicKey) {
+        console.log('Restoring wallet connection for:', storedPublicKey);
+        logInfo('Restoring wallet connection for:', {
+            component: "Wallet Provider",
+            storedPublicKey: storedPublicKey
+        });
 
-    //     setTimeout(() => {
-    //         phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
-    //     }, 500); // Delay ensures provider is ready
-    // }
+        setTimeout(() => {
+            phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
+        }, 500); // Delay ensures provider is ready
+    }
 
     // Mobile-specific logic
     const isMobileDevice = () => {
