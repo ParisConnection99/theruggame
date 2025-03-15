@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletModalProvider, useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { logInfo, logError } from '@/utils/logger';
 import Image from 'next/image';
 import nacl from 'tweetnacl';
@@ -109,31 +110,39 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     }
   ];
 
+  const { setVisible } = useWalletModal();
+
   const handleWalletSelect = async (walletName) => {
     // Set attempting state immediately for visual feedback
     setIsAttemptingConnect(true);
 
-    try {
-      // For mobile, dispatch an event to set connection pending flags
-      // if (isMobile) {
-      //   window.dispatchEvent(new Event('wallet-connect-start'));
-      // } else {
-      //   window.dispatchEvent(new Event('wallet-connect-request'));
-      // }
+    logInfo('Opening wallet modal', {
+      component: 'ConnectButton'
+    });
+    
+    setVisible(true);
 
-      logInfo('Dispatching the wallet connect request event');
+    // try {
+    //   // For mobile, dispatch an event to set connection pending flags
+    //   // if (isMobile) {
+    //   //   window.dispatchEvent(new Event('wallet-connect-start'));
+    //   // } else {
+    //   //   window.dispatchEvent(new Event('wallet-connect-request'));
+    //   // }
 
-      window.dispatchEvent(new Event('wallet-connect-request'));
+    //   logInfo('Dispatching the wallet connect request event');
 
-      // Use wallet adapter select - simplifying to match the tutorial approach
-      select(walletName);
-    } catch (error) {
-      console.error("Wallet selection error:", error);
-      setIsAttemptingConnect(false);
-      if (onError) {
-        onError('Failed to connect to wallet. Please try again.');
-      }
-    }
+    //   window.dispatchEvent(new Event('wallet-connect-request'));
+
+    //   // Use wallet adapter select - simplifying to match the tutorial approach
+    //   select(walletName);
+    // } catch (error) {
+    //   console.error("Wallet selection error:", error);
+    //   setIsAttemptingConnect(false);
+    //   if (onError) {
+    //     onError('Failed to connect to wallet. Please try again.');
+    //   }
+    // }
   };
   // Option for direct Phantom deep link on mobile
   const handleDirectPhantomLink = () => {

@@ -8,60 +8,110 @@ import { clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
 
 export const WalletProviderComponent = ({ children }) => {
-  const network = 'mainnet-beta';
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const [isClient, setIsClient] = useState(false);
-
-  // We need to use useState for wallets because we want to detect
-  // if we're on mobile or desktop after component mounts
-  const [wallets, setWallets] = useState([]);
-
-  useEffect(() => {
-    setIsClient(true);
-
-    // Initialize PhantomWalletAdapter
-    const phantomAdapter = new PhantomWalletAdapter();
-    const walletAdapters = [phantomAdapter];
-    setWallets(walletAdapters);
-
-    // Restore connection if wallet was previously connected
-    const storedPublicKey = localStorage.getItem('wallet_public_key');
-    if (storedPublicKey) {
-        console.log('Restoring wallet connection for:', storedPublicKey);
-        logInfo('Restoring wallet connection for:', {
-            component: "Wallet Provider",
-            storedPublicKey: storedPublicKey
+    const network = 'mainnet-beta';
+    const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+    const [isClient, setIsClient] = useState(false);
+  
+    // We need to use useState for wallets because we want to detect
+    // if we're on mobile or desktop after component mounts
+    const [wallets, setWallets] = useState([]);
+  
+    useEffect(() => {
+      setIsClient(true);
+  
+      // Initialize PhantomWalletAdapter with proper config
+      const phantomAdapter = new PhantomWalletAdapter({
+        appIdentity: { name: "Your App Name" },
+        connectOnReady: false
+      });
+      
+      const walletAdapters = [phantomAdapter];
+      setWallets(walletAdapters);
+  
+      // Listen for wallet connection events
+      const handleWalletConnect = (publicKey) => {
+        if (publicKey) {
+          localStorage.setItem('wallet_public_key', publicKey.toBase58());
+          console.log('Wallet connected successfully:', publicKey.toBase58());
+          logInfo('Wallet connected successfully', {
+            component: 'Wallet Provider',
+            publicKey: publicKey.toBase58()
+          });
+        }
+      };
+  
+      // Set up event listeners for the adapter
+      phantomAdapter.on('connect', handleWalletConnect);
+  
+      // Restore connection if wallet was previously connected
+      const storedPublicKey = localStorage.getItem('wallet_public_key');
+      if (storedPublicKey) {
+        console.log('Attempting to restore wallet connection for:', storedPublicKey);
+        logInfo('Attempting to restore wallet connection', {
+          component: "Wallet Provider",
+          storedPublicKey: storedPublicKey
         });
-
+  
+        // Wait for component to fully render
         setTimeout(() => {
-            phantomAdapter.connect().catch((err) => console.error('Auto-reconnect failed:', err));
-        }, 500); // Delay ensures provider is ready
-    }
-
-    // Mobile-specific logic
-    const isMobileDevice = () => {
+          try {
+            // For desktop, we'll use the built-in wallet modal instead
+            // This will trigger the extension popup automatically
+            const isMobileDevice = () => {
+              if (typeof navigator === 'undefined') return false;
+              return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            };
+            
+            if (!isMobileDevice()) {
+              // We'll rely on the modal for desktop connections
+              console.log('Using wallet modal for reconnection');
+            } else {
+              // Special handling for mobile
+              phantomAdapter.connect().catch((err) => {
+                console.error('Auto-reconnect failed:', err);
+                logError('Auto-reconnect failed', {
+                  component: 'Wallet Provider',
+                  error: err.message
+                });
+              });
+            }
+          } catch (err) {
+            console.error('Error during wallet reconnection setup:', err);
+            logError('Error during wallet reconnection setup', {
+              component: 'Wallet Provider',
+              error: err.message
+            });
+          }
+        }, 1000);
+      }
+  
+      // Mobile-specific logic
+      const isMobileDevice = () => {
         if (typeof navigator === 'undefined') return false;
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    };
-
-    if (isMobileDevice()) {
-        // Handle wallet connection start
+      };
+  
+      if (isMobileDevice()) {
+        // Mobile logic (unchanged from your original)
         logInfo('Is Mobile device', {
-            component: 'Wallet Provider'
+          component: 'Wallet Provider'
         });
+        
+        // ... rest of your mobile code ...
+        // (keeping your original mobile implementation)
         const handleWalletConnectionStart = () => {
             localStorage.setItem('wallet_connect_pending', 'true');
             localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
-
+  
             // Save the current wallet public key
             const storedPublicKey = phantomAdapter.publicKey?.toBase58();
             if (storedPublicKey) {
                 localStorage.setItem('wallet_public_key', storedPublicKey);
             }
         };
-
+  
         window.addEventListener('wallet-connect-start', handleWalletConnectionStart);
-
+  
         // Check if returning from wallet connection
         const checkWalletReturn = () => {
             const pendingConnection = localStorage.getItem('wallet_return_reconnect');
@@ -70,17 +120,17 @@ export const WalletProviderComponent = ({ children }) => {
                 logInfo('Detected return from wallet connection', {
                     component: 'Wallet Provider'
                 });
-
+  
                 // Get wallet data
                 const publicKey = localStorage.getItem('phantomPublicKey');
                 const session = localStorage.getItem('phantomSession');
-
+  
                 if (publicKey && session) {
                     // Dispatch event with available data
                     const walletEvent = new CustomEvent('wallet-callback-event', {
                         detail: { publicKey, session }
                     });
-
+  
                     // Short delay to ensure component is mounted
                     setTimeout(() => {
                         window.dispatchEvent(walletEvent);
@@ -88,14 +138,14 @@ export const WalletProviderComponent = ({ children }) => {
                 }
             }
         };
-
+  
         checkWalletReturn();
-
+  
         // Handle visibility changes for mobile
         const handleVisibilityChange = () => {
             if (!document.hidden) {
                 console.log("Visibility changed - returning from wallet app");
-
+  
                 // If we've just become visible, check if we need to reconnect
                 const pendingConnection = localStorage.getItem('wallet_connect_pending');
                 if (pendingConnection === 'true') {
@@ -106,67 +156,36 @@ export const WalletProviderComponent = ({ children }) => {
                 }
             }
         };
-
+  
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    } else {
-        // Desktop-specific logic
-        logInfo('Is Desktop device', {
-            component: 'Wallet Provider'
-        });
-        
-        // Listen for wallet connection request event
-        const handleWalletConnect = () => {
-            console.log('Wallet connect requested on desktop');
-            logInfo('Wallet connect requested on desktop', {
-                component: 'Wallet Provider'
-            });
-            
-            // Explicitly connect to the wallet
-            phantomAdapter.connect()
-              .then(publicKey => {
-                if (publicKey) {
-                  localStorage.setItem('wallet_public_key', publicKey.toBase58());
-                  console.log('Wallet connected successfully');
-                  logInfo('Wallet connected successfully', {
-                    component: 'Wallet Provider',
-                    publicKey: publicKey.toBase58()
-                  });
-                } else {
-                    logInfo('There is no public Key', {
-                        component: 'Wallet provider'
-                    });
-                }
-              })
-              .catch(err => {
-                console.error('Failed to connect wallet:', err);
-                logError('Failed to connect wallet', {
-                  component: 'Wallet Provider',
-                  error: err.message
-                });
-              });
+        return () => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          phantomAdapter.off('connect', handleWalletConnect);
+          window.removeEventListener('wallet-connect-start', handleWalletConnectionStart);
         };
-        
-        window.addEventListener('wallet-connect-request', handleWalletConnect);
-        return () => window.removeEventListener('wallet-connect-request', handleWalletConnect);
+      } else {
+        // Desktop specific cleanup
+        return () => {
+          phantomAdapter.off('connect', handleWalletConnect);
+        };
+      }
+    }, []);
+  
+    // Handle rendering nothing on the server
+    if (!isClient) {
+      return null;
     }
-}, []);
-
-  // Handle rendering nothing on the server
-  if (!isClient) {
-    return null;
-  }
-
-  return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets}>
-        <WalletModalProvider>
-          {children}
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
-  );
-};
+  
+    return (
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect={false}>
+          <WalletModalProvider>
+            {children}
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    );
+  };
   // useEffect(() => {
   //   setIsClient(true);
 
