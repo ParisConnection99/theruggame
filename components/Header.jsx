@@ -26,6 +26,7 @@ export default function Header() {
 
     console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
     logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
+    logInfo(`Connection state: ${connected}`);
 
     // Detect if user is on mobile device
     useEffect(() => {
