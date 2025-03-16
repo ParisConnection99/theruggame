@@ -73,7 +73,7 @@ export default function Header() {
             }
 
             // Attempt connection
-            await select('Phantom');
+            select('Phantom');
 
             logInfo('Checking wallet state after select', {
                 component: 'Header',
