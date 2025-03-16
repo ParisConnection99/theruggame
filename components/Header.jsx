@@ -67,6 +67,11 @@ export default function Header() {
                 throw new Error('Phantom wallet is not installed');
             }
 
+            logInfo('Wallet available', {
+                component: 'Header',
+                walletAvailable: phantomWallet?.isPhantom
+            });
+
             // Trigger wallet selection
             await select('Phantom');
             

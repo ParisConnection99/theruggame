@@ -10,20 +10,25 @@ export const WalletProviderComponent = ({ children }) => {
     // Set up network
     const endpoint = useMemo(() => clusterApiUrl('mainnet-beta'), []);
 
-    // Set up wallet adapter
-    const wallets = useMemo(() => [
-        new PhantomWalletAdapter()
-    ], []);
+    // Initialize Phantom adapter with required config
+    const phantomWallet = useMemo(() => 
+        new PhantomWalletAdapter({
+            appName: "The Rug Game"
+        })
+    , []);
 
+    // Create wallets array with the phantom wallet
+    const wallets = useMemo(() => [phantomWallet], [phantomWallet]);
+  
     return (
-        <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={wallets} autoConnect={false}>
-                <WalletModalProvider>
-                    {children}
-                </WalletModalProvider>
-            </WalletProvider>
-        </ConnectionProvider>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect={false}>
+          <WalletModalProvider>
+            {children}
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
     );
-};
+  };
 
 export default WalletProviderComponent; 
