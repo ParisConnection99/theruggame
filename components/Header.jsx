@@ -74,6 +74,16 @@ export default function Header() {
 
             // Attempt connection
             await select('Phantom');
+
+            logInfo('Checking wallet state after select', {
+                component: 'Header',
+                walletState: {
+                    connecting,
+                    connected,
+                    hasWallet: !!wallet,
+                    hasPhantom: !!window?.phantom?.solana
+                }
+            });
             
             logInfo('Select called successfully', {
                 component: 'Header'
