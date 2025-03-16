@@ -6,7 +6,6 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
-import { WalletProvider as CustomWalletProvider} from './WalletContext';
 
 export const WalletProviderComponent = ({ children }) => {
     const network = 'mainnet-beta';
@@ -194,9 +193,7 @@ export const WalletProviderComponent = ({ children }) => {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect={false}>
           <WalletModalProvider>
-            <CustomWalletProvider>
             {children}
-            </CustomWalletProvider>
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
