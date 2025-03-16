@@ -59,9 +59,22 @@ export default function MarketPage() {
   // Added state for outcome
   const [marketOutcome, setMarketOutcome] = useState(null);
 
+  // Added status for mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+        );
+        setIsMobile(isMobileDevice);
+    };
+
+    checkMobile();
+}, []);
+
 
   // Fetching the market data + initial token price
-
   useEffect(() => {
     if (!id) return;
 
@@ -186,6 +199,7 @@ export default function MarketPage() {
       }
     }
   }, [market?.id]); // Only depend on the ID, not the entire market object
+
 
   const handlePriceUpdate = (priceData) => {
     setCurrentPrice(priceData.price);
@@ -472,8 +486,32 @@ export default function MarketPage() {
         alert('Your bet has been successfully placed.');
       } else {
         logInfo('Balance is not enough need to check wallet', {});
+
+        // Get the appropriate public key based on platform
+        let userPublicKey;
+
+        if (isMobile) {
+          // For mobile, get the public key from localStorage
+          userPublicKey = localStorage.getItem('phantomPublicKey');
+          if (!userPublicKey) {
+              alert('Wallet connection not found. Please reconnect your wallet.');
+              setIsBetting(false);
+              setLoading(false);
+              return;
+          }
+      } else {
+          // For web, use the wallet adapter's public key
+          if (!publicKey) {
+              alert('Wallet not connected');
+              setIsBetting(false);
+              setLoading(false);
+              return;
+          }
+          userPublicKey = publicKey;
+      }
+
         // Need to use wallet payment
-        const hasEnough = await checkSufficientBalance(publicKey, betWithFees);
+        const hasEnough = await checkSufficientBalance(userPublicKey, betWithFees);
 
         if (!hasEnough) {
           logInfo('You dont have enough SOL', {});
@@ -490,7 +528,7 @@ export default function MarketPage() {
         // Use placeBet with proper callbacks
         await new Promise((resolve, reject) => {
           placeBet(
-            publicKey,
+            userPublicKey,
             sendTransaction,
             betWithFees,
             // Success callback
