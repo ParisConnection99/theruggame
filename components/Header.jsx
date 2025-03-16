@@ -259,9 +259,7 @@ export default function Header() {
                 dapp_encryption_public_key: dappEncryptionPublicKey,
                 cluster: "mainnet-beta",
                 app_url: appUrl,
-                redirect_link: redirectUrl,
-                title: 'The Rug Game',
-                icon: 'https://theruggame.fun/logo.png'
+                redirect_link: redirectUrl
             });
 
             const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
