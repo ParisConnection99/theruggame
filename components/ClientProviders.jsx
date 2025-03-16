@@ -1,19 +1,17 @@
 // components/ClientProviders.jsx
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { FirebaseProvider } from "@/components/FirebaseProvider";
-import { initializePriceScheduler } from '@/services/PricesSchedulerInitializer'; 
+import { WalletProviderComponent } from '@/components/WalletProvider';
+import '@solana/wallet-adapter-react-ui/styles.css'; // Add this for wallet modal styling
 
 export default function ClientProviders({ children }) {
-  useEffect(() => {
-    // Initialize the price scheduler
-    initializePriceScheduler();
-  }, []);
-
   return (
     <FirebaseProvider>
+      <WalletProviderComponent>
         {children}
+      </WalletProviderComponent>
     </FirebaseProvider>
   );
 }

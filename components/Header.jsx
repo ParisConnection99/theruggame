@@ -40,6 +40,18 @@ export default function Header() {
         checkMobile();
     }, []);
 
+    const handleConnect = async () => {
+        try {
+            logInfo('Attempting to connect wallet', {
+                component: 'Header'
+            });
+            
+            await select('Phantom');
+        } catch (error) {
+            console.error('Failed to connect:', error);
+        }
+    };
+
     // Update effective connection state
     // useEffect(() => {
     //     if (connected || (userProfile && userProfile.wallet_ca)) {
@@ -422,8 +434,8 @@ export default function Header() {
                 {!isEffectivelyConnected ? (
                     <div
                         onClick={() => {
+                            handleConnect();
                             closeMenu(); // Close the burger menu
-                            setShowWalletConnectionModal(true);
                         }}
                         className="text-white text-md hover:scale-105 hover:underline cursor-pointer relative"
                     >
