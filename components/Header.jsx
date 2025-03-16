@@ -40,15 +40,48 @@ export default function Header() {
         checkMobile();
     }, []);
 
+    // Monitor connection states
+    useEffect(() => {
+        if (connected) {
+            logInfo('Wallet connected successfully', {
+                component: 'Header',
+                publicKey: publicKey?.toString()
+            });
+            setConnectionStatus('success');
+        }
+    }, [connected, publicKey]);
+
     const handleConnect = async () => {
         try {
+            setConnectionStatus('connecting');
             logInfo('Attempting to connect wallet', {
                 component: 'Header'
             });
-            
+
+            // First check if Phantom is installed
+            const phantomWallet = window?.phantom?.solana;
+            if (!phantomWallet?.isPhantom) {
+                logInfo('Phantom wallet is not installed', {
+                    component: 'Header'
+                });
+                throw new Error('Phantom wallet is not installed');
+            }
+
+            // Trigger wallet selection
             await select('Phantom');
+            
+            // After select, the wallet adapter should trigger the popup
+            logInfo('Wallet selection successful, awaiting user approval', {
+                component: 'Header'
+            });
+
         } catch (error) {
             console.error('Failed to connect:', error);
+            logError(error, {
+                component: 'Header',
+                action: 'Failed to connect wallet'
+            });
+            setConnectionStatus('error');
         }
     };
 
