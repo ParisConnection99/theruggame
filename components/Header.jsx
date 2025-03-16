@@ -49,6 +49,7 @@ export default function Header() {
                 publicKey: publicKey?.toString()
             });
             setConnectionStatus('success');
+            setIsEffectivelyConnected(true);
         }
     }, [connected, publicKey]);
 
