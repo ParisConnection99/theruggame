@@ -26,42 +26,41 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   // Set mobile state on client side
   useEffect(() => {
     // Check if a keypair already exists in localStorage
- // Check if a keypair already exists in localStorage
- const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
- if (storedPrivateKey) {
-   try {
-     // Use the existing keypair
-     const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-     keypairRef.current = existingKeypair;
-     setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
-   } catch (error) {
-     console.error("Failed to load existing keypair:", error);
-     localStorage.removeItem('dappEncryptionPrivateKey');
-     localStorage.removeItem('dappEncryptionPublicKey');
-   }
- } else {
-   // Generate a new keypair
-   const keypair = nacl.box.keyPair();
-   keypairRef.current = keypair;
+    if (storedPrivateKey) {
+      try {
+        // Use the existing keypair
+        const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
+        keypairRef.current = existingKeypair;
+        setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
+      } catch (error) {
+        console.error("Failed to load existing keypair:", error);
+        localStorage.removeItem('dappEncryptionPrivateKey');
+        localStorage.removeItem('dappEncryptionPublicKey');
+      }
+    } else {
+      // Generate a new keypair
+      const keypair = nacl.box.keyPair();
+      keypairRef.current = keypair;
 
-   // Store the public key
-   const publicKeyBase58 = bs58.encode(keypair.publicKey);
-   setDappEncryptionPublicKey(publicKeyBase58);
-   localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
+      // Store the public key
+      const publicKeyBase58 = bs58.encode(keypair.publicKey);
+      setDappEncryptionPublicKey(publicKeyBase58);
+      localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
 
-   // Store the private key securely (consider an alternative to localStorage)
-   const privateKeyBase58 = bs58.encode(keypair.secretKey);
-   localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+      // Store the private key securely (consider an alternative to localStorage)
+      const privateKeyBase58 = bs58.encode(keypair.secretKey);
+      localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
 
-   // Log key generation
-   logInfo('dapp_private_key', {
-     component: 'WalletConnectionModal',
-     dappPrivateKey: privateKeyBase58,
-   });
- }
+      // Log key generation
+      logInfo('dapp_private_key', {
+        component: 'WalletConnectionModal',
+        dappPrivateKey: privateKeyBase58,
+      });
+    }
 
- setIsMobile(isMobileDevice());
+    setIsMobile(isMobileDevice());
   }, []);
 
   // Listen for wallet return reconnect events
@@ -119,16 +118,8 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     logInfo('Opening wallet modal', {
       component: 'ConnectButton'
     });
-    
-    try {
-      //For mobile, dispatch an event to set connection pending flags
-      // if (isMobile) {
-      //   window.dispatchEvent(new Event('wallet-connect-start'));
-      // } else {
-      //   window.dispatchEvent(new Event('wallet-connect-request'));
-      // }
 
-      // Use wallet adapter select - simplifying to match the tutorial approach
+    try {
       select(walletName);
     } catch (error) {
       logError("Wallet selection error:", error);

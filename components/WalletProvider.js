@@ -24,6 +24,11 @@ export const WalletProviderComponent = ({ children }) => {
         appIdentity: { name: "The Rug Game" },
         connectOnReady: false
       });
+
+      logInfo('Phantom adapter initialized', {
+        component: 'Wallet Provider',
+        phantomAdapter: phantomAdapter
+      });
       
       const walletAdapters = [phantomAdapter];
       setWallets(walletAdapters);
