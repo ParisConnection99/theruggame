@@ -41,12 +41,34 @@ export default function Header() {
         checkMobile();
     }, []);
 
+    // Handle wallet connection when connected
     useEffect(() => {
         if (connected && publicKey && auth) {
             console.log("Wallet connected:", publicKey.toString());
             handleWalletConnection();
         }
     }, [connected, publicKey, auth]);
+
+    // Listen for wallet disconnect event
+    useEffect(() => {
+        const handleWalletDisconnect = async () => {
+            try {
+                if (connected) {
+                    await disconnect();
+                }
+            } catch (error) {
+                console.error('Error disconnecting wallet:', error);
+            }
+        };
+
+        // Add event listener
+        window.addEventListener('wallet-disconnect-event', handleWalletDisconnect);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
+        };
+    }, [connected, disconnect]);
 
     // Monitor connection states
     useEffect(() => {
