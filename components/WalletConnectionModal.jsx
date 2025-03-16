@@ -128,11 +128,11 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       } else {
         window.dispatchEvent(new Event('wallet-connect-request'));
       }
-      
+
       // Use wallet adapter select - simplifying to match the tutorial approach
       select(walletName);
     } catch (error) {
-      console.error("Wallet selection error:", error);
+      logError("Wallet selection error:", error);
       setIsAttemptingConnect(false);
       if (onError) {
         onError('Failed to connect to wallet. Please try again.');
