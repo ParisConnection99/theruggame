@@ -13,6 +13,25 @@ export default function WalletCallbackPage() {
     try {
       // Parse query parameters from the URL
       const queryParams = new URLSearchParams(window.location.search);
+      const isDisconnect = queryParams.get('disconnect');
+
+
+      if (isDisconnect === 'true') {
+        // Clear all wallet-related data
+        localStorage.removeItem('phantomPublicKey');
+        localStorage.removeItem('phantomSession');
+        localStorage.removeItem('wallet_connect_pending');
+        localStorage.removeItem('wallet_connect_timestamp');
+
+        // Dispatch disconnect event
+        window.dispatchEvent(new Event('wallet-disconnect-event'));
+        
+        // Redirect back to home
+        router.push('/');
+        return;
+    }
+
+
       const phantomEncryptionPublicKey = queryParams.get('phantom_encryption_public_key');
       const nonce = queryParams.get('nonce');
       const encryptedData = queryParams.get('data');
