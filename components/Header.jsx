@@ -217,14 +217,30 @@ export default function Header() {
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
             try {
+                setConnectionStatus('connecting');
+
                 logInfo('Recieved wallet-callback event', {
                     component: 'Header',
                     event: event.detail
                 });
 
-                
+                // Process the connection with the received data
+            if (event.detail && event.detail.publicKey) {
+                await handleWalletCallbackConnection({
+                    publicKey: event.detail.publicKey,
+                    session: event.detail.session
+                });
+
+                setConnectionStatus('success');
+                    setIsEffectivelyConnected(true);
+                }
+
+                localStorage.setItem('wallet_return_reconnect', 'false');
+
             } catch (error) {
                 console.error('Error during wallet callback:', error);
+                setConnectionStatus('error');
+                showConnectionError(error.message || 'Connection failed, please try again');
                 logError(error, {
                     component: 'Header',
                     action: 'Error during wallet callback'
@@ -233,6 +249,7 @@ export default function Header() {
         };
 
         window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
+        return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
 
     // Update effective connection state
