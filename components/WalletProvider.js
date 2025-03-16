@@ -6,6 +6,7 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
+import { WalletProvider as CustomWalletProvider} from './WalletContext';
 
 export const WalletProviderComponent = ({ children }) => {
     const network = 'mainnet-beta';
@@ -15,21 +16,22 @@ export const WalletProviderComponent = ({ children }) => {
     // We need to use useState for wallets because we want to detect
     // if we're on mobile or desktop after component mounts
     const [wallets, setWallets] = useState([]);
+
+    const phantomAdapter = useMemo(() => new PhantomWalletAdapter({
+      appIdentity: { name: "The Rug Game" },
+      connectOnReady: false
+    }), []);
+
+    logInfo('Phantom adapter initialized', {
+      component: 'Wallet Provider',
+      phantomAdapter: phantomAdapter
+    });
   
     useEffect(() => {
       setIsClient(true);
   
       // Initialize PhantomWalletAdapter with proper config
-      const phantomAdapter = new PhantomWalletAdapter({
-        appIdentity: { name: "The Rug Game" },
-        connectOnReady: false
-      });
-
-      logInfo('Phantom adapter initialized', {
-        component: 'Wallet Provider',
-        phantomAdapter: phantomAdapter
-      });
-      
+    
       const walletAdapters = [phantomAdapter];
       setWallets(walletAdapters);
   
@@ -181,7 +183,7 @@ export const WalletProviderComponent = ({ children }) => {
           phantomAdapter.off('connect', handleWalletConnect);
         };
       }
-    }, []);
+    }, [phantomAdapter]);
   
     // Handle rendering nothing on the server
     if (!isClient) {
@@ -192,7 +194,9 @@ export const WalletProviderComponent = ({ children }) => {
       <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect={false}>
           <WalletModalProvider>
+            <CustomWalletProvider>
             {children}
+            </CustomWalletProvider>
           </WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
