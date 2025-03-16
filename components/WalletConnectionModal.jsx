@@ -120,7 +120,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
     });
 
     try {
+      logInfo('Attempting to select wallet:', walletName);
       select(walletName);
+      logInfo('Wallet selected successfully:', walletName);
     } catch (error) {
       logError("Wallet selection error:", error);
       setIsAttemptingConnect(false);
