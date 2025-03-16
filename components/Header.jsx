@@ -23,7 +23,7 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    const [isConnecting, setIsConnecting] = useState(false);
+    
 
     console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
     logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
@@ -54,7 +54,7 @@ export default function Header() {
 
     const handleConnect = async () => {
         try {
-            setIsConnecting(true);
+            setConnectionStatus('connecting');
             
             // Log initial state
             logInfo('Starting wallet connection', {
@@ -81,7 +81,8 @@ export default function Header() {
 
         } catch (error) {
             console.error('Connection error:', error);
-            setIsConnecting(false);
+            setConnectionStatus('error');
+            showConnectionError(error.message || 'Connection failed, please try again');
         }
     };
 
