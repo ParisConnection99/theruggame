@@ -74,13 +74,13 @@ export const WalletProviderComponent = ({ children }) => {
               });
             } else {
               // Special handling for mobile
-              phantomAdapter.connect().catch((err) => {
-                console.error('Auto-reconnect failed:', err);
-                logError('Auto-reconnect failed', {
-                  component: 'Wallet Provider',
-                  error: err.message
-                });
-              });
+              // phantomAdapter.connect().catch((err) => {
+              //   console.error('Auto-reconnect failed:', err);
+              //   logError('Auto-reconnect failed', {
+              //     component: 'Wallet Provider',
+              //     error: err.message
+              //   });
+              // });
             }
           } catch (err) {
             console.error('Error during wallet reconnection setup:', err);
