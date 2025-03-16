@@ -260,8 +260,8 @@ export default function Header() {
                 cluster: "mainnet-beta",
                 app_url: appUrl,
                 redirect_link: redirectUrl,
-                name: 'The Rug Game',
-                icon: 'https://theruggame.fun/images/logo1.png'
+                title: 'The Rug Game',
+                icon: 'https://theruggame.fun/logo.png'
             });
 
             const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
