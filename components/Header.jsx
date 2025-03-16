@@ -55,6 +55,14 @@ export default function Header() {
             try {
                 if (connected) {
                     await disconnect();
+
+                    logInfo('Wallet disconnected', {
+                        component: 'Header',
+                        walletState: {
+                            connected: connected,
+                            publicKey: publicKey?.toString()
+                        }
+                    });
                 }
             } catch (error) {
                 console.error('Error disconnecting wallet:', error);
