@@ -91,23 +91,34 @@ export default function Header() {
     // Listen for wallet disconnect event
     useEffect(() => {
         const handleWalletDisconnect = async () => {
-            try {
-                if (connected) {
-                    await disconnect();
+            if (isMobile) {
+                await handleMobileDisconnect();
+            } else {
+                try {
+                    if (connected) {
+                        await disconnect();
 
-                    logInfo('Wallet disconnected', {
-                        component: 'Header',
-                        walletState: {
-                            connected: connected,
-                            publicKey: publicKey?.toString()
-                        }
-                    });
-
-                    setIsEffectivelyConnected(false);
+                        logInfo('Wallet disconnected', {
+                            component: 'Header',
+                            walletState: {
+                                connected: connected,
+                                publicKey: publicKey?.toString()
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error disconnecting wallet:', error);
                 }
-            } catch (error) {
-                console.error('Error disconnecting wallet:', error);
             }
+
+            // Clear stored data
+            localStorage.removeItem('phantomPublicKey');
+            localStorage.removeItem('phantomSession');
+            localStorage.removeItem('wallet_connect_pending');
+            localStorage.removeItem('wallet_connect_timestamp');
+
+            setIsEffectivelyConnected(false);
+
         };
 
         // Add event listener
@@ -118,6 +129,65 @@ export default function Header() {
             window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
         };
     }, [connected, disconnect]);
+
+    const handleMobileDisconnect = async () => {
+        try {
+            // Get stored session and dapp public key
+            const session = localStorage.getItem('phantomSession');
+            const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+
+            if (!session || !dappEncryptionPublicKey) {
+                throw new Error('Missing session or encryption key');
+            }
+
+            // Create and encrypt the payload
+            const payload = {
+                session: session
+            };
+
+            // Generate new nonce
+            const nonce = nacl.randomBytes(24);
+            const nonceBase58 = bs58.encode(nonce);
+
+            // Get stored private key for encryption
+            const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+            if (!storedPrivateKey) {
+                throw new Error('Encryption private key not found');
+            }
+
+            // Encrypt the payload
+            const dappPrivateKey = bs58.decode(storedPrivateKey);
+            const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
+            const encryptedData = nacl.box.after(
+                messageUint8,
+                nonce,
+                nacl.box.before(
+                    bs58.decode(dappEncryptionPublicKey),
+                    dappPrivateKey
+                )
+            );
+
+            // Create the deep link URL
+            const params = new URLSearchParams({
+                dapp_encryption_public_key: dappEncryptionPublicKey,
+                nonce: nonceBase58,
+                redirect_link: 'https://theruggame.fun/wallet-callback',
+                payload: bs58.encode(encryptedData)
+            });
+
+            const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
+
+            // Redirect to Phantom
+            window.location.href = disconnectDeepLink;
+
+        } catch (error) {
+            console.error('Error creating disconnect deep link:', error);
+            logError(error, {
+                component: 'Header',
+                action: 'mobile disconnect'
+            });
+        }
+    };
 
     // Monitor connection states
     useEffect(() => {
@@ -225,17 +295,16 @@ export default function Header() {
                 });
 
                 // Process the connection with the received data
-            if (event.detail && event.detail.publicKey) {
-                await handleWalletCallbackConnection({
-                    publicKey: event.detail.publicKey,
-                    session: event.detail.session
-                });
+                if (event.detail && event.detail.publicKey) {
+                    await handleWalletCallbackConnection({
+                        publicKey: event.detail.publicKey,
+                        session: event.detail.session
+                    });
 
-                setConnectionStatus('success');
+                    setConnectionStatus('success');
                     setIsEffectivelyConnected(true);
                 }
 
-                localStorage.setItem('wallet_return_reconnect', 'false');
 
             } catch (error) {
                 console.error('Error during wallet callback:', error);
