@@ -82,7 +82,9 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
   // Close modal when connected successfully
   useEffect(() => {
     if (connected) {
-      console.log("Connection detected, closing modal");
+      logInfo('Connection detected, closing modal', {
+        component: 'WalletConnectionModal'
+      });
       onClose();
       setIsAttemptingConnect(false);
 
@@ -91,6 +93,14 @@ export const WalletConnectionModal = ({ isOpen, onClose, onError }) => {
       localStorage.removeItem('wallet_connect_timestamp');
     }
   }, [connected, onClose]);
+
+  useEffect(() => {
+    if (connecting) {
+      logInfo('Connecting detected', {
+        component: 'WalletConnectionModal'
+      });
+    }
+  }, [connecting]);
 
   // Reset state when modal closes
   useEffect(() => {
