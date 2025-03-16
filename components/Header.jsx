@@ -63,6 +63,8 @@ export default function Header() {
                             publicKey: publicKey?.toString()
                         }
                     });
+
+                    setIsEffectivelyConnected(false);
                 }
             } catch (error) {
                 console.error('Error disconnecting wallet:', error);
