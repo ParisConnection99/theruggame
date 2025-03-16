@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
-//import WalletConnectionModal from './WalletConnectionModal';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-
+import nacl from 'tweetnacl';
+import bs58 from 'bs58';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -23,7 +23,8 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-
+    const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
+    const keypairRef = useRef(null);
 
     console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
     logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
@@ -39,6 +40,44 @@ export default function Header() {
         };
 
         checkMobile();
+    }, []);
+
+    // Create a keypair for the dapp
+    useEffect(() => {
+        // Check if a keypair already exists in localStorage
+        const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+
+        if (storedPrivateKey) {
+            try {
+                // Use the existing keypair
+                const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
+                keypairRef.current = existingKeypair;
+                setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
+            } catch (error) {
+                console.error("Failed to load existing keypair:", error);
+                localStorage.removeItem('dappEncryptionPrivateKey');
+                localStorage.removeItem('dappEncryptionPublicKey');
+            }
+        } else {
+            // Generate a new keypair
+            const keypair = nacl.box.keyPair();
+            keypairRef.current = keypair;
+
+            // Store the public key
+            const publicKeyBase58 = bs58.encode(keypair.publicKey);
+            setDappEncryptionPublicKey(publicKeyBase58);
+            localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
+
+            // Store the private key securely (consider an alternative to localStorage)
+            const privateKeyBase58 = bs58.encode(keypair.secretKey);
+            localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+
+            // Log key generation
+            logInfo('dapp_private_key', {
+                component: 'WalletConnectionModal',
+                dappPrivateKey: privateKeyBase58,
+            });
+        }
     }, []);
 
     // Handle wallet connection when connected
@@ -132,6 +171,69 @@ export default function Header() {
             showConnectionError(error.message || 'Connection failed, please try again');
         }
     };
+
+    const handleMobileWalletConnection = async () => {
+        if (!isMobile) return;
+
+
+        try {
+            setConnectionStatus('connecting');
+
+            localStorage.setItem('wallet_connect_pending', 'true');
+            localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
+
+            const appUrl = 'https://theruggame.fun/';
+            const redirectUrl = 'https://theruggame.fun/wallet-callback';
+
+            const params = new URLSearchParams({
+                dapp_encryption_public_key: dappEncryptionPublicKey,
+                cluster: "mainnet-beta",
+                app_url: appUrl,
+                redirect_link: redirectUrl
+            });
+
+            const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
+
+            logInfo('Deeplink', {
+                link: deepLink
+            });
+
+            // Direct link to Phantom with callback to our site
+            window.location.href = deepLink;
+
+            // Log initial state
+        } catch (error) {
+            console.error('Connection error:', error);
+            logError(error, {
+                component: 'Header',
+                action: 'Error during mobile wallet connection'
+            });
+            setConnectionStatus('error');
+            showConnectionError(error.message || 'Connection failed, please try again');
+        }
+    };
+
+    //Handle wallet callback
+    useEffect(() => {
+        const handleWalletCallbackEvent = async (event) => {
+            try {
+                logInfo('Recieved wallet-callback event', {
+                    component: 'Header',
+                    event: event.detail
+                });
+
+                
+            } catch (error) {
+                console.error('Error during wallet callback:', error);
+                logError(error, {
+                    component: 'Header',
+                    action: 'Error during wallet callback'
+                });
+            }
+        };
+
+        window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
+    }, []);
 
     // Update effective connection state
     // useEffect(() => {
@@ -515,7 +617,12 @@ export default function Header() {
                 {!isEffectivelyConnected ? (
                     <div
                         onClick={() => {
-                            handleConnect();
+                            if (isMobile) {
+                                handleMobileWalletConnection();
+                            } else {
+                                handleConnect();
+                            }
+
                             closeMenu(); // Close the burger menu
                         }}
                         className="text-white text-md hover:scale-105 hover:underline cursor-pointer relative"
