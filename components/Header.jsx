@@ -50,6 +50,7 @@ export default function Header() {
             });
             setConnectionStatus('success');
             setIsEffectivelyConnected(true);
+            handleWalletConnection();
         }
     }, [connected, publicKey]);
 
