@@ -23,7 +23,7 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    
+
 
     console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
     logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
@@ -41,6 +41,13 @@ export default function Header() {
         checkMobile();
     }, []);
 
+    useEffect(() => {
+        if (connected && publicKey && auth) {
+            console.log("Wallet connected:", publicKey.toString());
+            handleWalletConnection();
+        }
+    }, [connected, publicKey, auth]);
+
     // Monitor connection states
     useEffect(() => {
         if (connected) {
@@ -50,14 +57,13 @@ export default function Header() {
             });
             setConnectionStatus('success');
             setIsEffectivelyConnected(true);
-            handleWalletConnection();
         }
     }, [connected, publicKey]);
 
     const handleConnect = async () => {
         try {
             setConnectionStatus('connecting');
-            
+
             // Log initial state
             logInfo('Starting wallet connection', {
                 component: 'Header',
@@ -160,7 +166,7 @@ export default function Header() {
     //                 action: 'Disconnecting wallet'
     //             })
     //         }
-            
+
     //         //setIsEffectivelyConnected(false);
 
     //         // logInfo('Check user connection after disconnect', {
