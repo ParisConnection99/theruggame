@@ -23,6 +23,7 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
+    const [isConnecting, setIsConnecting] = useState(false);
 
     console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
     logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
@@ -53,40 +54,34 @@ export default function Header() {
 
     const handleConnect = async () => {
         try {
-            setConnectionStatus('connecting');
-            logInfo('Attempting to connect wallet', {
-                component: 'Header'
+            setIsConnecting(true);
+            
+            // Log initial state
+            logInfo('Starting wallet connection', {
+                component: 'Header',
+                walletState: {
+                    connecting,
+                    connected,
+                    hasWallet: !!wallet,
+                    hasPhantom: !!window?.phantom?.solana
+                }
             });
 
-            // First check if Phantom is installed
-            const phantomWallet = window?.phantom?.solana;
-            if (!phantomWallet?.isPhantom) {
-                logInfo('Phantom wallet is not installed', {
-                    component: 'Header'
-                });
+            // Check if Phantom is available
+            if (!window?.phantom?.solana) {
                 throw new Error('Phantom wallet is not installed');
             }
 
-            logInfo('Wallet available', {
-                component: 'Header',
-                walletAvailable: phantomWallet?.isPhantom
-            });
-
-            // Trigger wallet selection
+            // Attempt connection
             await select('Phantom');
             
-            // After select, the wallet adapter should trigger the popup
-            logInfo('Wallet selection successful, awaiting user approval', {
+            logInfo('Select called successfully', {
                 component: 'Header'
             });
 
         } catch (error) {
-            console.error('Failed to connect:', error);
-            logError(error, {
-                component: 'Header',
-                action: 'Failed to connect wallet'
-            });
-            setConnectionStatus('error');
+            console.error('Connection error:', error);
+            setIsConnecting(false);
         }
     };
 

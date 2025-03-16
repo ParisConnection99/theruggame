@@ -5,18 +5,25 @@ import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { clusterApiUrl } from '@solana/web3.js';
+import { logInfo } from '@/utils/logger';
 
 export const WalletProviderComponent = ({ children }) => {
     // Set up network
     const endpoint = useMemo(() => clusterApiUrl('mainnet-beta'), []);
 
     // Initialize Phantom adapter with required config
-    const phantomWallet = useMemo(() => 
-        new PhantomWalletAdapter({
-            appName: "The Rug Game"
-        })
-    , []);
+    const phantomWallet = useMemo(() => {
+        const wallet = new PhantomWalletAdapter();
+        
+        // Log initialization
+      logInfo('Phantom adapter initialized', {
+        component: 'Wallet Provider',
+            phantomAdapter: wallet
+        });
 
+        return wallet;
+    }, []);
+  
     // Create wallets array with the phantom wallet
     const wallets = useMemo(() => [phantomWallet], [phantomWallet]);
   
