@@ -260,8 +260,7 @@ export default function Header() {
                 cluster: "mainnet-beta",
                 app_url: appUrl,
                 redirect_link: redirectUrl,
-
-                app_identity: JSON.stringify({
+                app: JSON.stringify({
                     name: 'The Rug Game',
                     icon: 'https://theruggame.fun/images/logo1.png'
                 })
