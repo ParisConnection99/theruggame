@@ -25,43 +25,35 @@ export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
   const id = pathname ? pathname.split("/").pop() : null;
   const PLATFORM_FEE = 0.02;
+  const MIN_BET_AMOUNT = 0.07;
+  const MAX_BET_AMOUNT = 100;
   const inputRef = useRef(null); // Add ref for the input element
   const { publicKey, sendTransaction, connected } = useWallet();
   const analytics = useAnalytics();
-
-  if (!id) {
-    console.error("Market ID is missing from URL.");
-  }
-
   const { user: authUser, auth } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [userLoading, setUserLoading] = useState(true);
   const [market, setMarket] = useState(null);
-
-  // State for countdown timer (added from MarketCard)
   const [timeLeft, setTimeLeft] = useState('');
   const [isBettingClosed, setIsBettingClosed] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
   const [timerLabel, setTimerLabel] = useState('Market closes in:');
   const [userBalance, setUserBalance] = useState(0);
-
-  // Added state for bet calculations
   const [betAmount, setBetAmount] = useState(0);
   const [houseFee, setHouseFee] = useState(0);
   const [potentialReturn, setPotentialReturn] = useState({ amount: 0, percentage: 0 });
-
-  // Added state for token price updates
   const [currentPrice, setCurrentPrice] = useState(0);
   const [liquidity, setLiquidity] = useState(0);
-
-  // Added state for price history 
   const [priceHistory, setPriceHistory] = useState([]);
-
-  // Added state for outcome
   const [marketOutcome, setMarketOutcome] = useState(null);
-
-  // Added status for mobile detection
   const [isMobile, setIsMobile] = useState(false);
+  const [isPumpActive, setIsPumpActive] = useState(true); 
+  const [isBetting, setIsBetting] = useState(false);
+
+  if (!id) {
+    console.error("Market ID is missing from URL.");
+  }
 
   // Added state for search params
   const searchParams = useSearchParams();
@@ -400,18 +392,8 @@ export default function MarketPage() {
 
   const tokenNameNoSpaces = market?.name ? market.name.replace(/\s+/g, "") : "UnknownToken";
   const questionStart = "Will ";
-  const questionEnd = " Pump or Rug in 10 mins?";
-
-  // Use state to manage the active state of the buttons
-  const [isPumpActive, setIsPumpActive] = useState(true); // Default is 'Pump' active
-
+  const questionEnd = ` Pump or Rug in ${market?.duration} mins?`;
   const stats = calculatePumpRugPercentages(market?.total_pump_amount || 0, market?.total_rug_amount || 0);
-
-  // Constants for betting
-  const MIN_BET_AMOUNT = 0.07;
-  const MAX_BET_AMOUNT = 100;
-
-  const [isBetting, setIsBetting] = useState(false);
 
   // Modified function to handle amount changes and calculate returns
   const handleAmountChange = async (value) => {
