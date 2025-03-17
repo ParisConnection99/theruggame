@@ -188,12 +188,6 @@ export async function placeBet(
       throw new Error("You don't have enough SOL to place this bet");
     }
 
-    // Check balance (works for both mobile and web)
-    // const hasEnough = await checkSufficientBalance(publicKey, betAmount);
-    // if (!hasEnough) {
-    //   throw new Error("You don't have enough SOL to place this bet");
-    // }
-
     if (isMobile) {
       if (!marketId) {
         throw new Error('Market ID is required for mobile transactions');
@@ -205,6 +199,10 @@ export async function placeBet(
       localStorage.setItem('pending_transaction_amount', betAmount.toString());
       localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
       localStorage.setItem('pending_transaction_market_id', marketId);
+
+      logInfo('Deep Link', {
+        deepLink: deepLink
+      });
 
       // Redirect to Phantom app
       window.location.href = deepLink;
