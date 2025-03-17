@@ -5,7 +5,7 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
   // Format the question with no spaces in market name
   const tokenNameNoSpaces = name ? name.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
-  const questionEnd = " Pump or Rug in 10 mins?";
+  const questionEnd = ` Pump or Rug in ${duration} mins?`;
 
   if (!imageSrc) {
     imageSrc = "/images/ruggy_angry.svg";

@@ -22,7 +22,7 @@ const FeaturedMarket = ({
   const [isExpired, setIsExpired] = useState(false);
   const tokenNameNoSpaces = marketName ? marketName.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
-  const questionEnd = " Pump or Rug in 10 mins?";
+  const questionEnd = ` Pump or Rug in ${duration} mins?`;
 
   if (!imageSrc) {
     imageSrc = "/images/ruggy_angry.svg";

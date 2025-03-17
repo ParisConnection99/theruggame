@@ -205,7 +205,8 @@ export async function placeBet(
       });
 
       // Redirect to Phantom app
-      window.location.href = deepLink;
+      //window.location.href = deepLink;
+      window.open(deepLink, '_blank');
     } else {
       // Handle web transaction as before
       const result = await transferSOL(publicKey, sendTransaction, betAmount);
