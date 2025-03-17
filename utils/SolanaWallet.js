@@ -356,12 +356,24 @@ export async function createMobileTransactionDeepLink(
     // 7. Create minimal payload
     const payload = {
       session,
-      transaction: Buffer.from(serializedTransaction).toString('base64')
+      transaction: Buffer.from(serializedTransaction).toString('base64'),
+      options: {
+        commitment: 'confirmed',
+        skipPreflight: false,
+        maxRetries: 3
+      }
     };
 
     logInfo('Payload Created', {
       sessionLength: session.length,
-      transactionLength: serializedTransaction.length
+      transactionLength: serializedTransaction.length,
+      options: true
+    });
+
+    // Also, let's log the session format (first few characters)
+    logInfo('Session Format', {
+      preview: session.substring(0, 20) + '...',
+      isJSON: session.startsWith('{')
     });
 
     // 8. Encrypt with minimal steps
