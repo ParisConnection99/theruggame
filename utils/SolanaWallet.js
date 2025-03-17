@@ -205,8 +205,7 @@ export async function placeBet(
       });
 
       // Redirect to Phantom app
-      //window.location.href = deepLink;
-      window.open(deepLink, '_blank');
+      window.location.href = deepLink;
     } else {
       // Handle web transaction as before
       const result = await transferSOL(publicKey, sendTransaction, betAmount);
@@ -361,7 +360,7 @@ export async function createMobileTransactionDeepLink(
     });
 
     // Include marketId in the redirect URL
-    const redirectUrl = `https://theruggame.fun/market/${marketId}`;
+    const redirectUrl = encodeURIComponent(`https://theruggame.fun/market/${marketId}`);
 
     // Create deep link parameters
     const params = new URLSearchParams({
