@@ -300,7 +300,7 @@ export async function createMobileTransactionDeepLink(
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
     const session = localStorage.getItem('phantomSession');
-    
+
     if (!dappEncryptionPublicKey || !storedPrivateKey || !session) {
       throw new Error('Encryption keys or session not found');
     }
@@ -311,7 +311,7 @@ export async function createMobileTransactionDeepLink(
 
     // Create transaction
     const transaction = new Transaction();
-    
+
     // Add transfer instruction
     transaction.add(
       SystemProgram.transfer({
@@ -355,25 +355,22 @@ export async function createMobileTransactionDeepLink(
       sharedSecret
     );
 
-    logInfo('Market ID', {
-      marketId: marketId
-    });
-
     // Update the redirect URL to use the new callback page
-    const redirectUrl = encodeURIComponent('https://theruggame.fun/market-callback');
+    const redirectUrl = 'https://theruggame.fun/market-callback';
 
     // Create deep link parameters
-    const params = new URLSearchParams({
-      dapp_encryption_public_key: dappEncryptionPublicKey,
-      nonce: nonceBase58,
-      redirect_link: redirectUrl,
-      payload: bs58.encode(encryptedData)
-    });
+    const params = new URLSearchParams();
+    params.append('dapp_encryption_public_key', dappEncryptionPublicKey);
+    params.append('nonce', nonceBase58);
+    params.append('redirect_link', redirectUrl);
+    params.append('payload', bs58.encode(encryptedData));
 
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
 
     logInfo('Deep Link', {
-      deepLink: deepLink
+      deepLink: deepLink,
+      nonce: nonceBase58.length, // Log nonce length for debugging
+      payload: bs58.encode(encryptedData).length // Log payload length for debugging
     });
 
     return deepLink;
@@ -398,7 +395,7 @@ export async function handleTransactionCallback(encryptedData, nonceString) {
     // Get stored encryption keys
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-    
+
     if (!dappEncryptionPublicKey || !storedPrivateKey) {
       throw new Error('Encryption keys not found');
     }
