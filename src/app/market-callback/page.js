@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { handleTransactionCallback } from '@/utils/SolanaWallet';
+import { logInfo, logError } from '@/utils/logger';
 
 function CallbackContent() {
   const router = useRouter();
@@ -11,11 +12,28 @@ function CallbackContent() {
   useEffect(() => {
     async function processCallback() {
       try {
+        // Log all search parameters for debugging
+        console.log('Search params:', Object.fromEntries(searchParams.entries()));
+        logInfo('Search params', {
+          params: Object.fromEntries(searchParams.entries())
+        });
+        
         // Get the encrypted data and nonce from URL parameters
-        const data = searchParams.get('data');
+        // Phantom might be using different parameter names
+        const data = searchParams.get('data') || searchParams.get('encrypted_data');
         const nonce = searchParams.get('nonce');
 
+        console.log('Data:', data);
+        console.log('Nonce:', nonce);
+
         if (!data || !nonce) {
+          const marketId = localStorage.getItem('pending_transaction_market_id') || '1544';
+          console.error('Missing data or nonce in URL parameters');
+          logError('Missing transaction data', {
+            marketId: marketId,
+            data: data,
+            nonce: nonce
+          });
           throw new Error('Missing transaction data');
         }
 
@@ -38,7 +56,12 @@ function CallbackContent() {
         router.push(`/market/${marketId}?txSignature=${signature}`);
       } catch (error) {
         console.error('Error processing transaction:', error);
+        logError('Transaction error', {
+          marketId: marketId,
+          error: error.message
+        });
         
+
         // Get the market ID for redirect
         const marketId = localStorage.getItem('pending_transaction_market_id');
         
