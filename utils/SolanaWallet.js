@@ -338,7 +338,7 @@ export async function createMobileTransactionDeepLink(
     );
 
     // Include marketId in the redirect URL
-    const redirectUrl = `https://theruggame.fun/market/${marketId}/wallet-callback`;
+    const redirectUrl = `https://theruggame.fun/market/${marketId}`;
 
     // Create deep link parameters
     const params = new URLSearchParams({
