@@ -296,40 +296,68 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Get stored encryption keys and session
+    // 1. Validate and log all required keys
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
     const session = localStorage.getItem('phantomSession');
-    
-    if (!dappEncryptionPublicKey || !storedPrivateKey || !session) {
-      throw new Error('Encryption keys or session not found');
+    const phantomPublicKey = localStorage.getItem('phantomPublicKey');
+
+    logInfo('Phantom Connection State', {
+      hasEncryptionPublicKey: !!dappEncryptionPublicKey,
+      hasPrivateKey: !!storedPrivateKey,
+      hasSession: !!session,
+      hasPublicKey: !!phantomPublicKey,
+      sessionLength: session?.length,
+      publicKey: phantomPublicKey?.substring(0, 10) + '...'
+    });
+
+    // Validate all required data
+    if (!dappEncryptionPublicKey) throw new Error('Missing dapp encryption public key');
+    if (!storedPrivateKey) throw new Error('Missing stored private key');
+    if (!session) throw new Error('Missing phantom session');
+    if (!phantomPublicKey) throw new Error('Missing phantom public key');
+
+    // 2. Validate public keys
+    try {
+      const userPublicKey = new PublicKey(phantomPublicKey);
+      const destinationPublicKey = new PublicKey(destinationAddress);
+      logInfo('Public Keys Valid', {
+        user: userPublicKey.toBase58().substring(0, 10) + '...',
+        destination: destinationPublicKey.toBase58().substring(0, 10) + '...'
+      });
+    } catch (e) {
+      throw new Error(`Invalid public key format: ${e.message}`);
     }
 
-    // Create connection and get latest blockhash
+    // 3. Create and validate connection
     const connection = new Connection(endpoint, 'confirmed');
     const { blockhash } = await connection.getLatestBlockhash('confirmed');
+    logInfo('Connection State', {
+      endpoint,
+      hasBlockhash: !!blockhash,
+      blockhash: blockhash?.substring(0, 10) + '...'
+    });
 
-    // Get the user's public key
-    const userPublicKey = new PublicKey(localStorage.getItem('phantomPublicKey'));
-    const destinationPublicKey = new PublicKey(destinationAddress);
-
-    // Create transaction
+    // 4. Create and validate transaction
     const transaction = new Transaction();
-    
-    // Add transfer instruction
     transaction.add(
       SystemProgram.transfer({
-        fromPubkey: userPublicKey,
-        toPubkey: destinationPublicKey,
+        fromPubkey: new PublicKey(phantomPublicKey),
+        toPubkey: new PublicKey(destinationAddress),
         lamports: Math.round(amount * LAMPORTS_PER_SOL)
       })
     );
-
-    // Set recent blockhash and fee payer
     transaction.recentBlockhash = blockhash;
-    transaction.feePayer = userPublicKey;
+    transaction.feePayer = new PublicKey(phantomPublicKey);
 
-    // Serialize the transaction - IMPORTANT: Use base64 encoding
+    logInfo('Transaction Details', {
+      amount: amount,
+      lamports: Math.round(amount * LAMPORTS_PER_SOL),
+      hasBlockhash: !!transaction.recentBlockhash,
+      hasFeePayer: !!transaction.feePayer
+    });
+
+    // 5. Serialize transaction
     const serializedTransaction = Buffer.from(
       transaction.serialize({
         requireAllSignatures: false,
@@ -337,56 +365,75 @@ export async function createMobileTransactionDeepLink(
       })
     ).toString('base64');
 
-    // Create the payload object according to Phantom's specification
+    logInfo('Serialized Transaction', {
+      length: serializedTransaction.length,
+      preview: serializedTransaction.substring(0, 20) + '...'
+    });
+
+    // 6. Create and validate payload
     const payload = {
       session,
-      transaction: serializedTransaction,
-      options: {
-        commitment: 'confirmed',
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-        maxRetries: 3
-      }
+      transaction: serializedTransaction
     };
 
-    // Generate new nonce
+    // 7. Generate and validate nonce
     const nonce = nacl.randomBytes(24);
     const nonceBase58 = bs58.encode(nonce);
-
-    // Create shared secret
-    const sharedSecret = nacl.box.before(
-      bs58.decode(dappEncryptionPublicKey),
-      bs58.decode(storedPrivateKey)
-    );
-
-    // Encrypt the payload
-    const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
-    const encryptedData = nacl.box.after(
-      messageUint8,
-      nonce,
-      sharedSecret
-    );
-
-    // Create deep link parameters
-    const params = new URLSearchParams({
-      dapp_encryption_public_key: dappEncryptionPublicKey,
-      nonce: nonceBase58,
-      redirect_link: 'https://www.theruggame.fun/market-callback',
-      payload: bs58.encode(encryptedData)
+    logInfo('Nonce', {
+      length: nonce.length,
+      base58Length: nonceBase58.length
     });
 
-    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+    // 8. Create and validate encryption
+    try {
+      const sharedSecret = nacl.box.before(
+        bs58.decode(dappEncryptionPublicKey),
+        bs58.decode(storedPrivateKey)
+      );
 
-    // Log for debugging
-    console.log('Transaction Payload:', {
-      session: session.substring(0, 10) + '...',
-      transactionLength: serializedTransaction.length,
-      options: payload.options
-    });
+      const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
+      const encryptedData = nacl.box.after(
+        messageUint8,
+        nonce,
+        sharedSecret
+      );
 
-    return deepLink;
+      logInfo('Encryption', {
+        payloadSize: messageUint8.length,
+        encryptedSize: encryptedData.length,
+        hasSharedSecret: !!sharedSecret
+      });
+
+      // 9. Create final URL
+      const params = new URLSearchParams({
+        dapp_encryption_public_key: dappEncryptionPublicKey,
+        nonce: nonceBase58,
+        redirect_link: 'https://www.theruggame.fun/market-callback',
+        payload: bs58.encode(encryptedData)
+      });
+
+      const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+
+      logInfo('Deep Link Created', {
+        length: deepLink.length,
+        hasAllParams: deepLink.includes('dapp_encryption_public_key') && 
+                     deepLink.includes('nonce') && 
+                     deepLink.includes('redirect_link') && 
+                     deepLink.includes('payload')
+      });
+
+      return deepLink;
+    } catch (e) {
+      throw new Error(`Encryption error: ${e.message}`);
+    }
+
   } catch (error) {
-    console.error('Error creating mobile transaction:', error);
+    logError(error, {
+      component: 'createMobileTransactionDeepLink',
+      amount,
+      marketId,
+      destinationAddress
+    });
     throw error;
   }
 }
