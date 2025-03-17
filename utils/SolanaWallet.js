@@ -359,8 +359,8 @@ export async function createMobileTransactionDeepLink(
       marketId: marketId
     });
 
-    // Include marketId in the redirect URL
-    const redirectUrl = encodeURIComponent(`https://theruggame.fun/market/${marketId}`);
+    // Update the redirect URL to use the new callback page
+    const redirectUrl = encodeURIComponent(`https://theruggame.fun/market-callback`);
 
     // Create deep link parameters
     const params = new URLSearchParams({
