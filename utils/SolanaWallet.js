@@ -124,6 +124,7 @@ export async function transferSOL(
   }
 }
 
+// Update placeBet function to include marketId
 export async function placeBet(
   publicKey, 
   sendTransaction, 
@@ -131,7 +132,8 @@ export async function placeBet(
   onSuccess, 
   onError, 
   setLoading = null,
-  isMobile = false // Add isMobile parameter
+  isMobile = false,
+  marketId = null // Add marketId parameter
 ) {
   if (setLoading) setLoading(true);
   
@@ -146,25 +148,20 @@ export async function placeBet(
       throw new Error("You don't have enough SOL to place this bet");
     }
 
-    logInfo('Bet Amount', {
-      amount: betAmount,
-      component: 'Solana wallet',
-      platform: isMobile ? 'mobile' : 'web'
-    });
-    
     if (isMobile) {
+      if (!marketId) {
+        throw new Error('Market ID is required for mobile transactions');
+      }
       // Handle mobile transaction
-      const deepLink = await createMobileTransactionDeepLink(betAmount);
+      const deepLink = await createMobileTransactionDeepLink(betAmount, marketId);
       
       // Store pending transaction info
       localStorage.setItem('pending_transaction_amount', betAmount.toString());
       localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
+      localStorage.setItem('pending_transaction_market_id', marketId);
       
       // Redirect to Phantom app
       window.location.href = deepLink;
-      
-      // Note: The actual success callback will be handled in the wallet-callback page
-      // This function will not complete as we're redirecting
     } else {
       // Handle web transaction as before
       const result = await transferSOL(publicKey, sendTransaction, betAmount);
@@ -250,6 +247,7 @@ export async function placeBet(
 // New function for mobile transactions
 export async function createMobileTransactionDeepLink(
   amount,
+  marketId, // Add marketId parameter
   destinationAddress = SITE_WALLET_ADDRESS,
   endpoint = RPC_ENDPOINT
 ) {
@@ -264,11 +262,16 @@ export async function createMobileTransactionDeepLink(
 
     // Create the transaction payload
     const payload = {
-      session: localStorage.getItem('phantomSession'), // Get stored session
+      session: localStorage.getItem('phantomSession'),
       transaction: {
         type: 'transfer',
         amount: amount,
         destination: destinationAddress,
+      },
+      // Add bet-related data to payload
+      betData: {
+        marketId: marketId,
+        amount: amount
       }
     };
 
@@ -288,11 +291,14 @@ export async function createMobileTransactionDeepLink(
       )
     );
 
+    // Include marketId in the redirect URL
+    const redirectUrl = `https://theruggame.fun/market/${marketId}/wallet-callback`;
+
     // Create deep link parameters
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: nonceBase58,
-      redirect_link: 'https://theruggame.fun/wallet-callback',
+      redirect_link: redirectUrl,
       payload: bs58.encode(encryptedData)
     });
 

@@ -610,7 +610,8 @@ export default function MarketPage() {
             },
             // Loading state (already handled by the outer function)
             null,
-            isMobile
+            isMobile,
+            market.id
           );
         });
       }
