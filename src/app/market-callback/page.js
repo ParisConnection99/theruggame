@@ -12,6 +12,14 @@ function CallbackContent() {
   useEffect(() => {
     async function processCallback() {
       try {
+        // Check for Phantom error response
+        const errorCode = searchParams.get('errorCode');
+        const errorMessage = searchParams.get('errorMessage');
+
+        if (errorCode || errorMessage) {
+          throw new Error(`Phantom Error: ${errorMessage || 'Unknown error'} (${errorCode || 'no code'})`);
+        }
+
         // Log all search parameters for debugging
         console.log('Search params:', Object.fromEntries(searchParams.entries()));
         logInfo('Search params', {
@@ -60,8 +68,6 @@ function CallbackContent() {
           marketId: marketId,
           error: error.message
         });
-        
-
         // Get the market ID for redirect
         const marketId = localStorage.getItem('pending_transaction_market_id');
         
@@ -70,7 +76,7 @@ function CallbackContent() {
         localStorage.removeItem('pending_transaction_timestamp');
         localStorage.removeItem('pending_transaction_market_id');
 
-        // Redirect back to the market page with error parameter
+        // Redirect back to the market page with detailed error
         router.push(`/market/${marketId}?error=${encodeURIComponent(error.message)}`);
       }
     }

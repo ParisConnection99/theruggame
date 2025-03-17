@@ -25,7 +25,7 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
   if (!publicKeyOrString) {
     throw new Error('Wallet not connected');
   }
-
+  
   try {
     const connection = new Connection(endpoint, 'confirmed');
 
@@ -36,10 +36,10 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
 
     const lamports = await connection.getBalance(publicKey);
     const solBalance = lamports / LAMPORTS_PER_SOL;
-
+    
     // Add small buffer for transaction fees
     const requiredAmount = amount + 0.000005;
-
+    
     return solBalance >= requiredAmount;
   } catch (error) {
     console.error('Error checking balance:', error);
@@ -81,16 +81,16 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
  * @returns {Promise<{success: boolean, signature?: string, error?: string}>} Transaction result
  */
 export async function transferSOL(
-  publicKey,
-  sendTransaction,
-  amount,
+  publicKey, 
+  sendTransaction, 
+  amount, 
   destinationAddress = SITE_WALLET_ADDRESS,
   endpoint = RPC_ENDPOINT
 ) {
   if (!publicKey) {
     return { success: false, error: 'Wallet not connected' };
   }
-
+  
   try {
     // Use connectionless approach to avoid WebSocket issues
     // The sendTransaction function already has a connection from the wallet adapter
@@ -101,7 +101,7 @@ export async function transferSOL(
       confirmTransactionInitialTimeout: 60000 // 60 seconds
     });
     const destinationWallet = new PublicKey(destinationAddress);
-
+    
     // Create transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
@@ -110,36 +110,36 @@ export async function transferSOL(
         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
       })
     );
-
+    
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = publicKey;
-
+    
     // Send transaction (this triggers the wallet popup for user approval)
     const signature = await sendTransaction(transaction, connection);
-
+    
     // Confirm with parameters that don't rely on WebSockets
     const confirmation = await connection.confirmTransaction({
       blockhash,
       lastValidBlockHeight,
       signature
     }, 'confirmed');
-
+    
     // Check for timeout errors
     if (confirmation.value.err) {
       throw new Error(`Transaction failed: ${confirmation.value.err}`);
     }
-
+    
     // If we get here, the transaction was confirmed
-    return {
-      success: true,
+    return { 
+      success: true, 
       signature,
-      transactionUrl: `https://explorer.solana.com/tx/${signature}`
+      transactionUrl: `https://explorer.solana.com/tx/${signature}`  
     };
   } catch (error) {
     console.error('Transaction failed:', error);
-
+    
     // Provide more specific error messaging
     let errorMessage = error.message;
     if (error.message.includes('User rejected')) {
@@ -147,32 +147,32 @@ export async function transferSOL(
     } else if (error.message.includes('timeout')) {
       errorMessage = 'Transaction confirmation timed out. Please check Solana Explorer for status.';
     }
-
-    return {
-      success: false,
-      error: errorMessage
+    
+    return { 
+      success: false, 
+      error: errorMessage 
     };
   }
 }
 
 // Update placeBet function to include marketId
 export async function placeBet(
-  publicKey,
-  sendTransaction,
-  betAmount,
-  onSuccess,
-  onError,
+  publicKey, 
+  sendTransaction, 
+  betAmount, 
+  onSuccess, 
+  onError, 
   setLoading = null,
   isMobile = false,
   marketId = null // Add marketId parameter
 ) {
   if (setLoading) setLoading(true);
-
+  
   try {
     if (!publicKey) {
       throw new Error('Wallet not connected');
     }
-
+    
     // For mobile, get the public key from localStorage
     const publicKeyToCheck = isMobile
       ? localStorage.getItem('phantomPublicKey')
@@ -210,10 +210,10 @@ export async function placeBet(
       // Handle web transaction as before
       const result = await transferSOL(publicKey, sendTransaction, betAmount);
 
-      if (result.success) {
-        onSuccess(result);
-      } else {
-        throw new Error(result.error);
+    if (result.success) {
+      onSuccess(result);
+    } else {
+      throw new Error(result.error);
       }
     }
   } catch (error) {
@@ -300,41 +300,42 @@ export async function createMobileTransactionDeepLink(
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
     const session = localStorage.getItem('phantomSession');
-
+    
     if (!dappEncryptionPublicKey || !storedPrivateKey || !session) {
       throw new Error('Encryption keys or session not found');
     }
 
     // Create connection and get latest blockhash
     const connection = new Connection(endpoint, 'confirmed');
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    const { blockhash } = await connection.getLatestBlockhash('confirmed');
+
+    // Get the user's public key
+    const userPublicKey = new PublicKey(localStorage.getItem('phantomPublicKey'));
+    const destinationPublicKey = new PublicKey(destinationAddress);
 
     // Create transaction
-    const transaction = new Transaction();
-
-    // Add transfer instruction
-    transaction.add(
+    const transaction = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: new PublicKey(localStorage.getItem('phantomPublicKey')),
-        toPubkey: new PublicKey(destinationAddress),
+        fromPubkey: userPublicKey,
+        toPubkey: destinationPublicKey,
         lamports: Math.round(amount * LAMPORTS_PER_SOL)
       })
     );
 
     // Set recent blockhash and fee payer
     transaction.recentBlockhash = blockhash;
-    transaction.feePayer = new PublicKey(localStorage.getItem('phantomPublicKey'));
+    transaction.feePayer = userPublicKey;
 
     // Serialize the transaction
     const serializedTransaction = transaction.serialize({
       requireAllSignatures: false,
       verifySignatures: false
-    });
+    }).toString('base64');
 
     // Create the payload
     const payload = {
       session,
-      transaction: bs58.encode(serializedTransaction),
+      transaction: serializedTransaction
     };
 
     // Generate new nonce
@@ -355,22 +356,20 @@ export async function createMobileTransactionDeepLink(
       sharedSecret
     );
 
-    // Update the redirect URL to use the new callback page
-    const redirectUrl = 'https://theruggame.fun/market-callback';
-
     // Create deep link parameters
-    const params = new URLSearchParams();
-    params.append('dapp_encryption_public_key', dappEncryptionPublicKey);
-    params.append('nonce', nonceBase58);
-    params.append('redirect_link', redirectUrl);
-    params.append('payload', bs58.encode(encryptedData));
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: dappEncryptionPublicKey,
+      nonce: nonceBase58,
+      redirect_link: 'https://www.theruggame.fun/market-callback',
+      payload: bs58.encode(encryptedData)
+    });
 
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
 
-    logInfo('Deep Link', {
-      deepLink: deepLink,
-      nonce: nonceBase58.length, // Log nonce length for debugging
-      payload: bs58.encode(encryptedData).length // Log payload length for debugging
+    logInfo('Deep Link Created', {
+      deepLink,
+      amount,
+      marketId
     });
 
     return deepLink;
