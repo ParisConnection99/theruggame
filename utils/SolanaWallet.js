@@ -296,93 +296,88 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Get stored keys and validate
+    // 1. Basic validation and logging of inputs
+    logInfo('Starting Transaction Creation', {
+      amount,
+      marketId,
+      destinationAddress
+    });
+
+    // 2. Get and validate all required data first
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const session = localStorage.getItem('phantomSession');
-    
-    if (!phantomPublicKey || !session) {
+    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+
+    if (!phantomPublicKey || !session || !dappEncryptionPublicKey || !storedPrivateKey) {
+      logError(new Error('Missing required data'), {
+        hasPhantomKey: !!phantomPublicKey,
+        hasSession: !!session,
+        hasDappKey: !!dappEncryptionPublicKey,
+        hasStoredKey: !!storedPrivateKey
+      });
       throw new Error('Missing required wallet data');
     }
 
-    // Create connection
+    // 3. Create the simplest possible valid transaction
     const connection = new Connection(endpoint, 'confirmed');
+    const { blockhash } = await connection.getLatestBlockhash('confirmed');
+
+    const transaction = new Transaction();
+    const fromPubkey = new PublicKey(phantomPublicKey);
+    const toPubkey = new PublicKey(destinationAddress);
     
-    // Get latest blockhash - IMPORTANT: This needs to be fresh
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-    
-    logInfo('Blockhash Retrieved', {
-      blockhash: blockhash.substring(0, 10) + '...',
-      lastValidBlockHeight
+    logInfo('Transaction Components', {
+      from: fromPubkey.toString(),
+      to: toPubkey.toString(),
+      amount: amount,
+      lamports: Math.round(amount * LAMPORTS_PER_SOL)
     });
 
-    // Create transaction
-    const transaction = new Transaction();
-    
-    // IMPORTANT: Set blockhash BEFORE adding instructions
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = new PublicKey(phantomPublicKey);
-
-    // Add transfer instruction
+    // 4. Add transfer instruction
     transaction.add(
       SystemProgram.transfer({
-        fromPubkey: new PublicKey(phantomPublicKey),
-        toPubkey: new PublicKey(destinationAddress),
+        fromPubkey,
+        toPubkey,
         lamports: Math.round(amount * LAMPORTS_PER_SOL)
       })
     );
 
-    // Verify transaction has blockhash
-    if (!transaction.recentBlockhash) {
-      throw new Error('Transaction blockhash not set');
-    }
+    // 5. Set transaction properties
+    transaction.feePayer = fromPubkey;
+    transaction.recentBlockhash = blockhash;
 
-    logInfo('Transaction Created', {
-      hasBlockhash: !!transaction.recentBlockhash,
-      hasFeePayer: !!transaction.feePayer,
-      instructions: transaction.instructions.length
+    // 6. Serialize transaction
+    const serializedTransaction = transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false
     });
 
-    // Serialize transaction
-    const serializedTransaction = Buffer.from(
-      transaction.serialize({
-        requireAllSignatures: false,
-        verifySignatures: false
-      })
-    ).toString('base64');
-
-    // Create payload with transaction
+    // 7. Create minimal payload
     const payload = {
       session,
-      transaction: serializedTransaction
+      transaction: Buffer.from(serializedTransaction).toString('base64')
     };
 
     logInfo('Payload Created', {
-      hasSession: !!payload.session,
+      sessionLength: session.length,
       transactionLength: serializedTransaction.length
     });
 
-    // Encrypt payload
-    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
-    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-    
-    if (!dappEncryptionPublicKey || !storedPrivateKey) {
-      throw new Error('Missing encryption keys');
-    }
-
+    // 8. Encrypt with minimal steps
     const nonce = nacl.randomBytes(24);
     const sharedSecret = nacl.box.before(
       bs58.decode(dappEncryptionPublicKey),
       bs58.decode(storedPrivateKey)
     );
 
-    const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
     const encryptedData = nacl.box.after(
-      messageUint8,
+      new TextEncoder().encode(JSON.stringify(payload)),
       nonce,
       sharedSecret
     );
 
-    // Create deep link
+    // 9. Create minimal deep link
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: bs58.encode(nonce),
@@ -392,10 +387,9 @@ export async function createMobileTransactionDeepLink(
 
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
 
-    logInfo('Deep Link Created', {
-      hasBlockhash: true,
-      amount,
-      marketId
+    logInfo('Final Deep Link', {
+      length: deepLink.length,
+      hasAllParams: true
     });
 
     return deepLink;
@@ -403,8 +397,7 @@ export async function createMobileTransactionDeepLink(
   } catch (error) {
     logError(error, {
       component: 'createMobileTransactionDeepLink',
-      amount,
-      marketId
+      step: 'transaction creation'
     });
     throw error;
   }
