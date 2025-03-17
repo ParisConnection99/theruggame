@@ -357,8 +357,12 @@ export async function createMobileTransactionDeepLink(
       sharedSecret
     );
 
+    logInfo('Market ID', {
+      marketId: marketId
+    });
+
     // Include marketId in the redirect URL
-    const redirectUrl = 'https://theruggame.fun/wallet-callback';
+    const redirectUrl = `https://theruggame.fun/market/${marketId}`;
 
     // Create deep link parameters
     const params = new URLSearchParams({
@@ -368,7 +372,13 @@ export async function createMobileTransactionDeepLink(
       payload: bs58.encode(encryptedData)
     });
 
-    return `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+
+    logInfo('Deep Link', {
+      deepLink: deepLink
+    });
+
+    return deepLink;
   } catch (error) {
     console.error('Error creating mobile transaction:', error);
     logError(error, {
