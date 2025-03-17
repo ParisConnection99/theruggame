@@ -64,14 +64,14 @@ export default function MarketPage() {
 
   useEffect(() => {
     const checkMobile = () => {
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
-        );
-        setIsMobile(isMobileDevice);
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      setIsMobile(isMobileDevice);
     };
 
     checkMobile();
-}, []);
+  }, []);
 
 
   // Fetching the market data + initial token price
@@ -173,8 +173,8 @@ export default function MarketPage() {
           if (updatedMarket.payload.id === market.id) {
             // Validate the outcome is one of the expected values
             if (
-              updatedMarket.payload.outcome === 'PUMP' || 
-              updatedMarket.payload.outcome === 'RUG' || 
+              updatedMarket.payload.outcome === 'PUMP' ||
+              updatedMarket.payload.outcome === 'RUG' ||
               updatedMarket.payload.outcome === 'HOUSE'
             ) {
               setMarketOutcome(updatedMarket.payload.outcome);
@@ -388,7 +388,7 @@ export default function MarketPage() {
     logInfo('PLACE BET', {
       component: 'Market Page'
     });
-    
+
     if (analytics) {
       logEvent(analytics, 'place_bet_button_click', {
         page: 'market',
@@ -494,21 +494,25 @@ export default function MarketPage() {
           // For mobile, get the public key from localStorage
           userPublicKey = localStorage.getItem('phantomPublicKey');
           if (!userPublicKey) {
-              alert('Wallet connection not found. Please reconnect your wallet.');
-              setIsBetting(false);
-              setLoading(false);
-              return;
+            alert('Wallet connection not found. Please reconnect your wallet.');
+            setIsBetting(false);
+            setLoading(false);
+            return;
           }
-      } else {
+        } else {
           // For web, use the wallet adapter's public key
           if (!publicKey) {
-              alert('Wallet not connected');
-              setIsBetting(false);
-              setLoading(false);
-              return;
+            alert('Wallet not connected');
+            setIsBetting(false);
+            setLoading(false);
+            return;
           }
           userPublicKey = publicKey;
-      }
+        }
+
+        logInfo('User public key', {
+          userPublicKey: userPublicKey
+        });
 
         // Need to use wallet payment
         const hasEnough = await checkSufficientBalance(userPublicKey, betWithFees);
@@ -522,7 +526,7 @@ export default function MarketPage() {
         }
 
         logInfo('Enough money ready to place bet.', {
-          component: 'Market Page' 
+          component: 'Market Page'
         });
 
         // Use placeBet with proper callbacks
@@ -708,8 +712,8 @@ export default function MarketPage() {
           <span className="mr-2">⏱️ {timerLabel}</span>
           {marketOutcome ? (
             <span className={`font-bold text-lg ${marketOutcome === 'PUMP' ? 'text-green-500' :
-                marketOutcome === 'RUG' ? 'text-red-500' :
-                  'text-amber-400' // For HOUSE outcome
+              marketOutcome === 'RUG' ? 'text-red-500' :
+                'text-amber-400' // For HOUSE outcome
               }`}>
               {marketOutcome === 'PUMP' ? 'PUMP WON' :
                 marketOutcome === 'RUG' ? 'RUG WON' :
@@ -717,8 +721,8 @@ export default function MarketPage() {
             </span>
           ) : (
             <span className={`font-bold ${isExpired ? 'text-red-500' :
-                isBettingClosed ? 'text-orange-400' :
-                  'text-yellow-400 animate-pulse'
+              isBettingClosed ? 'text-orange-400' :
+                'text-yellow-400 animate-pulse'
               }`}>
               {timeLeft}
             </span>
