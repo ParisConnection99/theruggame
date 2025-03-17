@@ -11,8 +11,18 @@ function CallbackContent() {
 
   useEffect(() => {
     async function processCallback() {
+      // Initialize marketId early to ensure it's available for error handling
+      const marketId = localStorage.getItem('pending_transaction_market_id') || '1544';
+
       try {
-        // Check for Phantom error response
+        // Log all parameters for debugging
+        const params = {};
+        searchParams.forEach((value, key) => {
+          params[key] = value;
+        });
+        console.log('Received parameters:', params);
+
+        // Check for Phantom error response first
         const errorCode = searchParams.get('errorCode');
         const errorMessage = searchParams.get('errorMessage');
 
@@ -20,40 +30,28 @@ function CallbackContent() {
           throw new Error(`Phantom Error: ${errorMessage || 'Unknown error'} (${errorCode || 'no code'})`);
         }
 
-        // Log all search parameters for debugging
-        console.log('Search params:', Object.fromEntries(searchParams.entries()));
-        logInfo('Search params', {
-          params: Object.fromEntries(searchParams.entries())
-        });
-        
         // Get the encrypted data and nonce from URL parameters
-        // Phantom might be using different parameter names
-        const data = searchParams.get('data') || searchParams.get('encrypted_data');
+        const data = searchParams.get('data');
         const nonce = searchParams.get('nonce');
 
-        console.log('Data:', data);
-        console.log('Nonce:', nonce);
+        console.log('Transaction data:', { data, nonce });
 
         if (!data || !nonce) {
-          const marketId = localStorage.getItem('pending_transaction_market_id') || '1544';
-          console.error('Missing data or nonce in URL parameters');
-          logError('Missing transaction data', {
-            marketId: marketId,
-            data: data,
-            nonce: nonce
-          });
-          throw new Error('Missing transaction data');
+          throw new Error('Missing transaction data parameters');
         }
 
         // Process the transaction callback
         const signature = await handleTransactionCallback(data, nonce);
 
-        // Get the stored market ID and transaction details
-        const marketId = localStorage.getItem('pending_transaction_market_id');
+        // Get the stored transaction details
         const amount = localStorage.getItem('pending_transaction_amount');
 
         // Log successful transaction
-        console.log('Transaction successful:', signature);
+        console.log('Transaction processed:', {
+          signature,
+          marketId,
+          amount
+        });
 
         // Clear stored transaction data
         localStorage.removeItem('pending_transaction_amount');
@@ -63,25 +61,31 @@ function CallbackContent() {
         // Redirect back to the market page with success parameter
         router.push(`/market/${marketId}?txSignature=${signature}`);
       } catch (error) {
-        console.error('Error processing transaction:', error);
-        logError('Transaction error', {
-          marketId: marketId,
-          error: error.message
-        });
-        // Get the market ID for redirect
-        const marketId = localStorage.getItem('pending_transaction_market_id');
+        console.error('Error in callback:', error);
         
         // Clear stored transaction data
-        localStorage.removeItem('pending_transaction_amount');
-        localStorage.removeItem('pending_transaction_timestamp');
-        localStorage.removeItem('pending_transaction_market_id');
+        try {
+          localStorage.removeItem('pending_transaction_amount');
+          localStorage.removeItem('pending_transaction_timestamp');
+          localStorage.removeItem('pending_transaction_market_id');
+        } catch (e) {
+          console.error('Error clearing localStorage:', e);
+        }
 
-        // Redirect back to the market page with detailed error
-        router.push(`/market/${marketId}?error=${encodeURIComponent(error.message)}`);
+        // Redirect back to the market page with error parameter
+        const errorMessage = error.message || 'Unknown error processing transaction';
+        router.push(`/market/${marketId}?error=${encodeURIComponent(errorMessage)}`);
       }
     }
 
-    processCallback();
+    // Wrap the async function call in try-catch
+    try {
+      processCallback();
+    } catch (error) {
+      console.error('Critical error in callback:', error);
+      // Fallback redirect in case of critical error
+      router.push('/market/1544?error=Critical+callback+error');
+    }
   }, [searchParams, router]);
 
   return (
