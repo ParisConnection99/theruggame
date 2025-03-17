@@ -314,7 +314,10 @@ export async function createMobileTransactionDeepLink(
     const destinationPublicKey = new PublicKey(destinationAddress);
 
     // Create transaction
-    const transaction = new Transaction().add(
+    const transaction = new Transaction();
+    
+    // Add transfer instruction
+    transaction.add(
       SystemProgram.transfer({
         fromPubkey: userPublicKey,
         toPubkey: destinationPublicKey,
@@ -326,16 +329,24 @@ export async function createMobileTransactionDeepLink(
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = userPublicKey;
 
-    // Serialize the transaction
-    const serializedTransaction = transaction.serialize({
-      requireAllSignatures: false,
-      verifySignatures: false
-    }).toString('base64');
+    // Serialize the transaction - IMPORTANT: Use base64 encoding
+    const serializedTransaction = Buffer.from(
+      transaction.serialize({
+        requireAllSignatures: false,
+        verifySignatures: false
+      })
+    ).toString('base64');
 
-    // Create the payload
+    // Create the payload object according to Phantom's specification
     const payload = {
       session,
-      transaction: serializedTransaction
+      transaction: serializedTransaction,
+      options: {
+        commitment: 'confirmed',
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 3
+      }
     };
 
     // Generate new nonce
@@ -366,19 +377,16 @@ export async function createMobileTransactionDeepLink(
 
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
 
-    logInfo('Deep Link Created', {
-      deepLink,
-      amount,
-      marketId
+    // Log for debugging
+    console.log('Transaction Payload:', {
+      session: session.substring(0, 10) + '...',
+      transactionLength: serializedTransaction.length,
+      options: payload.options
     });
 
     return deepLink;
   } catch (error) {
     console.error('Error creating mobile transaction:', error);
-    logError(error, {
-      component: 'Solana wallet',
-      platform: 'mobile'
-    });
     throw error;
   }
 }
