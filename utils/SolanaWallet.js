@@ -19,26 +19,55 @@ const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // R
  * @param {string} [endpoint=RPC_ENDPOINT] - Optional custom RPC endpoint
  * @returns {Promise<boolean>} Whether the user has sufficient balance
  */
-export async function checkSufficientBalance(publicKey, amount, endpoint = RPC_ENDPOINT) {
-  if (!publicKey) {
+export async function checkSufficientBalance(publicKeyOrString, amount, endpoint = RPC_ENDPOINT) {
+  if (!publicKeyOrString) {
     throw new Error('Wallet not connected');
   }
-  
+
   try {
     const connection = new Connection(endpoint, 'confirmed');
+
+    // Convert string to PublicKey if needed
+    const publicKey = typeof publicKeyOrString === 'string'
+      ? new PublicKey(publicKeyOrString)
+      : publicKeyOrString;
+
     const lamports = await connection.getBalance(publicKey);
     const solBalance = lamports / LAMPORTS_PER_SOL;
-    
+
     // Add small buffer for transaction fees
     const requiredAmount = amount + 0.000005;
-    
+
     return solBalance >= requiredAmount;
   } catch (error) {
     console.error('Error checking balance:', error);
-    logInfo('Error checking balance', {});
+    logInfo('Error checking balance', {
+      error: error.message,
+      publicKey: typeof publicKeyOrString === 'string' ? publicKeyOrString : publicKeyOrString.toString()
+    });
     throw new Error(`Failed to check wallet balance: ${error.message}`);
   }
 }
+// export async function checkSufficientBalance(publicKey, amount, endpoint = RPC_ENDPOINT) {
+//   if (!publicKey) {
+//     throw new Error('Wallet not connected');
+//   }
+
+//   try {
+//     const connection = new Connection(endpoint, 'confirmed');
+//     const lamports = await connection.getBalance(publicKey);
+//     const solBalance = lamports / LAMPORTS_PER_SOL;
+
+//     // Add small buffer for transaction fees
+//     const requiredAmount = amount + 0.000005;
+
+//     return solBalance >= requiredAmount;
+//   } catch (error) {
+//     console.error('Error checking balance:', error);
+//     logInfo('Error checking balance', {});
+//     throw new Error(`Failed to check wallet balance: ${error.message}`);
+//   }
+// }
 
 /**
  * Transfers SOL from user wallet to the site wallet
@@ -50,16 +79,16 @@ export async function checkSufficientBalance(publicKey, amount, endpoint = RPC_E
  * @returns {Promise<{success: boolean, signature?: string, error?: string}>} Transaction result
  */
 export async function transferSOL(
-  publicKey, 
-  sendTransaction, 
-  amount, 
+  publicKey,
+  sendTransaction,
+  amount,
   destinationAddress = SITE_WALLET_ADDRESS,
   endpoint = RPC_ENDPOINT
 ) {
   if (!publicKey) {
     return { success: false, error: 'Wallet not connected' };
   }
-  
+
   try {
     // Use connectionless approach to avoid WebSocket issues
     // The sendTransaction function already has a connection from the wallet adapter
@@ -70,7 +99,7 @@ export async function transferSOL(
       confirmTransactionInitialTimeout: 60000 // 60 seconds
     });
     const destinationWallet = new PublicKey(destinationAddress);
-    
+
     // Create transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
@@ -79,36 +108,36 @@ export async function transferSOL(
         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
       })
     );
-    
+
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = publicKey;
-    
+
     // Send transaction (this triggers the wallet popup for user approval)
     const signature = await sendTransaction(transaction, connection);
-    
+
     // Confirm with parameters that don't rely on WebSockets
     const confirmation = await connection.confirmTransaction({
       blockhash,
       lastValidBlockHeight,
       signature
     }, 'confirmed');
-    
+
     // Check for timeout errors
     if (confirmation.value.err) {
       throw new Error(`Transaction failed: ${confirmation.value.err}`);
     }
-    
+
     // If we get here, the transaction was confirmed
-    return { 
-      success: true, 
+    return {
+      success: true,
       signature,
-      transactionUrl: `https://explorer.solana.com/tx/${signature}`  
+      transactionUrl: `https://explorer.solana.com/tx/${signature}`
     };
   } catch (error) {
     console.error('Transaction failed:', error);
-    
+
     // Provide more specific error messaging
     let errorMessage = error.message;
     if (error.message.includes('User rejected')) {
@@ -116,37 +145,52 @@ export async function transferSOL(
     } else if (error.message.includes('timeout')) {
       errorMessage = 'Transaction confirmation timed out. Please check Solana Explorer for status.';
     }
-    
-    return { 
-      success: false, 
-      error: errorMessage 
+
+    return {
+      success: false,
+      error: errorMessage
     };
   }
 }
 
 // Update placeBet function to include marketId
 export async function placeBet(
-  publicKey, 
-  sendTransaction, 
-  betAmount, 
-  onSuccess, 
-  onError, 
+  publicKey,
+  sendTransaction,
+  betAmount,
+  onSuccess,
+  onError,
   setLoading = null,
   isMobile = false,
   marketId = null // Add marketId parameter
 ) {
   if (setLoading) setLoading(true);
-  
+
   try {
     if (!publicKey) {
       throw new Error('Wallet not connected');
     }
-    
+
+    // For mobile, get the public key from localStorage
+    const publicKeyToCheck = isMobile
+      ? localStorage.getItem('phantomPublicKey')
+      : publicKey;
+
+    if (!publicKeyToCheck) {
+      throw new Error('Wallet public key not found');
+    }
+
     // Check balance (works for both mobile and web)
-    const hasEnough = await checkSufficientBalance(publicKey, betAmount);
+    const hasEnough = await checkSufficientBalance(publicKeyToCheck, betAmount);
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
     }
+
+    // Check balance (works for both mobile and web)
+    // const hasEnough = await checkSufficientBalance(publicKey, betAmount);
+    // if (!hasEnough) {
+    //   throw new Error("You don't have enough SOL to place this bet");
+    // }
 
     if (isMobile) {
       if (!marketId) {
@@ -154,18 +198,18 @@ export async function placeBet(
       }
       // Handle mobile transaction
       const deepLink = await createMobileTransactionDeepLink(betAmount, marketId);
-      
+
       // Store pending transaction info
       localStorage.setItem('pending_transaction_amount', betAmount.toString());
       localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
       localStorage.setItem('pending_transaction_market_id', marketId);
-      
+
       // Redirect to Phantom app
       window.location.href = deepLink;
     } else {
       // Handle web transaction as before
       const result = await transferSOL(publicKey, sendTransaction, betAmount);
-      
+
       if (result.success) {
         onSuccess(result);
       } else {
@@ -203,12 +247,12 @@ export async function placeBet(
 // ) {
 //   // Set loading state if provided
 //   if (setLoading) setLoading(true);
-  
+
 //   try {
 //     if (!publicKey) {
 //       throw new Error('Wallet not connected');
 //     }
-    
+
 //     // Check balance
 //     const hasEnough = await checkSufficientBalance(publicKey, betAmount);
 //     if (!hasEnough) {
@@ -219,7 +263,7 @@ export async function placeBet(
 //       amount: betAmount,
 //       component: 'Solana wallet'
 //     })
-    
+
 //     // Transfer SOL
 //     const result = await transferSOL(publicKey, sendTransaction, betAmount);
 
@@ -255,7 +299,7 @@ export async function createMobileTransactionDeepLink(
     // Get stored encryption keys
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-    
+
     if (!dappEncryptionPublicKey || !storedPrivateKey) {
       throw new Error('Encryption keys not found');
     }
@@ -305,6 +349,10 @@ export async function createMobileTransactionDeepLink(
     return `https://phantom.app/ul/v1/transfer?${params.toString()}`;
   } catch (error) {
     console.error('Error creating mobile transaction:', error);
+    logError(error, {
+      component: 'Solana wallet',
+      platform: 'mobile'
+    });
     throw error;
   }
 }
