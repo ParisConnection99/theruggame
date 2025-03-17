@@ -388,3 +388,63 @@ export async function createMobileTransactionDeepLink(
     throw error;
   }
 }
+
+/**
+ * Handles the transaction callback from Phantom mobile wallet
+ * @param {string} encryptedData - The encrypted data from Phantom
+ * @param {string} nonceString - The nonce used for encryption, in base58
+ * @returns {Promise<string>} The transaction signature
+ */
+export async function handleTransactionCallback(encryptedData, nonceString) {
+  try {
+    // Get stored encryption keys
+    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+    
+    if (!dappEncryptionPublicKey || !storedPrivateKey) {
+      throw new Error('Encryption keys not found');
+    }
+
+    // Decode the encrypted data and nonce from base58
+    const nonce = bs58.decode(nonceString);
+    const encryptedBytes = bs58.decode(encryptedData);
+
+    // Create shared secret
+    const sharedSecret = nacl.box.before(
+      bs58.decode(dappEncryptionPublicKey),
+      bs58.decode(storedPrivateKey)
+    );
+
+    // Decrypt the data
+    const decryptedData = nacl.box.open.after(
+      encryptedBytes,
+      nonce,
+      sharedSecret
+    );
+
+    if (!decryptedData) {
+      throw new Error('Failed to decrypt transaction data');
+    }
+
+    // Parse the decrypted data
+    const decodedData = new TextDecoder().decode(decryptedData);
+    const { signature } = JSON.parse(decodedData);
+
+    if (!signature) {
+      throw new Error('No signature found in response');
+    }
+
+    logInfo('Transaction callback processed', {
+      signature,
+      component: 'Solana wallet'
+    });
+
+    return signature;
+  } catch (error) {
+    logError(error, {
+      component: 'Solana wallet',
+      action: 'Processing transaction callback'
+    });
+    throw new Error(`Failed to process transaction callback: ${error.message}`);
+  }
+}
