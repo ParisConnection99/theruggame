@@ -3,6 +3,8 @@
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
+import nacl from 'tweetnacl';
+import bs58 from 'bs58';
 // Constants - Replace with your values in production
 // Use a more reliable devnet RPC with proper WebSocket support
 // Using clusterApiUrl for more reliable connections
