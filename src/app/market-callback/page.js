@@ -27,6 +27,10 @@ function CallbackContent() {
         const errorMessage = searchParams.get('errorMessage');
 
         if (errorCode || errorMessage) {
+          logError('Phantom Error:', {
+            errorCode,
+            errorMessage
+          });
           throw new Error(`Phantom Error: ${errorMessage || 'Unknown error'} (${errorCode || 'no code'})`);
         }
 
@@ -34,7 +38,7 @@ function CallbackContent() {
         const data = searchParams.get('data');
         const nonce = searchParams.get('nonce');
 
-        console.log('Transaction data:', { data, nonce });
+        logInfo('Transaction data:', { data, nonce });  
 
         if (!data || !nonce) {
           throw new Error('Missing transaction data parameters');
@@ -47,11 +51,11 @@ function CallbackContent() {
         const amount = localStorage.getItem('pending_transaction_amount');
 
         // Log successful transaction
-        console.log('Transaction processed:', {
+        logInfo('Transaction processed:', {
           signature,
           marketId,
           amount
-        });
+        }); 
 
         // Clear stored transaction data
         localStorage.removeItem('pending_transaction_amount');
@@ -61,6 +65,10 @@ function CallbackContent() {
         // Redirect back to the market page with success parameter
         router.push(`/market/${marketId}?txSignature=${signature}`);
       } catch (error) {
+        logError('Error in callback:', {
+          marketId,
+          error: error.message
+        }); 
         console.error('Error in callback:', error);
         
         // Clear stored transaction data
