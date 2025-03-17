@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { handleTransactionCallback } from '@/utils/SolanaWallet';
 
-export default function MarketCallback() {
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -56,11 +56,24 @@ export default function MarketCallback() {
   }, [searchParams, router]);
 
   return (
+    <div className="text-center">
+      <h1 className="text-xl font-bold mb-4">Processing Transaction</h1>
+      <p>Please wait while we process your transaction...</p>
+    </div>
+  );
+}
+
+export default function MarketCallback() {
+  return (
     <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <h1 className="text-xl font-bold mb-4">Processing Transaction</h1>
-        <p>Please wait while we process your transaction...</p>
-      </div>
+      <Suspense fallback={
+        <div className="text-center">
+          <h1 className="text-xl font-bold mb-4">Loading...</h1>
+          <p>Please wait...</p>
+        </div>
+      }>
+        <CallbackContent />
+      </Suspense>
     </div>
   );
 }
