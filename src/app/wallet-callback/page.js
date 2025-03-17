@@ -17,6 +17,10 @@ export default function WalletCallbackPage() {
 
 
       if (isDisconnect === 'true') {
+        logInfo('Disconnecting wallet', {
+          component: 'WalletCallbackPage',
+          action: 'disconnecting wallet'
+        });
         // Clear all wallet-related data
         localStorage.removeItem('phantomPublicKey');
         localStorage.removeItem('phantomSession');
@@ -25,11 +29,16 @@ export default function WalletCallbackPage() {
 
         // Dispatch disconnect event
         window.dispatchEvent(new Event('wallet-disconnect-event'));
-        
+
         // Redirect back to home
         router.push('/');
         return;
-    }
+      }
+
+      logInfo('Connecting wallet', {
+        component: 'WalletCallbackPage',
+        action: 'connecting wallet'
+      });
 
 
       const phantomEncryptionPublicKey = queryParams.get('phantom_encryption_public_key');
@@ -156,7 +165,7 @@ export default function WalletCallbackPage() {
       logInfo('Decrypted Data', {
         component: 'WalletCallBackPage',
         publicKey: decryptedData
-      }); 
+      });
 
       if (!decryptedData) {
         throw new Error('Failed to decrypt data');
