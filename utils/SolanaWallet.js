@@ -296,45 +296,45 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // 1. Basic validation and logging of inputs
-    logInfo('Starting Transaction Creation', {
-      amount,
-      marketId,
-      destinationAddress
+    // Get and decode session
+    const encodedSession = localStorage.getItem('phantomSession');
+    if (!encodedSession) {
+      throw new Error('No session found');
+    }
+
+    // Try to decode the session if it's base58 encoded
+    let session;
+    try {
+      // If it's base58 encoded, decode it first
+      const decodedBytes = bs58.decode(encodedSession);
+      session = new TextDecoder().decode(decodedBytes);
+      
+      // Ensure it's valid JSON
+      JSON.parse(session);
+    } catch (e) {
+      // If decode fails, use the session as is
+      session = encodedSession;
+    }
+
+    logInfo('Session Format', {
+      original: encodedSession.substring(0, 20) + '...',
+      decoded: session.substring(0, 20) + '...',
+      isJSON: session.startsWith('{')
     });
 
-    // 2. Get and validate all required data first
+    // Rest of your existing code...
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
-    const session = localStorage.getItem('phantomSession');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
-    if (!phantomPublicKey || !session || !dappEncryptionPublicKey || !storedPrivateKey) {
-      logError(new Error('Missing required data'), {
-        hasPhantomKey: !!phantomPublicKey,
-        hasSession: !!session,
-        hasDappKey: !!dappEncryptionPublicKey,
-        hasStoredKey: !!storedPrivateKey
-      });
-      throw new Error('Missing required wallet data');
-    }
-
-    // 3. Create the simplest possible valid transaction
+    // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
     const { blockhash } = await connection.getLatestBlockhash('confirmed');
 
     const transaction = new Transaction();
     const fromPubkey = new PublicKey(phantomPublicKey);
     const toPubkey = new PublicKey(destinationAddress);
-    
-    logInfo('Transaction Components', {
-      from: fromPubkey.toString(),
-      to: toPubkey.toString(),
-      amount: amount,
-      lamports: Math.round(amount * LAMPORTS_PER_SOL)
-    });
 
-    // 4. Add transfer instruction
     transaction.add(
       SystemProgram.transfer({
         fromPubkey,
@@ -343,17 +343,15 @@ export async function createMobileTransactionDeepLink(
       })
     );
 
-    // 5. Set transaction properties
     transaction.feePayer = fromPubkey;
     transaction.recentBlockhash = blockhash;
 
-    // 6. Serialize transaction
     const serializedTransaction = transaction.serialize({
       requireAllSignatures: false,
       verifySignatures: false
     });
 
-    // 7. Create minimal payload
+    // Create payload with decoded session
     const payload = {
       session,
       transaction: Buffer.from(serializedTransaction).toString('base64'),
@@ -367,16 +365,10 @@ export async function createMobileTransactionDeepLink(
     logInfo('Payload Created', {
       sessionLength: session.length,
       transactionLength: serializedTransaction.length,
-      options: true
+      hasOptions: true
     });
 
-    // Also, let's log the session format (first few characters)
-    logInfo('Session Format', {
-      preview: session.substring(0, 20) + '...',
-      isJSON: session.startsWith('{')
-    });
-
-    // 8. Encrypt with minimal steps
+    // Encrypt payload
     const nonce = nacl.randomBytes(24);
     const sharedSecret = nacl.box.before(
       bs58.decode(dappEncryptionPublicKey),
@@ -389,7 +381,6 @@ export async function createMobileTransactionDeepLink(
       sharedSecret
     );
 
-    // 9. Create minimal deep link
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: bs58.encode(nonce),
@@ -399,17 +390,12 @@ export async function createMobileTransactionDeepLink(
 
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
 
-    logInfo('Final Deep Link', {
-      length: deepLink.length,
-      hasAllParams: true
-    });
-
     return deepLink;
 
   } catch (error) {
     logError(error, {
       component: 'createMobileTransactionDeepLink',
-      step: 'transaction creation'
+      step: 'session processing'
     });
     throw error;
   }
