@@ -296,62 +296,53 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Validate amount first
-    if (amount <= 0) {
-      throw new Error('Amount must be greater than zero');
+    // Get stored keys and validate
+    const phantomPublicKey = localStorage.getItem('phantomPublicKey');
+    const session = localStorage.getItem('phantomSession');
+    
+    if (!phantomPublicKey || !session) {
+      throw new Error('Missing required wallet data');
     }
 
-    // Log RPC endpoint and connection attempt
-    logInfo('RPC Connection', {
-      endpoint,
-      network: endpoint.includes('devnet') ? 'devnet' : 'mainnet'
-    });
-
-    // Create connection with specific commitment
-    const connection = new Connection(endpoint, {
-      commitment: 'confirmed',
-      confirmTransactionInitialTimeout: 60000
-    });
-
-    // Get and validate blockhash
+    // Create connection
+    const connection = new Connection(endpoint, 'confirmed');
+    
+    // Get latest blockhash - IMPORTANT: This needs to be fresh
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-    if (!blockhash) {
-      throw new Error('Failed to retrieve blockhash from RPC');
-    }
-
-    logInfo('RPC State', {
+    
+    logInfo('Blockhash Retrieved', {
       blockhash: blockhash.substring(0, 10) + '...',
-      lastValidBlockHeight,
-      timestamp: Date.now()
+      lastValidBlockHeight
     });
 
-    // Validate public keys before transaction creation
-    const userPublicKey = new PublicKey(localStorage.getItem('phantomPublicKey'));
-    const destinationPublicKey = new PublicKey(destinationAddress);
+    // Create transaction
+    const transaction = new Transaction();
+    
+    // IMPORTANT: Set blockhash BEFORE adding instructions
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = new PublicKey(phantomPublicKey);
 
-    // Create transaction with explicit version
-    const transaction = new Transaction({
-      feePayer: userPublicKey,
-      recentBlockhash: blockhash,
-      lastValidBlockHeight
-    }).add(
+    // Add transfer instruction
+    transaction.add(
       SystemProgram.transfer({
-        fromPubkey: userPublicKey,
-        toPubkey: destinationPublicKey,
+        fromPubkey: new PublicKey(phantomPublicKey),
+        toPubkey: new PublicKey(destinationAddress),
         lamports: Math.round(amount * LAMPORTS_PER_SOL)
       })
     );
 
-    // Log transaction details
-    logInfo('Transaction Creation', {
-      fromPubkey: userPublicKey.toString(),
-      toPubkey: destinationPublicKey.toString(),
-      lamports: Math.round(amount * LAMPORTS_PER_SOL),
+    // Verify transaction has blockhash
+    if (!transaction.recentBlockhash) {
+      throw new Error('Transaction blockhash not set');
+    }
+
+    logInfo('Transaction Created', {
       hasBlockhash: !!transaction.recentBlockhash,
-      hasFeePayer: !!transaction.feePayer
+      hasFeePayer: !!transaction.feePayer,
+      instructions: transaction.instructions.length
     });
 
-    // Serialize with specific options
+    // Serialize transaction
     const serializedTransaction = Buffer.from(
       transaction.serialize({
         requireAllSignatures: false,
@@ -359,31 +350,59 @@ export async function createMobileTransactionDeepLink(
       })
     ).toString('base64');
 
-    // Create payload with specific options
+    // Create payload with transaction
     const payload = {
-      session: localStorage.getItem('phantomSession'),
-      transaction: serializedTransaction,
-      options: {
-        commitment: 'confirmed',
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-        maxRetries: 3
-      }
+      session,
+      transaction: serializedTransaction
     };
 
-    logInfo('Payload Creation', {
+    logInfo('Payload Created', {
       hasSession: !!payload.session,
-      transactionLength: serializedTransaction.length,
-      options: payload.options
+      transactionLength: serializedTransaction.length
     });
 
-    // Rest of your encryption and deep link creation code...
+    // Encrypt payload
+    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+    
+    if (!dappEncryptionPublicKey || !storedPrivateKey) {
+      throw new Error('Missing encryption keys');
+    }
+
+    const nonce = nacl.randomBytes(24);
+    const sharedSecret = nacl.box.before(
+      bs58.decode(dappEncryptionPublicKey),
+      bs58.decode(storedPrivateKey)
+    );
+
+    const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
+    const encryptedData = nacl.box.after(
+      messageUint8,
+      nonce,
+      sharedSecret
+    );
+
+    // Create deep link
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: dappEncryptionPublicKey,
+      nonce: bs58.encode(nonce),
+      redirect_link: 'https://www.theruggame.fun/market-callback',
+      payload: bs58.encode(encryptedData)
+    });
+
+    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+
+    logInfo('Deep Link Created', {
+      hasBlockhash: true,
+      amount,
+      marketId
+    });
+
+    return deepLink;
 
   } catch (error) {
     logError(error, {
       component: 'createMobileTransactionDeepLink',
-      errorCode: error.code || 'unknown',
-      errorType: 'RPC_ERROR',
       amount,
       marketId
     });
