@@ -360,13 +360,13 @@ export async function createMobileTransactionDeepLink(
     });
 
     // Update the redirect URL to use the new callback page
-    const redirectUrl = 'https://theruggame.fun/market-callback';
+    const redirectUrl = encodeURIComponent('https://theruggame.fun/market-callback');
 
     // Create deep link parameters
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: nonceBase58,
-      redirect_link: 'https://theruggame.fun/market-callback',
+      redirect_link: redirectUrl,
       payload: bs58.encode(encryptedData)
     });
 
