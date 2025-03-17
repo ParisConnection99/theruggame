@@ -293,31 +293,61 @@ export async function placeBet(
 // New function for mobile transactions
 export async function createMobileTransactionDeepLink(
   amount,
-  marketId, // Add marketId parameter
+  marketId,
   destinationAddress = SITE_WALLET_ADDRESS,
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Get stored encryption keys
+    // Get stored encryption keys and session
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-
-    if (!dappEncryptionPublicKey || !storedPrivateKey) {
-      throw new Error('Encryption keys not found');
+    const session = localStorage.getItem('phantomSession');
+    
+    if (!dappEncryptionPublicKey || !storedPrivateKey || !session) {
+      throw new Error('Encryption keys or session not found');
     }
 
-    // Create the transaction payload
+    // Create connection and get latest blockhash
+    const connection = new Connection(endpoint, 'confirmed');
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+    // Create transaction
+    const transaction = new Transaction();
+    
+    // Add transfer instruction
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(localStorage.getItem('phantomPublicKey')),
+        toPubkey: new PublicKey(destinationAddress),
+        lamports: Math.round(amount * LAMPORTS_PER_SOL)
+      })
+    );
+
+    // Set recent blockhash
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = new PublicKey(localStorage.getItem('phantomPublicKey'));
+
+    // Serialize the transaction
+    const serializedTransaction = bs58.encode(transaction.serialize({
+      requireAllSignatures: false,
+      verifySignatures: false
+    }));
+
+    // Create the payload
     const payload = {
-      session: localStorage.getItem('phantomSession'),
-      transaction: {
-        type: 'transfer',
-        amount: amount,
-        destination: destinationAddress,
+      session,
+      transaction: serializedTransaction,
+      // Optional send options
+      sendOptions: {
+        skipPreflight: false,
+        preflightCommitment: 'confirmed',
+        maxRetries: 2,
       },
-      // Add bet-related data to payload
-      betData: {
-        marketId: marketId,
-        amount: amount
+      // Add bet-related data as metadata
+      metadata: {
+        marketId,
+        amount,
+        timestamp: Date.now()
       }
     };
 
@@ -338,7 +368,7 @@ export async function createMobileTransactionDeepLink(
     );
 
     // Include marketId in the redirect URL
-    const redirectUrl = `https://theruggame.fun/market/${marketId}`;
+    const redirectUrl = `https://theruggame.fun/market/${marketId}/wallet-callback`;
 
     // Create deep link parameters
     const params = new URLSearchParams({
@@ -348,7 +378,7 @@ export async function createMobileTransactionDeepLink(
       payload: bs58.encode(encryptedData)
     });
 
-    return `https://phantom.app/ul/v1/transfer?${params.toString()}`;
+    return `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
   } catch (error) {
     console.error('Error creating mobile transaction:', error);
     logError(error, {
