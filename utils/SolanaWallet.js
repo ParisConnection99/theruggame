@@ -323,48 +323,38 @@ export async function createMobileTransactionDeepLink(
       })
     );
 
-    // Set recent blockhash
+    // Set recent blockhash and fee payer
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = new PublicKey(localStorage.getItem('phantomPublicKey'));
 
     // Serialize the transaction
-    const serializedTransaction = bs58.encode(transaction.serialize({
+    const serializedTransaction = transaction.serialize({
       requireAllSignatures: false,
       verifySignatures: false
-    }));
+    });
 
     // Create the payload
     const payload = {
       session,
-      transaction: serializedTransaction,
-      // Optional send options
-      sendOptions: {
-        skipPreflight: false,
-        preflightCommitment: 'confirmed',
-        maxRetries: 2,
-      },
-      // Add bet-related data as metadata
-      metadata: {
-        marketId,
-        amount,
-        timestamp: Date.now()
-      }
+      transaction: bs58.encode(serializedTransaction),
     };
 
     // Generate new nonce
     const nonce = nacl.randomBytes(24);
     const nonceBase58 = bs58.encode(nonce);
 
+    // Create shared secret
+    const sharedSecret = nacl.box.before(
+      bs58.decode(dappEncryptionPublicKey),
+      bs58.decode(storedPrivateKey)
+    );
+
     // Encrypt the payload
-    const dappPrivateKey = bs58.decode(storedPrivateKey);
     const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
     const encryptedData = nacl.box.after(
       messageUint8,
       nonce,
-      nacl.box.before(
-        bs58.decode(dappEncryptionPublicKey),
-        dappPrivateKey
-      )
+      sharedSecret
     );
 
     // Include marketId in the redirect URL

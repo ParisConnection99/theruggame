@@ -566,6 +566,11 @@ export default function MarketPage() {
         let userPublicKey;
 
         if (isMobile) {
+          localStorage.setItem('pending_bet_type', isPumpActive ? 'PUMP' : 'RUG');
+          localStorage.setItem('pending_transaction_amount', betAmount.toString());
+          localStorage.setItem('pending_transaction_market_id', market.id);
+          localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
+          
           // For mobile, get the public key from localStorage
           userPublicKey = localStorage.getItem('phantomPublicKey');
           if (!userPublicKey) {
