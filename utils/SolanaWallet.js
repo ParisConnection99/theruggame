@@ -360,7 +360,7 @@ export async function createMobileTransactionDeepLink(
     });
 
     // Update the redirect URL to use the new callback page
-    const redirectUrl = encodeURIComponent(`https://theruggame.fun/market-callback`);
+    const redirectUrl = `https://theruggame.fun/market-callback`;
 
     // Create deep link parameters
     const params = new URLSearchParams({
