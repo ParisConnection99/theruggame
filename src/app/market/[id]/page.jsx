@@ -609,7 +609,8 @@ export default function MarketPage() {
               reject(new Error(errorMessage));
             },
             // Loading state (already handled by the outer function)
-            null
+            null,
+            isMobile
           );
         });
       }

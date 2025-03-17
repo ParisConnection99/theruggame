@@ -124,6 +124,68 @@ export async function transferSOL(
   }
 }
 
+export async function placeBet(
+  publicKey, 
+  sendTransaction, 
+  betAmount, 
+  onSuccess, 
+  onError, 
+  setLoading = null,
+  isMobile = false // Add isMobile parameter
+) {
+  if (setLoading) setLoading(true);
+  
+  try {
+    if (!publicKey) {
+      throw new Error('Wallet not connected');
+    }
+    
+    // Check balance (works for both mobile and web)
+    const hasEnough = await checkSufficientBalance(publicKey, betAmount);
+    if (!hasEnough) {
+      throw new Error("You don't have enough SOL to place this bet");
+    }
+
+    logInfo('Bet Amount', {
+      amount: betAmount,
+      component: 'Solana wallet',
+      platform: isMobile ? 'mobile' : 'web'
+    });
+    
+    if (isMobile) {
+      // Handle mobile transaction
+      const deepLink = await createMobileTransactionDeepLink(betAmount);
+      
+      // Store pending transaction info
+      localStorage.setItem('pending_transaction_amount', betAmount.toString());
+      localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
+      
+      // Redirect to Phantom app
+      window.location.href = deepLink;
+      
+      // Note: The actual success callback will be handled in the wallet-callback page
+      // This function will not complete as we're redirecting
+    } else {
+      // Handle web transaction as before
+      const result = await transferSOL(publicKey, sendTransaction, betAmount);
+      
+      if (result.success) {
+        onSuccess(result);
+      } else {
+        throw new Error(result.error);
+      }
+    }
+  } catch (error) {
+    logError(error, {
+      component: 'Solana wallet',
+      platform: isMobile ? 'mobile' : 'web'
+    });
+    onError(error.message);
+  } finally {
+    if (setLoading && !isMobile) setLoading(false);
+  }
+}
+
 /**
  * Example usage function for placing a bet
  * This combines balance checking and transfer in one convenient function
@@ -134,53 +196,109 @@ export async function transferSOL(
  * @param {Function} onError - Error callback function
  * @param {Function} [setLoading] - Optional loading state setter function
  */
-export async function placeBet(
-  publicKey, 
-  sendTransaction, 
-  betAmount, 
-  onSuccess, 
-  onError, 
-  setLoading = null
-) {
-  // Set loading state if provided
-  if (setLoading) setLoading(true);
+// export async function placeBet(
+//   publicKey, 
+//   sendTransaction, 
+//   betAmount, 
+//   onSuccess, 
+//   onError, 
+//   setLoading = null
+// ) {
+//   // Set loading state if provided
+//   if (setLoading) setLoading(true);
   
+//   try {
+//     if (!publicKey) {
+//       throw new Error('Wallet not connected');
+//     }
+    
+//     // Check balance
+//     const hasEnough = await checkSufficientBalance(publicKey, betAmount);
+//     if (!hasEnough) {
+//       throw new Error("You don't have enough SOL to place this bet");
+//     }
+
+//     logInfo('Bet Amount', {
+//       amount: betAmount,
+//       component: 'Solana wallet'
+//     })
+    
+//     // Transfer SOL
+//     const result = await transferSOL(publicKey, sendTransaction, betAmount);
+
+//     logInfo('Transaction result', {
+//       component: 'Solana wallet',
+//       transferResult: result
+//     });
+
+//     if (result.success) {
+//       onSuccess(result);
+//     } else {
+//       logError(result.error, {
+//         component: 'Solana wallet'
+//       });
+//       throw new Error(result.error);
+//     }
+//   } catch (error) {
+//     onError(error.message);
+//   } finally {
+//     // Clear loading state
+//     if (setLoading) setLoading(false);
+//   }
+// }
+
+// New function for mobile transactions
+export async function createMobileTransactionDeepLink(
+  amount,
+  destinationAddress = SITE_WALLET_ADDRESS,
+  endpoint = RPC_ENDPOINT
+) {
   try {
-    if (!publicKey) {
-      throw new Error('Wallet not connected');
-    }
+    // Get stored encryption keys
+    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
     
-    // Check balance
-    const hasEnough = await checkSufficientBalance(publicKey, betAmount);
-    if (!hasEnough) {
-      throw new Error("You don't have enough SOL to place this bet");
+    if (!dappEncryptionPublicKey || !storedPrivateKey) {
+      throw new Error('Encryption keys not found');
     }
 
-    logInfo('Bet Amount', {
-      amount: betAmount,
-      component: 'Solana wallet'
-    })
-    
-    // Transfer SOL
-    const result = await transferSOL(publicKey, sendTransaction, betAmount);
+    // Create the transaction payload
+    const payload = {
+      session: localStorage.getItem('phantomSession'), // Get stored session
+      transaction: {
+        type: 'transfer',
+        amount: amount,
+        destination: destinationAddress,
+      }
+    };
 
-    logInfo('Transaction result', {
-      component: 'Solana wallet',
-      transferResult: result
+    // Generate new nonce
+    const nonce = nacl.randomBytes(24);
+    const nonceBase58 = bs58.encode(nonce);
+
+    // Encrypt the payload
+    const dappPrivateKey = bs58.decode(storedPrivateKey);
+    const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
+    const encryptedData = nacl.box.after(
+      messageUint8,
+      nonce,
+      nacl.box.before(
+        bs58.decode(dappEncryptionPublicKey),
+        dappPrivateKey
+      )
+    );
+
+    // Create deep link parameters
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: dappEncryptionPublicKey,
+      nonce: nonceBase58,
+      redirect_link: 'https://theruggame.fun/wallet-callback',
+      payload: bs58.encode(encryptedData)
     });
 
-    if (result.success) {
-      onSuccess(result);
-    } else {
-      logError(result.error, {
-        component: 'Solana wallet'
-      });
-      throw new Error(result.error);
-    }
+    return `https://phantom.app/ul/v1/transfer?${params.toString()}`;
   } catch (error) {
-    onError(error.message);
-  } finally {
-    // Clear loading state
-    if (setLoading) setLoading(false);
+    console.error('Error creating mobile transaction:', error);
+    throw error;
   }
 }
