@@ -296,31 +296,26 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Get and decode session
-    const encodedSession = localStorage.getItem('phantomSession');
-    if (!encodedSession) {
+    // Get and parse session
+    const storedSession = localStorage.getItem('phantomSession');
+    if (!storedSession) {
       throw new Error('No session found');
     }
 
-    // Try to decode the session if it's base58 encoded
-    let session;
+    let sessionData;
     try {
-      // If it's base58 encoded, decode it first
-      const decodedBytes = bs58.decode(encodedSession);
-      session = new TextDecoder().decode(decodedBytes);
-      
-      // Ensure it's valid JSON
-      JSON.parse(session);
+      sessionData = JSON.parse(storedSession);
     } catch (e) {
-      // If decode fails, use the session as is
-      session = encodedSession;
+      throw new Error('Invalid session format');
     }
 
-    logInfo('Session Format', {
-      original: encodedSession.substring(0, 20) + '...',
-      decoded: session.substring(0, 20) + '...',
-      isJSON: session.startsWith('{')
+    logInfo('Session Data', {
+      hasSession: !!sessionData.session,
+      timestamp: sessionData.created
     });
+
+    // Use the actual session value from the object
+    const session = sessionData.session;
 
     // Rest of your existing code...
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
@@ -351,9 +346,9 @@ export async function createMobileTransactionDeepLink(
       verifySignatures: false
     });
 
-    // Create payload with decoded session
+    // Create payload with the actual session value
     const payload = {
-      session,
+      session: session, // Use the extracted session value
       transaction: Buffer.from(serializedTransaction).toString('base64'),
       options: {
         commitment: 'confirmed',

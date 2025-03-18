@@ -64,9 +64,15 @@ export default function WalletCallbackPage() {
       const { public_key, session } = JSON.parse(decryptedData);
 
       if (public_key && session) {
-        // Store the connection details in localStorage
-        localStorage.setItem('phantomPublicKey', public_key);
-        localStorage.setItem('phantomSession', session);
+        // Create a proper session object
+        const sessionObject = {
+          session: session,
+          publicKey: public_key,
+          created: Date.now()
+        };
+
+        // Store as JSON string
+        localStorage.setItem('phantomSession', JSON.stringify(sessionObject));
         localStorage.setItem('wallet_return_reconnect', 'true');
         localStorage.setItem('wallet_return_timestamp', Date.now().toString());
 
