@@ -275,6 +275,18 @@ export async function createMobileTransactionDeepLink(
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
+    logInfo('Phantom Public Key', {
+      phantomPublicKey: phantomPublicKey
+    });
+
+    logInfo('Dapp Encryption Public Key', {
+      dappEncryptionPublicKey: dappEncryptionPublicKey
+    });
+
+    logInfo('Stored Private Key', {
+      storedPrivateKey: storedPrivateKey
+    });
+
     // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
