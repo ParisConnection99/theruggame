@@ -275,8 +275,6 @@ export async function createMobileTransactionDeepLink(
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
-
-    
     // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
@@ -374,7 +372,7 @@ export async function createMobileTransactionDeepLink(
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: bs58.encode(nonce),
-      redirect_link: encodeURIComponent('https://www.theruggame.fun/market-callback'),
+      redirect_link: 'https://www.theruggame.fun/market-callback',
       payload: bs58.encode(encryptedData)
     });
 
