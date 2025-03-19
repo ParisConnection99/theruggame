@@ -392,25 +392,8 @@ export async function createMobileTransactionDeepLink(
       params: params.toString()
     });
     
-    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
-
-    // const params = new Map([
-    //   ['dapp_encryption_public_key', dappEncryptionPublicKey],
-    //   ['nonce', bs58.encode(nonce)],
-    //   ['redirect_link', 'https://www.theruggame.fun/market-callback'],
-    //   ['payload', bs58.encode(encryptedData)]
-    // ]);
-    
-    // // Convert the Map to a query string
-    // const queryString = Array.from(params)
-    //   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    //   .join('&');
-    
-    // logInfo('Params', {
-    //   params: queryString
-    // });
-    
-    // const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${queryString}`;
+   //const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+    const deepLink = `https://phantom.app/ul/v1/signTransaction?${params.toString()}`;
     
     return deepLink;
   } catch (error) {
