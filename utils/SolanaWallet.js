@@ -377,6 +377,10 @@ export async function createMobileTransactionDeepLink(
       redirect_link: 'https://www.theruggame.fun/market-callback',
       payload: bs58.encode(encryptedData)
     });
+
+    logInfo('Params', {
+      params: params
+    });
     
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
     
