@@ -573,6 +573,9 @@ export default function MarketPage() {
           
           // For mobile, get the public key from localStorage
           userPublicKey = localStorage.getItem('phantomPublicKey');
+          logInfo('User public key', {
+            userPublicKey: userPublicKey
+          });
           if (!userPublicKey) {
             alert('Wallet connection not found. Please reconnect your wallet.');
             setIsBetting(false);
