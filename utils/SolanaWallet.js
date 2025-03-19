@@ -374,7 +374,7 @@ export async function createMobileTransactionDeepLink(
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: bs58.encode(nonce),
-      redirect_link: encodeURIComponent('https://www.theruggame.fun/market-callback'),
+      redirect_link: 'https://www.theruggame.fun/market-callback',
       payload: bs58.encode(encryptedData)
     });
 
