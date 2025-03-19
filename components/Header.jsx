@@ -44,44 +44,62 @@ export default function Header() {
 
     // Create a keypair for the dapp
     useEffect(() => {
-        // Check if a keypair already exists in localStorage
-        const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+        // Generate a new keypair
+        const keypair = nacl.box.keyPair();
+        keypairRef.current = keypair;
 
-        logInfo('Stored Private Key', {
-            storedPrivateKey: storedPrivateKey
+        // Store the public key
+        const publicKeyBase58 = bs58.encode(keypair.publicKey);
+        setDappEncryptionPublicKey(publicKeyBase58);
+        localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
+
+        // Store the private key securely (consider an alternative to localStorage)
+        const privateKeyBase58 = bs58.encode(keypair.secretKey);
+        localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+
+        // Log key generation
+        logInfo('dapp_private_key', {
+            component: 'WalletConnectionModal',
+            dappPrivateKey: privateKeyBase58,
         });
+        // Check if a keypair already exists in localStorage
+        // const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
-        if (storedPrivateKey) {
-            try {
-                // Use the existing keypair
-                const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-                keypairRef.current = existingKeypair;
-                setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
-            } catch (error) {
-                console.error("Failed to load existing keypair:", error);
-                localStorage.removeItem('dappEncryptionPrivateKey');
-                localStorage.removeItem('dappEncryptionPublicKey');
-            }
-        } else {
-            // Generate a new keypair
-            const keypair = nacl.box.keyPair();
-            keypairRef.current = keypair;
+        // logInfo('Stored Private Key', {
+        //     storedPrivateKey: storedPrivateKey
+        // });
 
-            // Store the public key
-            const publicKeyBase58 = bs58.encode(keypair.publicKey);
-            setDappEncryptionPublicKey(publicKeyBase58);
-            localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
+        // if (storedPrivateKey) {
+        //     try {
+        //         // Use the existing keypair
+        //         const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
+        //         keypairRef.current = existingKeypair;
+        //         setDappEncryptionPublicKey(bs58.encode(existingKeypair.publicKey));
+        //     } catch (error) {
+        //         console.error("Failed to load existing keypair:", error);
+        //         localStorage.removeItem('dappEncryptionPrivateKey');
+        //         localStorage.removeItem('dappEncryptionPublicKey');
+        //     }
+        // } else {
+        //     // Generate a new keypair
+        //     const keypair = nacl.box.keyPair();
+        //     keypairRef.current = keypair;
 
-            // Store the private key securely (consider an alternative to localStorage)
-            const privateKeyBase58 = bs58.encode(keypair.secretKey);
-            localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+        //     // Store the public key
+        //     const publicKeyBase58 = bs58.encode(keypair.publicKey);
+        //     setDappEncryptionPublicKey(publicKeyBase58);
+        //     localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
 
-            // Log key generation
-            logInfo('dapp_private_key', {
-                component: 'WalletConnectionModal',
-                dappPrivateKey: privateKeyBase58,
-            });
-        }
+        //     // Store the private key securely (consider an alternative to localStorage)
+        //     const privateKeyBase58 = bs58.encode(keypair.secretKey);
+        //     localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+
+        //     // Log key generation
+        //     logInfo('dapp_private_key', {
+        //         component: 'WalletConnectionModal',
+        //         dappPrivateKey: privateKeyBase58,
+        //     });
+        // }
     }, []);
 
     // Handle wallet connection when connected
