@@ -65,6 +65,8 @@ export default function WalletCallbackPage() {
 
       if (public_key && session) {
         // Create a proper session object
+        localStorage.setItem('phantomPublicKey', public_key);
+        
         const sessionObject = {
           session: session,
           publicKey: public_key,
