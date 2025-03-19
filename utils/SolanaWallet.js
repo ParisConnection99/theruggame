@@ -274,6 +274,8 @@ export async function createMobileTransactionDeepLink(
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+
+
     
     // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
@@ -282,6 +284,15 @@ export async function createMobileTransactionDeepLink(
     const transaction = new Transaction();
     const fromPubkey = new PublicKey(phantomPublicKey);
     const toPubkey = new PublicKey(destinationAddress);
+
+    if (!PublicKey.isOnCurve(fromPubkey) || !PublicKey.isOnCurve(toPubkey)) {
+      logError('Invalid public key', {
+        component: 'createMobileTransactionDeepLink',
+        fromPubkey: fromPubkey,
+        toPubkey: toPubkey
+      });
+      throw new Error('Invalid public key');
+    }
     
     transaction.add(
       SystemProgram.transfer({
