@@ -73,6 +73,11 @@ export default function WalletCallbackPage() {
           created: Date.now()
         };
 
+        logInfo('Session Object', {
+          component: 'WalletCallbackPage',
+          session: session
+        });
+
         // Store as JSON string
         localStorage.setItem('phantomSession', JSON.stringify(sessionObject));
         localStorage.setItem('wallet_return_reconnect', 'true');
