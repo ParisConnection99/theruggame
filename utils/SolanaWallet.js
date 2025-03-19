@@ -305,6 +305,16 @@ export async function createMobileTransactionDeepLink(
     transaction.feePayer = fromPubkey;
     transaction.recentBlockhash = blockhash;
     transaction.lastValidBlockHeight = lastValidBlockHeight; // Add this line
+
+    logInfo('Transaction:', {
+      feePayer: transaction.feePayer.toBase58(),
+      recentBlockhash: transaction.recentBlockhash,
+      instructions: transaction.instructions.map(ix => ({
+        keys: ix.keys.map(k => k.pubkey.toBase58()),
+        programId: ix.programId.toBase58(),
+        data: ix.data.toString('base64')
+      }))
+    });
     
     const serializedTransaction = transaction.serialize({
       requireAllSignatures: false,
@@ -321,6 +331,10 @@ export async function createMobileTransactionDeepLink(
         maxRetries: 3
       }
     };
+
+    logInfo('Payload', {
+      payload: payload
+    });
     
     logInfo('Payload Created', {
       sessionLength: session.length,
@@ -340,6 +354,12 @@ export async function createMobileTransactionDeepLink(
       nonce,
       sharedSecret
     );
+
+    logInfo('Data', {
+      sharedSecret: sharedSecret,
+      nonce: nonce,
+      encryptedData: encryptedData
+    })
     
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
