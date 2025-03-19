@@ -280,6 +280,11 @@ export async function createMobileTransactionDeepLink(
     // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+
+    logInfo('Blockhash', {
+      blockhash: blockhash,
+      lastValidBlockHeight: lastValidBlockHeight
+    });
     
     const transaction = new Transaction();
     const fromPubkey = new PublicKey(phantomPublicKey);
@@ -301,6 +306,11 @@ export async function createMobileTransactionDeepLink(
         lamports: Math.round(amount * LAMPORTS_PER_SOL)
       })
     );
+
+    logInfo('Amount', {
+      amount: amount,
+      lamports: Math.round(amount * LAMPORTS_PER_SOL)
+    });
     
     transaction.feePayer = fromPubkey;
     transaction.recentBlockhash = blockhash;
@@ -326,7 +336,7 @@ export async function createMobileTransactionDeepLink(
       session: session,
       transaction: Buffer.from(serializedTransaction).toString('base64'),
       options: {
-        commitment: 'confirmed',
+        commitment: 'confirmed', // Fix the typo here
         skipPreflight: false,
         maxRetries: 3
       }
