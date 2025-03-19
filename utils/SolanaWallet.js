@@ -237,58 +237,6 @@ export async function placeBet(
  * @param {Function} onError - Error callback function
  * @param {Function} [setLoading] - Optional loading state setter function
  */
-// export async function placeBet(
-//   publicKey, 
-//   sendTransaction, 
-//   betAmount, 
-//   onSuccess, 
-//   onError, 
-//   setLoading = null
-// ) {
-//   // Set loading state if provided
-//   if (setLoading) setLoading(true);
-
-//   try {
-//     if (!publicKey) {
-//       throw new Error('Wallet not connected');
-//     }
-
-//     // Check balance
-//     const hasEnough = await checkSufficientBalance(publicKey, betAmount);
-//     if (!hasEnough) {
-//       throw new Error("You don't have enough SOL to place this bet");
-//     }
-
-//     logInfo('Bet Amount', {
-//       amount: betAmount,
-//       component: 'Solana wallet'
-//     })
-
-//     // Transfer SOL
-//     const result = await transferSOL(publicKey, sendTransaction, betAmount);
-
-//     logInfo('Transaction result', {
-//       component: 'Solana wallet',
-//       transferResult: result
-//     });
-
-//     if (result.success) {
-//       onSuccess(result);
-//     } else {
-//       logError(result.error, {
-//         component: 'Solana wallet'
-//       });
-//       throw new Error(result.error);
-//     }
-//   } catch (error) {
-//     onError(error.message);
-//   } finally {
-//     // Clear loading state
-//     if (setLoading) setLoading(false);
-//   }
-// }
-
-// New function for mobile transactions
 export async function createMobileTransactionDeepLink(
   amount,
   marketId,
@@ -301,35 +249,35 @@ export async function createMobileTransactionDeepLink(
     if (!storedSession) {
       throw new Error('No session found');
     }
-
+    
     let sessionData;
     try {
       sessionData = JSON.parse(storedSession);
     } catch (e) {
       throw new Error('Invalid session format');
     }
-
+    
     logInfo('Session Data', {
       hasSession: !!sessionData.session,
       timestamp: sessionData.created
     });
-
+    
     // Use the actual session value from the object
     const session = sessionData.session;
-
+    
     // Rest of your existing code...
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-
+    
     // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
-    const { blockhash } = await connection.getLatestBlockhash('confirmed');
-
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    
     const transaction = new Transaction();
     const fromPubkey = new PublicKey(phantomPublicKey);
     const toPubkey = new PublicKey(destinationAddress);
-
+    
     transaction.add(
       SystemProgram.transfer({
         fromPubkey,
@@ -337,18 +285,19 @@ export async function createMobileTransactionDeepLink(
         lamports: Math.round(amount * LAMPORTS_PER_SOL)
       })
     );
-
+    
     transaction.feePayer = fromPubkey;
     transaction.recentBlockhash = blockhash;
-
+    transaction.lastValidBlockHeight = lastValidBlockHeight; // Add this line
+    
     const serializedTransaction = transaction.serialize({
       requireAllSignatures: false,
       verifySignatures: false
     });
-
+    
     // Create payload with the actual session value
     const payload = {
-      session: session, // Use the extracted session value
+      session: session,
       transaction: Buffer.from(serializedTransaction).toString('base64'),
       options: {
         commitment: 'confirmed',
@@ -356,37 +305,36 @@ export async function createMobileTransactionDeepLink(
         maxRetries: 3
       }
     };
-
+    
     logInfo('Payload Created', {
       sessionLength: session.length,
       transactionLength: serializedTransaction.length,
       hasOptions: true
     });
-
+    
     // Encrypt payload
     const nonce = nacl.randomBytes(24);
     const sharedSecret = nacl.box.before(
       bs58.decode(dappEncryptionPublicKey),
       bs58.decode(storedPrivateKey)
     );
-
+    
     const encryptedData = nacl.box.after(
       new TextEncoder().encode(JSON.stringify(payload)),
       nonce,
       sharedSecret
     );
-
+    
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: bs58.encode(nonce),
       redirect_link: 'https://www.theruggame.fun/market-callback',
       payload: bs58.encode(encryptedData)
     });
-
+    
     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
-
+    
     return deepLink;
-
   } catch (error) {
     logError(error, {
       component: 'createMobileTransactionDeepLink',
@@ -395,6 +343,114 @@ export async function createMobileTransactionDeepLink(
     throw error;
   }
 }
+
+// New function for mobile transactions
+// export async function createMobileTransactionDeepLink(
+//   amount,
+//   marketId,
+//   destinationAddress = SITE_WALLET_ADDRESS,
+//   endpoint = RPC_ENDPOINT
+// ) {
+//   try {
+//     // Get and parse session
+//     const storedSession = localStorage.getItem('phantomSession');
+//     if (!storedSession) {
+//       throw new Error('No session found');
+//     }
+
+//     let sessionData;
+//     try {
+//       sessionData = JSON.parse(storedSession);
+//     } catch (e) {
+//       throw new Error('Invalid session format');
+//     }
+
+//     logInfo('Session Data', {
+//       hasSession: !!sessionData.session,
+//       timestamp: sessionData.created
+//     });
+
+//     // Use the actual session value from the object
+//     const session = sessionData.session;
+
+//     // Rest of your existing code...
+//     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
+//     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+//     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+
+//     // Create transaction
+//     const connection = new Connection(endpoint, 'confirmed');
+//     const { blockhash } = await connection.getLatestBlockhash('confirmed');
+
+//     const transaction = new Transaction();
+//     const fromPubkey = new PublicKey(phantomPublicKey);
+//     const toPubkey = new PublicKey(destinationAddress);
+
+//     transaction.add(
+//       SystemProgram.transfer({
+//         fromPubkey,
+//         toPubkey,
+//         lamports: Math.round(amount * LAMPORTS_PER_SOL)
+//       })
+//     );
+
+//     transaction.feePayer = fromPubkey;
+//     transaction.recentBlockhash = blockhash;
+
+//     const serializedTransaction = transaction.serialize({
+//       requireAllSignatures: false,
+//       verifySignatures: false
+//     });
+
+//     // Create payload with the actual session value
+//     const payload = {
+//       session: session, // Use the extracted session value
+//       transaction: Buffer.from(serializedTransaction).toString('base64'),
+//       options: {
+//         commitment: 'confirmed',
+//         skipPreflight: false,
+//         maxRetries: 3
+//       }
+//     };
+
+//     logInfo('Payload Created', {
+//       sessionLength: session.length,
+//       transactionLength: serializedTransaction.length,
+//       hasOptions: true
+//     });
+
+//     // Encrypt payload
+//     const nonce = nacl.randomBytes(24);
+//     const sharedSecret = nacl.box.before(
+//       bs58.decode(dappEncryptionPublicKey),
+//       bs58.decode(storedPrivateKey)
+//     );
+
+//     const encryptedData = nacl.box.after(
+//       new TextEncoder().encode(JSON.stringify(payload)),
+//       nonce,
+//       sharedSecret
+//     );
+
+//     const params = new URLSearchParams({
+//       dapp_encryption_public_key: dappEncryptionPublicKey,
+//       nonce: bs58.encode(nonce),
+//       redirect_link: 'https://www.theruggame.fun/market-callback',
+//       payload: bs58.encode(encryptedData)
+//     });
+
+//     const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+
+//     return deepLink;
+
+//   } catch (error) {
+//     logError(error, {
+//       component: 'createMobileTransactionDeepLink',
+//       step: 'session processing'
+//     });
+//     throw error;
+//   }
+// }
 
 /**
  * Handles the transaction callback from Phantom mobile wallet
