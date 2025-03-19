@@ -264,6 +264,11 @@ export async function createMobileTransactionDeepLink(
     
     // Use the actual session value from the object
     const session = sessionData.session;
+
+    logInfo('Fetched Session', {
+      component: 'createMobileTransactionDeepLink',
+      session: session
+    });
     
     // Rest of your existing code...
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
