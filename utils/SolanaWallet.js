@@ -343,8 +343,8 @@ export async function createMobileTransactionDeepLink(
     
     // Create payload with the actual session value
     const payload = {
-      session: session,
       transaction: Buffer.from(serializedTransaction).toString('base64'),
+      session: session,
       options: {
         commitment: 'confirmed', 
         skipPreflight: false,
@@ -381,36 +381,36 @@ export async function createMobileTransactionDeepLink(
       encryptedData: encryptedData
     })
     
-    // const params = new URLSearchParams({
-    //   dapp_encryption_public_key: dappEncryptionPublicKey,
-    //   nonce: bs58.encode(nonce),
-    //   redirect_link: 'https://www.theruggame.fun/market-callback',
-    //   payload: bs58.encode(encryptedData)
-    // });
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: dappEncryptionPublicKey,
+      nonce: bs58.encode(nonce),
+      redirect_link: 'https://www.theruggame.fun/market-callback',
+      payload: bs58.encode(encryptedData)
+    });
 
-    // logInfo('Params', {
-    //   params: params.toString()
-    // });
-    
-    // const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
-
-    const params = new Map([
-      ['dapp_encryption_public_key', dappEncryptionPublicKey],
-      ['nonce', bs58.encode(nonce)],
-      ['redirect_link', 'https://www.theruggame.fun/market-callback'],
-      ['payload', bs58.encode(encryptedData)]
-    ]);
-    
-    // Convert the Map to a query string
-    const queryString = Array.from(params)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
-    
     logInfo('Params', {
-      params: queryString
+      params: params.toString()
     });
     
-    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${queryString}`;
+    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+
+    // const params = new Map([
+    //   ['dapp_encryption_public_key', dappEncryptionPublicKey],
+    //   ['nonce', bs58.encode(nonce)],
+    //   ['redirect_link', 'https://www.theruggame.fun/market-callback'],
+    //   ['payload', bs58.encode(encryptedData)]
+    // ]);
+    
+    // // Convert the Map to a query string
+    // const queryString = Array.from(params)
+    //   .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    //   .join('&');
+    
+    // logInfo('Params', {
+    //   params: queryString
+    // });
+    
+    // const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${queryString}`;
     
     return deepLink;
   } catch (error) {
