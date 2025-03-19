@@ -298,14 +298,14 @@ export async function createMobileTransactionDeepLink(
       });
       throw new Error('Invalid public key');
     }
+
+    const instruction = SystemProgram.transfer({
+      fromPubkey,
+      toPubkey,
+      lamports: Math.round(amount * LAMPORTS_PER_SOL)
+    })
     
-    transaction.add(
-      SystemProgram.transfer({
-        fromPubkey,
-        toPubkey,
-        lamports: Math.round(amount * LAMPORTS_PER_SOL)
-      })
-    );
+    transaction.add(instruction);
 
     logInfo('Amount', {
       amount: amount,
@@ -336,7 +336,7 @@ export async function createMobileTransactionDeepLink(
       session: session,
       transaction: Buffer.from(serializedTransaction).toString('base64'),
       options: {
-        commitment: 'confirmed', // Fix the typo here
+        commitment: 'confirmed', 
         skipPreflight: false,
         maxRetries: 3
       }
