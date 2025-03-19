@@ -47,6 +47,10 @@ export default function Header() {
         // Check if a keypair already exists in localStorage
         const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
 
+        logInfo('Stored Private Key', {
+            storedPrivateKey: storedPrivateKey
+        });
+
         if (storedPrivateKey) {
             try {
                 // Use the existing keypair
