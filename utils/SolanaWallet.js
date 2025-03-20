@@ -265,27 +265,20 @@ export async function createMobileTransactionDeepLink(
     // Use the actual session value from the object
     const session = sessionData.session;
 
-    logInfo('Fetched Session', {
+    logInfo('Fetched Session Length', {
       component: 'createMobileTransactionDeepLink',
-      session: session
+      sessionLength: session.length
+    });
+
+    logInfo('Fetched Session First 10 Characters', {
+      component: 'createMobileTransactionDeepLink',
+      sessionFirst10Chars: session.substring(0, 10)
     });
     
     // Rest of your existing code...
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-
-    logInfo('Phantom Public Key', {
-      phantomPublicKey: phantomPublicKey
-    });
-
-    logInfo('Dapp Encryption Public Key', {
-      dappEncryptionPublicKey: dappEncryptionPublicKey
-    });
-
-    logInfo('Stored Private Key', {
-      storedPrivateKey: storedPrivateKey
-    });
 
     // Create transaction
     const connection = new Connection(endpoint, 'confirmed');
@@ -353,16 +346,6 @@ export async function createMobileTransactionDeepLink(
       }
     };
 
-    logInfo('Payload', {
-      payload: payload
-    });
-    
-    logInfo('Payload Created', {
-      sessionLength: session.length,
-      transactionLength: serializedTransaction.length,
-      hasOptions: true
-    });
-    
     // Encrypt payload
     const nonce = nacl.randomBytes(24);
     const sharedSecret = nacl.box.before(
@@ -376,11 +359,6 @@ export async function createMobileTransactionDeepLink(
       sharedSecret
     );
 
-    logInfo('Data', {
-      sharedSecret: sharedSecret,
-      nonce: nonce,
-      encryptedData: encryptedData
-    })
     
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
@@ -389,29 +367,10 @@ export async function createMobileTransactionDeepLink(
       payload: bs58.encode(encryptedData)
     });
 
-    logInfo('Params', {
-      params: params.toString()
-    });
     
    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
 
-   try {
-    // Validate the transaction
-    const txSim = await connection.simulateTransaction(transaction);
-    if (txSim.value.err) {
-      logError('Transaction simulation failed', {
-        component: 'createMobileTransactionDeepLink',
-        error: txSim.value.err
-      });
-      throw new Error(`Transaction simulation failed: ${JSON.stringify(txSim.value.err)}`);
-    }
-  } catch (simError) {
-    logError(simError, {
-      component: 'createMobileTransactionDeepLink',
-      step: 'transaction simulation'
-    });
-  }
-    
+   
     return deepLink;
   } catch (error) {
     logError(error, {

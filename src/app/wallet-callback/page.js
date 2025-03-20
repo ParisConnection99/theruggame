@@ -73,9 +73,14 @@ export default function WalletCallbackPage() {
           created: Date.now()
         };
 
-        logInfo('Session Object', {
+        logInfo('Session Length ', {
           component: 'WalletCallbackPage',
-          session: session
+          sessionLength: session.length
+        });
+
+        logInfo('Session received first 10 characters ', {
+          component: 'WalletCallbackPage',
+          sessionFirst10Chars: session.substring(0, 10)
         });
 
         // Store as JSON string
