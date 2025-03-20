@@ -157,39 +157,23 @@ export default function Header() {
 
     const handleMobileDisconnect = async () => {
         try {
-            // Get stored session data and verify it exists
-            const sessionDataString = localStorage.getItem('phantomSession');
+            // Get session directly as string
+            const session = localStorage.getItem('phantomSession');
             const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
 
             logInfo('Checking disconnect data', {
                 component: 'Header',
-                hasSessionData: !!sessionDataString,
+                hasSession: !!session,
                 hasDappKey: !!dappEncryptionPublicKey
             });
 
-            if (!sessionDataString || !dappEncryptionPublicKey) {
+            if (!session || !dappEncryptionPublicKey) {
                 throw new Error('Missing session data or encryption key');
             }
 
-            // Parse the session data
-            const sessionData = JSON.parse(sessionDataString);
-            
-            logInfo('Session data for disconnect', {
-                component: 'Header',
-                sessionData: {
-                    hasSession: !!sessionData.session,
-                    hasPublicKey: !!sessionData.publicKey,
-                    created: sessionData.created
-                }
-            });
-
-            if (!sessionData.session) {
-                throw new Error('Invalid session data structure');
-            }
-
-            // Create and encrypt the payload with the session
+            // Create payload with direct session string
             const payload = {
-                session: sessionData.session // Use the nested session value
+                session: session
             };
 
             // Generate new nonce
@@ -239,13 +223,13 @@ export default function Header() {
                 action: 'mobile disconnect'
             });
             
-            // Clear data anyway in case of error
+            // Clean up storage even if there's an error
             localStorage.removeItem('phantomPublicKey');
             localStorage.removeItem('phantomSession');
             localStorage.removeItem('wallet_connect_pending');
             localStorage.removeItem('wallet_connect_timestamp');
             
-            // Dispatch disconnect event even if there's an error
+            // Dispatch disconnect event regardless of error
             window.dispatchEvent(new Event('wallet-disconnect-event'));
         }
     };

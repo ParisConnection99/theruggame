@@ -40,24 +40,16 @@ export default function WalletCallbackPage() {
       const { public_key, session } = JSON.parse(decryptedData);
 
       if (public_key && session) {
-        // Create a proper session object
+        // Save public key
         localStorage.setItem('phantomPublicKey', public_key);
         
-        const sessionObject = {
-          session: session,
-          publicKey: public_key,
-          created: Date.now()
-        };
-
-        // Store as JSON string
-        localStorage.setItem('phantomSession', JSON.stringify(sessionObject));
-        localStorage.setItem('wallet_return_reconnect', 'true');
-        localStorage.setItem('wallet_return_timestamp', Date.now().toString());
+        // Save session directly as a string
+        localStorage.setItem('phantomSession', session);
 
         logInfo('Connection details stored', {
           component: 'WalletCallbackPage',
           publicKey: public_key,
-          session: session
+          hasSession: !!session
         });
 
         // Dispatch custom event with wallet data before redirecting
@@ -79,7 +71,6 @@ export default function WalletCallbackPage() {
 
         // Short delay to ensure event is processed before redirecting
         setTimeout(() => {
-          // Redirect the user to the main app page
           router.push('/');
         }, 500);
       } else {

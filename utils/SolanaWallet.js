@@ -244,28 +244,17 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Get and parse session
-    const storedSession = localStorage.getItem('phantomSession');
-    if (!storedSession) {
+    // Get session directly as string
+    const session = localStorage.getItem('phantomSession');
+    if (!session) {
       throw new Error('No session found');
     }
-    
-    let sessionData;
-    try {
-      sessionData = JSON.parse(storedSession);
-    } catch (e) {
-      throw new Error('Invalid session format');
-    }
-    
-    logInfo('Session Data', {
-      hasSession: !!sessionData.session,
-      timestamp: sessionData.created
-    });
-    
-    // Use the actual session value from the object
-    const session = sessionData.session;
 
-    // Rest of your existing code...
+    logInfo('Session Data', {
+      hasSession: !!session,
+      component: 'createMobileTransactionDeepLink'
+    });
+
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
@@ -324,10 +313,10 @@ export async function createMobileTransactionDeepLink(
       verifySignatures: false
     });
     
-    // Create payload with the actual session value
+    // Create payload with direct session string
     const payload = {
       transaction: Buffer.from(serializedTransaction).toString('base64'),
-      session: session,
+      session: session, // Use session string directly
       options: {
         commitment: 'confirmed', 
         skipPreflight: false,
