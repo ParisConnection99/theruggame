@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet, testSignMessage } from '@/utils/SolanaWallet.js';
+import { checkSufficientBalance, placeBet, testPhantomSDKConnect, testPhantomSDKTransaction, testPhantomSDKSignMessage } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
@@ -698,6 +698,51 @@ export default function MarketPage() {
 
       <div className="text-l font-semibold text-gray-400 mt-2">
         Liquidity: <span className="text-white">${liquidity}</span>
+      </div>
+
+      {/* Test Buttons Section */}
+      <div className="mt-4 flex gap-2 bg-gray-800 p-4 rounded-md">
+        <button
+          onClick={async () => {
+            try {
+              const result = await testPhantomSDKConnect();
+              console.log('Connect result:', result);
+            } catch (error) {
+              console.error('Connect error:', error);
+            }
+          }}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Test SDK Connect
+        </button>
+
+        <button
+          onClick={async () => {
+            try {
+              const result = await testPhantomSDKSignMessage();
+              console.log('Sign result:', result);
+            } catch (error) {
+              console.error('Sign error:', error);
+            }
+          }}
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        >
+          Test SDK Sign
+        </button>
+
+        <button
+          onClick={async () => {
+            try {
+              const result = await testPhantomSDKTransaction(0.1);
+              console.log('Transaction result:', result);
+            } catch (error) {
+              console.error('Transaction error:', error);
+            }
+          }}
+          className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+        >
+          Test SDK Transaction
+        </button>
       </div>
 
       {/* Market Details */}

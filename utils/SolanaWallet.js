@@ -5,6 +5,8 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 import { logInfo, logError } from '@/utils/logger';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
+import { PhantomWalletSDK } from '@phantom-wallet/sdk';
+
 // Constants - Replace with your values in production
 // Use a more reliable devnet RPC with proper WebSocket support
 // Using clusterApiUrl for more reliable connections
@@ -13,6 +15,12 @@ const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
 //const SITE_WALLET_ADDRESS = process.env.SITE_WALLET_ADDRESS;
+
+// Initialize SDK
+const phantomSDK = new PhantomWalletSDK({
+  appUrl: 'https://theruggame.fun',
+  cluster: 'devnet'
+});
 
 /**
  * Checks if a user has sufficient SOL balance for a transaction
@@ -382,71 +390,6 @@ export async function createMobileTransactionDeepLink(
   }
 }
 
-export async function testSignMessage() {
-  try {
-    // Get stored session and encryption keys
-    const storedSession = localStorage.getItem('phantomSession');
-    if (!storedSession) {
-      throw new Error('No session found');
-    }
-    
-    let sessionData = JSON.parse(storedSession);
-    const session = sessionData.session;
-    
-    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
-    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-
-    // Simple test message
-    const message = "Hello from The Rug Game!";
-
-    // Create the payload
-    const payload = {
-      message: message,
-      session: session
-    };
-
-    logInfo('Sign Message Test Payload', {
-      component: 'testSignMessage',
-      message: message
-    });
-
-    // Encrypt payload
-    const nonce = nacl.randomBytes(24);
-    const sharedSecret = nacl.box.before(
-      bs58.decode(dappEncryptionPublicKey),
-      bs58.decode(storedPrivateKey)
-    );
-    
-    const encryptedData = nacl.box.after(
-      new TextEncoder().encode(JSON.stringify(payload)),
-      nonce,
-      sharedSecret
-    );
-
-    // Create deep link parameters
-    const params = new URLSearchParams({
-      dapp_encryption_public_key: dappEncryptionPublicKey,
-      nonce: bs58.encode(nonce),
-      redirect_link: 'https://www.theruggame.fun/market-callback',
-      payload: bs58.encode(encryptedData)
-    });
-
-    // Create the deep link URL
-    const deepLink = `https://phantom.app/ul/v1/signMessage?${params.toString()}`;
-    
-    logInfo('Created sign message deep link', {
-      component: 'testSignMessage',
-      deepLink: deepLink
-    });
-
-    return deepLink;
-  } catch (error) {
-    logError(error, {
-      component: 'testSignMessage'
-    });
-    throw error;
-  }
-}
 
 // New function for mobile transactions
 // export async function createMobileTransactionDeepLink(
@@ -613,5 +556,88 @@ export async function handleTransactionCallback(encryptedData, nonceString) {
       action: 'Processing transaction callback'
     });
     throw new Error(`Failed to process transaction callback: ${error.message}`);
+  }
+}
+
+// Test connection
+export async function testPhantomSDKConnect() {
+  try {
+    logInfo('Testing Phantom SDK Connect', {
+      component: 'SolanaWallet'
+    });
+
+    const connection = await phantomSDK.connect();
+    
+    logInfo('Phantom SDK Connection Result', {
+      component: 'SolanaWallet',
+      publicKey: connection.publicKey,
+      connected: !!connection
+    });
+
+    return connection;
+  } catch (error) {
+    logError(error, {
+      component: 'SolanaWallet',
+      action: 'testPhantomSDKConnect'
+    });
+    throw error;
+  }
+}
+
+// Test transaction
+export async function testPhantomSDKTransaction(amount = 0.1) {
+  try {
+    logInfo('Testing Phantom SDK Transaction', {
+      component: 'SolanaWallet',
+      amount
+    });
+
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: new PublicKey(phantomSDK.publicKey),
+        toPubkey: new PublicKey(SITE_WALLET_ADDRESS),
+        lamports: Math.round(amount * LAMPORTS_PER_SOL)
+      })
+    );
+
+    const signature = await phantomSDK.signAndSendTransaction(transaction);
+
+    logInfo('Phantom SDK Transaction Result', {
+      component: 'SolanaWallet',
+      signature
+    });
+
+    return signature;
+  } catch (error) {
+    logError(error, {
+      component: 'SolanaWallet',
+      action: 'testPhantomSDKTransaction'
+    });
+    throw error;
+  }
+}
+
+// Test sign message
+export async function testPhantomSDKSignMessage(message = "Hello from The Rug Game!") {
+  try {
+    logInfo('Testing Phantom SDK Sign Message', {
+      component: 'SolanaWallet',
+      message
+    });
+
+    const signedMessage = await phantomSDK.signMessage(message);
+
+    logInfo('Phantom SDK Sign Message Result', {
+      component: 'SolanaWallet',
+      signedMessage
+    });
+
+    return signedMessage;
+  } catch (error) {
+    logError(error, {
+      component: 'SolanaWallet',
+      action: 'testPhantomSDKSignMessage'
+    });
+    throw error;
   }
 }
