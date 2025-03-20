@@ -99,16 +99,17 @@ export default function Header() {
     // Listen for wallet disconnect event
     useEffect(() => {
         const handleWalletDisconnect = async () => {
-            logInfo('Disconnecting wallet', {
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+    
+            logInfo('Disconnect triggered', {
                 component: 'Header',
-                action: 'disconnecting wallet'
+                isMobileDevice: isMobileDevice,
+                userAgent: navigator.userAgent
             });
 
-            logInfo('Disconnecting wallet', {
-                isMobile: isMobile
-            }); 
-
-            if (isMobile) {
+            if (isMobileDevice) {
                 logInfo('Disconnecting from mobile', {
                     component: 'Header',
                     isMobile: isMobile
