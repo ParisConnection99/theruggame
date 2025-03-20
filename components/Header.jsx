@@ -169,11 +169,6 @@ export default function Header() {
             const session = localStorage.getItem('phantomSession');
             const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
 
-            logInfo('Session when disconnecting from mobile', {
-                component: 'Header',
-                session: session
-            });
-
             logInfo('Starting disconnect process', {
                 component: 'Header',
                 hasSession: !!session,
@@ -184,17 +179,15 @@ export default function Header() {
                 throw new Error('Missing session data or encryption key');
             }
 
-            // Create payload with session
-            const payload = {
-                session: session
-            };
+            // Simplified payload - Phantom expects just the session
+            const payload = session;
 
-            // Create and encrypt the payload with the session
+            // Create and encrypt the payload
             const nonce = nacl.randomBytes(24);
             const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
             
             const encryptedData = nacl.box.after(
-                new TextEncoder().encode(JSON.stringify(payload)),
+                new TextEncoder().encode(payload),  // Send session directly, not as an object
                 nonce,
                 nacl.box.before(
                     bs58.decode(dappEncryptionPublicKey),
@@ -211,15 +204,15 @@ export default function Header() {
             });
 
             const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
-            window.location.href = disconnectDeepLink;
+            
+            // Use window.open instead of location.href
+            window.open(disconnectDeepLink, '_blank');
 
         } catch (error) {
             logError(error, {
                 component: 'Header',
                 action: 'mobile disconnect'
             });
-            
-            // Don't remove session here anymore, let disconnect-callback handle it
             window.dispatchEvent(new Event('wallet-disconnect-event'));
         }
     };
