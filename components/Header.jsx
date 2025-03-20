@@ -10,6 +10,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
+import { buildUrl } from '@/utils/PhantomConnect';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -24,7 +25,7 @@ export default function Header() {
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
     const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
-    const keypairRef = useRef(null);
+    //const keypairRef = useRef(null);
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -39,54 +40,54 @@ export default function Header() {
     }, []);
 
     // Create a keypair for the dapp
-    useEffect(() => {
-        // Check if we already have a keypair stored
-        const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-        const storedPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+    // useEffect(() => {
+    //     // Check if we already have a keypair stored
+    //     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+    //     const storedPublicKey = localStorage.getItem('dappEncryptionPublicKey');
 
-        if (storedPrivateKey && storedPublicKey) {
-            try {
-                // Use existing keypair
-                const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-                keypairRef.current = existingKeypair;
-                setDappEncryptionPublicKey(storedPublicKey);
+    //     if (storedPrivateKey && storedPublicKey) {
+    //         try {
+    //             // Use existing keypair
+    //             const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
+    //             keypairRef.current = existingKeypair;
+    //             setDappEncryptionPublicKey(storedPublicKey);
                 
-                logInfo('Using existing keypair', {
-                    component: 'Header',
-                    publicKey: storedPublicKey
-                });
-            } catch (error) {
-                logError(error, {
-                    component: 'Header',
-                    action: 'loading existing keypair'
-                });
-                // If there's an error with stored keys, remove them and generate new ones
-                localStorage.removeItem('dappEncryptionPrivateKey');
-                localStorage.removeItem('dappEncryptionPublicKey');
-                generateNewKeypair();
-            }
-        } else {
-            // No existing keypair, generate new one
-            generateNewKeypair();
-        }
+    //             logInfo('Using existing keypair', {
+    //                 component: 'Header',
+    //                 publicKey: storedPublicKey
+    //             });
+    //         } catch (error) {
+    //             logError(error, {
+    //                 component: 'Header',
+    //                 action: 'loading existing keypair'
+    //             });
+    //             // If there's an error with stored keys, remove them and generate new ones
+    //             localStorage.removeItem('dappEncryptionPrivateKey');
+    //             localStorage.removeItem('dappEncryptionPublicKey');
+    //             generateNewKeypair();
+    //         }
+    //     } else {
+    //         // No existing keypair, generate new one
+    //         generateNewKeypair();
+    //     }
 
-        function generateNewKeypair() {
-            const keypair = nacl.box.keyPair();
-            keypairRef.current = keypair;
+    //     function generateNewKeypair() {
+    //         const keypair = nacl.box.keyPair();
+    //         keypairRef.current = keypair;
 
-            const publicKeyBase58 = bs58.encode(keypair.publicKey);
-            const privateKeyBase58 = bs58.encode(keypair.secretKey);
+    //         const publicKeyBase58 = bs58.encode(keypair.publicKey);
+    //         const privateKeyBase58 = bs58.encode(keypair.secretKey);
 
-            setDappEncryptionPublicKey(publicKeyBase58);
-            localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
-            localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
+    //         setDappEncryptionPublicKey(publicKeyBase58);
+    //         localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
+    //         localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
 
-            logInfo('Generated new keypair', {
-                component: 'Header',
-                publicKey: publicKeyBase58
-            });
-        }
-    }, []); // Empty dependency array means this runs once on mount
+    //         logInfo('Generated new keypair', {
+    //             component: 'Header',
+    //             publicKey: publicKeyBase58
+    //         });
+    //     }
+    // }, []); // Empty dependency array means this runs once on mount
 
     // Handle wallet connection when connected
     useEffect(() => {
@@ -277,35 +278,28 @@ export default function Header() {
     const handleMobileWalletConnection = async () => {
         if (!isMobile) return;
 
-
         try {
             setConnectionStatus('connecting');
-
             localStorage.setItem('wallet_connect_pending', 'true');
             localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
 
-            const appUrl = 'https://theruggame.fun/';
-            const redirectUrl = 'https://theruggame.fun/wallet-callback';
-
             const params = new URLSearchParams({
-                dapp_encryption_public_key: dappEncryptionPublicKey,
+                dapp_encryption_public_key: localStorage.getItem('dappEncryptionPublicKey'),
                 cluster: "mainnet-beta",
-                app_url: appUrl,
-                redirect_link: redirectUrl
+                app_url: 'https://theruggame.fun',
+                redirect_link: 'https://theruggame.fun/wallet-callback'
             });
 
-            const deepLink = `https://phantom.app/ul/v1/connect?${params.toString()}`;
+            const url = buildUrl("connect", params);
 
-            logInfo('Deeplink', {
-                link: deepLink
+            logInfo('Connect deeplink created', {
+                component: 'Header',
+                url: url
             });
 
-            // Direct link to Phantom with callback to our site
-            window.location.href = deepLink;
+            window.location.href = url;
 
-            // Log initial state
         } catch (error) {
-            console.error('Connection error:', error);
             logError(error, {
                 component: 'Header',
                 action: 'Error during mobile wallet connection'
