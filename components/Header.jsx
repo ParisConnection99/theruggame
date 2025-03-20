@@ -100,6 +100,10 @@ export default function Header() {
     useEffect(() => {
         const handleWalletDisconnect = async () => {
             if (isMobile) {
+                logInfo('Disconnecting from mobile', {
+                    component: 'Header',
+                    isMobile: isMobile
+                });
                 await handleMobileDisconnect();
             } else {
                 try {
@@ -190,6 +194,10 @@ export default function Header() {
 
             const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
 
+            logInfo('Disconnecting deep link', {
+                component: 'Header',
+                deepLink: disconnectDeepLink
+            });
             // Redirect to Phantom
             window.location.href = disconnectDeepLink;
 

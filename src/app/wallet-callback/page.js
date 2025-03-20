@@ -73,16 +73,6 @@ export default function WalletCallbackPage() {
           created: Date.now()
         };
 
-        logInfo('Session Length ', {
-          component: 'WalletCallbackPage',
-          sessionLength: session.length
-        });
-
-        logInfo('Session received first 10 characters ', {
-          component: 'WalletCallbackPage',
-          sessionFirst10Chars: session.substring(0, 10)
-        });
-
         // Store as JSON string
         localStorage.setItem('phantomSession', JSON.stringify(sessionObject));
         localStorage.setItem('wallet_return_reconnect', 'true');
