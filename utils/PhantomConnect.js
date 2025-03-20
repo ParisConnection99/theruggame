@@ -1,5 +1,6 @@
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
+import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 global.Buffer = global.Buffer || Buffer;
 
