@@ -162,7 +162,7 @@ export default function Header() {
         return () => {
             window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
         };
-    }, [connected, disconnect, isMobile]);
+    }, [connected, disconnect]);
 
     const handleMobileDisconnect = async () => {
         try {
