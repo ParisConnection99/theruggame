@@ -178,7 +178,12 @@ export default function ProfilePage() {
             });
 
             window.dispatchEvent(walletEvent);
-            
+
+            logInfo('Signing out - event dispatched', {
+                component: 'ProfilePage',
+                action: 'sign out'
+            });
+
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);

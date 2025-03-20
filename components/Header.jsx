@@ -99,6 +99,10 @@ export default function Header() {
     // Listen for wallet disconnect event
     useEffect(() => {
         const handleWalletDisconnect = async () => {
+            logInfo('Disconnecting wallet', {
+                component: 'Header',
+                action: 'disconnecting wallet'
+            });
             if (isMobile) {
                 logInfo('Disconnecting from mobile', {
                     component: 'Header',
@@ -119,7 +123,10 @@ export default function Header() {
                         });
                     }
                 } catch (error) {
-                    console.error('Error disconnecting wallet:', error);
+                   logError(error, {
+                    component: 'Header',
+                    action: 'mobile disconnect'
+                   });
                 }
             }
 
@@ -342,82 +349,6 @@ export default function Header() {
         return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
 
-    // Update effective connection state
-    // useEffect(() => {
-    //     if (connected || (userProfile && userProfile.wallet_ca)) {
-    //         logInfo('Use effect is connected.');
-    //         setIsEffectivelyConnected(true);
-
-    //         //logInfo(`User is Effectively connected: ${isEffectivelyConnected}`, {});
-    //     } else {
-    //         logInfo('Connected is false', {
-    //             component: 'Header',
-    //             isEffectively: `${isEffectivelyConnected}`
-    //         });
-
-    //         setIsEffectivelyConnected(false);
-
-    //         // logInfo('IsEffectivelyConneted after update', {
-    //         //     isUserConnected: `${isEffectivelyConnected}`,
-    //         //     component: 'Header'
-    //         // });
-
-    //     }
-    // }, [connected, userProfile]);
-
-    // useEffect(() => {
-    //     const handleWalletCallbackEvent = async (event) => {
-    //         // logInfo('Recieved wallet-callback event', {
-    //         //     component: 'Header'
-    //         // })
-
-    //         // Check if we have the data
-    //         if (event.detail && event.detail.publicKey) {
-    //             await handleWalletCallbackConnection({
-    //                 publicKey: event.detail.publicKey,
-    //                 session: event.detail.session
-    //             });
-
-    //             localStorage.setItem('wallet_return_reconnect', 'false');
-    //         }
-    //     };
-
-    //     window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
-    // }, []);
-
-    // useEffect(() => {
-    //     const handleWalletDisconnectEvent = async (event) => {
-    //         logInfo('Received wallet disconnect event', {
-    //             component: 'Header'
-    //         });
-
-    //         // logInfo('Check user connection before disconnect', {
-    //         //     component: 'Header',
-    //         //     isUserConnected: `${connected}`
-    //         // });
-
-    //         // check if on mobile
-    //         setIsEffectivelyConnected(false);
-
-    //         try {
-    //             await disconnect();
-    //         } catch (error) {
-    //             logError(error, {
-    //                 component: 'Header',
-    //                 action: 'Disconnecting wallet'
-    //             })
-    //         }
-
-    //         //setIsEffectivelyConnected(false);
-
-    //         // logInfo('Check user connection after disconnect', {
-    //         //     component: 'Header',
-    //         //     isUserConnected: `${connected}`
-    //         // });
-    //     };
-
-    //     window.addEventListener('wallet-disconnect-event', handleWalletDisconnectEvent);
-    // }, []);
 
     // Function to handle wallet connection from callback data
     const handleWalletCallbackConnection = async (walletData) => {
@@ -558,52 +489,6 @@ export default function Header() {
             }
         }
     };
-
-    // Handle visibility changes for mobile wallet connections
-    // useEffect(() => {
-    //     const handleVisibilityChange = () => {
-    //         // If we're becoming visible again and we're on mobile
-    //         if (!document.hidden && isMobile && connectionStatus === 'connecting') {
-    //             console.log("Returning from wallet app, checking connection...");
-    //             setReturningFromWalletApp(true);
-
-    //             // Give a moment for connection to establish
-    //             setTimeout(() => {
-    //                 if (!isEffectivelyConnected) {
-    //                     // If still not connected after returning
-    //                     showConnectionError('Wallet connection not completed. Please try again.');
-    //                     setConnectionStatus('error');
-    //                 }
-    //                 setReturningFromWalletApp(false);
-    //             }, 2000);
-    //         }
-    //     };
-
-    //     document.addEventListener('visibilitychange', handleVisibilityChange);
-    //     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    // }, [isMobile, connectionStatus, isEffectivelyConnected]);
-
-    // useEffect(() => {
-    //     if (connected && publicKey && auth) {
-    //         console.log("Wallet connected:", publicKey.toString());
-    //         handleWalletConnection();
-    //     }
-    // }, [connected, publicKey, auth]);
-
-    // Watch connection status changes
-    // useEffect(() => {
-    //     if (connecting) {
-    //         setConnectionStatus('connecting');
-    //     } else if (connected || isEffectivelyConnected) {
-    //         setConnectionStatus('success');
-    //         // Reset status after showing success
-    //         const timer = setTimeout(() => {
-    //             setConnectionStatus('idle');
-    //         }, 3000);
-    //         return () => clearTimeout(timer);
-    //     } 
-    // }, [connecting, connected, isEffectivelyConnected]);
-
 
     const handleWalletConnection = async () => {
         try {
