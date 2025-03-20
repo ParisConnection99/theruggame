@@ -99,27 +99,18 @@ export default function Header() {
     // Listen for wallet disconnect event
     useEffect(() => {
         const handleWalletDisconnect = async () => {
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                navigator.userAgent
-            );
-    
             logInfo('Disconnect triggered', {
                 component: 'Header',
-                isMobileDevice: isMobileDevice,
+                isMobileDevice: isMobile,
                 userAgent: navigator.userAgent
             });
 
-            if (isMobileDevice) {
-                logInfo('Disconnecting from mobile', {
-                    component: 'Header',
-                    isMobile: isMobile
-                });
+            if (isMobile) {
                 await handleMobileDisconnect();
             } else {
                 try {
                     if (connected) {
                         await disconnect();
-
                         logInfo('Wallet disconnected', {
                             component: 'Header',
                             walletState: {
@@ -129,21 +120,12 @@ export default function Header() {
                         });
                     }
                 } catch (error) {
-                   logError(error, {
-                    component: 'Header',
-                    action: 'mobile disconnect'
-                   });
+                    logError(error, {
+                        component: 'Header',
+                        action: 'mobile disconnect'
+                    });
                 }
             }
-
-            // Clear stored data
-            localStorage.removeItem('phantomPublicKey');
-            localStorage.removeItem('phantomSession');
-            localStorage.removeItem('wallet_connect_pending');
-            localStorage.removeItem('wallet_connect_timestamp');
-
-            setIsEffectivelyConnected(false);
-
         };
 
         // Add event listener
@@ -157,11 +139,10 @@ export default function Header() {
 
     const handleMobileDisconnect = async () => {
         try {
-            // Get session directly as string
             const session = localStorage.getItem('phantomSession');
             const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
 
-            logInfo('Checking disconnect data', {
+            logInfo('Starting disconnect process', {
                 component: 'Header',
                 hasSession: !!session,
                 hasDappKey: !!dappEncryptionPublicKey
@@ -171,50 +152,33 @@ export default function Header() {
                 throw new Error('Missing session data or encryption key');
             }
 
-            // Create payload with direct session string
+            // Create payload with session
             const payload = {
                 session: session
             };
 
-            // Generate new nonce
+            // Create and encrypt the payload with the session
             const nonce = nacl.randomBytes(24);
-            const nonceBase58 = bs58.encode(nonce);
-
-            // Get stored private key for encryption
             const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-            if (!storedPrivateKey) {
-                throw new Error('Encryption private key not found');
-            }
-
-            // Encrypt the payload
-            const dappPrivateKey = bs58.decode(storedPrivateKey);
-            const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
+            
             const encryptedData = nacl.box.after(
-                messageUint8,
+                new TextEncoder().encode(JSON.stringify(payload)),
                 nonce,
                 nacl.box.before(
                     bs58.decode(dappEncryptionPublicKey),
-                    dappPrivateKey
+                    bs58.decode(storedPrivateKey)
                 )
             );
 
-            // Create the deep link URL with disconnect-callback
+            // Create the deep link URL
             const params = new URLSearchParams({
                 dapp_encryption_public_key: dappEncryptionPublicKey,
-                nonce: nonceBase58,
+                nonce: bs58.encode(nonce),
                 redirect_link: 'https://theruggame.fun/disconnect-callback',
                 payload: bs58.encode(encryptedData)
             });
 
             const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
-
-            logInfo('Created disconnect deep link', {
-                component: 'Header',
-                hasPayload: !!payload,
-                hasNonce: !!nonceBase58
-            });
-
-            // Redirect to Phantom
             window.location.href = disconnectDeepLink;
 
         } catch (error) {
@@ -223,13 +187,7 @@ export default function Header() {
                 action: 'mobile disconnect'
             });
             
-            // Clean up storage even if there's an error
-            localStorage.removeItem('phantomPublicKey');
-            localStorage.removeItem('phantomSession');
-            localStorage.removeItem('wallet_connect_pending');
-            localStorage.removeItem('wallet_connect_timestamp');
-            
-            // Dispatch disconnect event regardless of error
+            // Don't remove session here anymore, let disconnect-callback handle it
             window.dispatchEvent(new Event('wallet-disconnect-event'));
         }
     };
