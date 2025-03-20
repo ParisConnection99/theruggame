@@ -98,28 +98,40 @@ export default function Header() {
 
     // Listen for wallet disconnect event
     useEffect(() => {
-        const handleWalletDisconnect = async () => {
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                navigator.userAgent
-            );
-        
-            logInfo('Disconnect triggered', {
-                component: 'Header',
-                isMobileDevice: isMobileDevice,
-                userAgent: navigator.userAgent
-            });
+        let isDisconnecting = false; // Flag to prevent multiple calls
 
-            if (isMobileDevice) {
-                logInfo('Disconnecting from mobile', {
-                    component: 'Header',
-                    isMobile: isMobileDevice
+        const handleWalletDisconnect = async () => {
+            // If already disconnecting, ignore subsequent calls
+            if (isDisconnecting) {
+                logInfo('Disconnect already in progress, ignoring call', {
+                    component: 'Header'
                 });
-                await handleMobileDisconnect();
-            } else {
-                try {
+                return;
+            }
+
+            isDisconnecting = true; // Set flag
+
+            try {
+                const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                );
+            
+                logInfo('Disconnect triggered', {
+                    component: 'Header',
+                    isMobileDevice: isMobileDevice,
+                    userAgent: navigator.userAgent,
+                    hasSession: !!localStorage.getItem('phantomSession')
+                });
+
+                if (isMobileDevice) {
+                    logInfo('Disconnecting from mobile', {
+                        component: 'Header',
+                        isMobile: isMobile
+                    });
+                    await handleMobileDisconnect();
+                } else {
                     if (connected) {
                         await disconnect();
-
                         logInfo('Wallet disconnected', {
                             component: 'Header',
                             walletState: {
@@ -128,12 +140,18 @@ export default function Header() {
                             }
                         });
                     }
-                } catch (error) {
-                   logError(error, {
-                    component: 'Header',
-                    action: 'web disconnect'
-                   });
                 }
+
+                // Remove the event listener after successful disconnect
+                window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
+
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'wallet disconnect'
+                });
+            } finally {
+                isDisconnecting = false; // Reset flag regardless of success or failure
             }
         };
 
@@ -144,7 +162,7 @@ export default function Header() {
         return () => {
             window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
         };
-    }, [connected, disconnect]);
+    }, [connected, disconnect, isMobile]);
 
     const handleMobileDisconnect = async () => {
         try {
