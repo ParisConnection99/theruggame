@@ -102,6 +102,7 @@ export default function Header() {
             if (connected) {
                 await disconnect();
                 // Clear any stored session data
+                setIsEffectivelyConnected(false);
                 window.localStorage.removeItem('phantomSession');
                 window.localStorage.removeItem('phantomSharedSecret');
                 window.localStorage.removeItem('phantomPublicKey');
@@ -128,6 +129,7 @@ export default function Header() {
                 throw new Error('PhantomConnect not initialized');
             }
             await phantomConnect.disconnect();
+            
         } catch (error) {
             logError(error, {
                 component: 'Header',
