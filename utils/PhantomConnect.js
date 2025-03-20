@@ -140,7 +140,6 @@ class PhantomConnect {
     }
 }
 
-// Only create instance if in browser environment
-const phantomConnect = typeof window !== 'undefined' ? new PhantomConnect() : null;
-
-export { decryptPayload, encryptPayload, buildUrl }; 
+// Export both the instance and the buildUrl function
+export const phantomConnect = typeof window !== 'undefined' ? new PhantomConnect() : null;
+export { buildUrl }; 

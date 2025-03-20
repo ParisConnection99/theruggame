@@ -10,7 +10,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { buildUrl } from '@/utils/PhantomConnect';
+import { phantomConnect, buildUrl } from '@/utils/PhantomConnect';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
