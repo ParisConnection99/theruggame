@@ -103,6 +103,11 @@ export default function Header() {
                 component: 'Header',
                 action: 'disconnecting wallet'
             });
+
+            logInfo('Disconnecting wallet', {
+                isMobile: isMobile
+            }); 
+
             if (isMobile) {
                 logInfo('Disconnecting from mobile', {
                     component: 'Header',
