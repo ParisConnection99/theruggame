@@ -382,6 +382,72 @@ export async function createMobileTransactionDeepLink(
   }
 }
 
+export async function testSignMessage() {
+  try {
+    // Get stored session and encryption keys
+    const storedSession = localStorage.getItem('phantomSession');
+    if (!storedSession) {
+      throw new Error('No session found');
+    }
+    
+    let sessionData = JSON.parse(storedSession);
+    const session = sessionData.session;
+    
+    const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+    const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
+
+    // Simple test message
+    const message = "Hello from The Rug Game!";
+
+    // Create the payload
+    const payload = {
+      message: message,
+      session: session
+    };
+
+    logInfo('Sign Message Test Payload', {
+      component: 'testSignMessage',
+      message: message
+    });
+
+    // Encrypt payload
+    const nonce = nacl.randomBytes(24);
+    const sharedSecret = nacl.box.before(
+      bs58.decode(dappEncryptionPublicKey),
+      bs58.decode(storedPrivateKey)
+    );
+    
+    const encryptedData = nacl.box.after(
+      new TextEncoder().encode(JSON.stringify(payload)),
+      nonce,
+      sharedSecret
+    );
+
+    // Create deep link parameters
+    const params = new URLSearchParams({
+      dapp_encryption_public_key: dappEncryptionPublicKey,
+      nonce: bs58.encode(nonce),
+      redirect_link: 'https://www.theruggame.fun/market-callback',
+      payload: bs58.encode(encryptedData)
+    });
+
+    // Create the deep link URL
+    const deepLink = `https://phantom.app/ul/v1/signMessage?${params.toString()}`;
+    
+    logInfo('Created sign message deep link', {
+      component: 'testSignMessage',
+      deepLink: deepLink
+    });
+
+    return deepLink;
+  } catch (error) {
+    logError(error, {
+      component: 'testSignMessage'
+    });
+    throw error;
+  }
+}
+
 // New function for mobile transactions
 // export async function createMobileTransactionDeepLink(
 //   amount,
