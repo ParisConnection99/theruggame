@@ -112,7 +112,7 @@ export default function Header() {
             if (isMobileDevice) {
                 logInfo('Disconnecting from mobile', {
                     component: 'Header',
-                    isMobile: isMobile
+                    isMobile: isMobileDevice
                 });
                 await handleMobileDisconnect();
             } else {
@@ -144,12 +144,17 @@ export default function Header() {
         return () => {
             window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
         };
-    }, [connected, disconnect, isMobile]);
+    }, [connected, disconnect]);
 
     const handleMobileDisconnect = async () => {
         try {
             const session = localStorage.getItem('phantomSession');
             const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+
+            logInfo('Session when disconnecting from mobile', {
+                component: 'Header',
+                session: session
+            });
 
             logInfo('Starting disconnect process', {
                 component: 'Header',
