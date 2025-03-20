@@ -23,6 +23,13 @@ function DisconnectHandler() {
                     hasNonce: !!nonce
                 });
 
+                logInfo('Disconnect callback - all params received:', {
+                    component: 'DisconnectCallbackPage',
+                    allParams: Object.fromEntries(searchParams.entries()),
+                    searchParamsKeys: Array.from(searchParams.keys()),
+                    rawURL: window.location.href
+                });
+
                 // Check if there was an error or missing data
                 if (errorCode || !encryptedData || !nonce) {
                     throw new Error(errorCode || 'Invalid disconnect response');
