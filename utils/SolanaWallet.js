@@ -244,139 +244,91 @@ export async function createMobileTransactionDeepLink(
   endpoint = RPC_ENDPOINT
 ) {
   try {
-    // Get and parse session
+    // Session handling and validation - this part seems to be working fine
     const storedSession = localStorage.getItem('phantomSession');
-    if (!storedSession) {
-      throw new Error('No session found');
-    }
-    
-    let sessionData;
-    try {
-      sessionData = JSON.parse(storedSession);
-    } catch (e) {
-      throw new Error('Invalid session format');
-    }
-    
-    logInfo('Session Data', {
-      hasSession: !!sessionData.session,
-      timestamp: sessionData.created
-    });
-    
-    // Use the actual session value from the object
+    const sessionData = JSON.parse(storedSession);
     const session = sessionData.session;
-
-    logInfo('Fetched Session Length', {
-      component: 'createMobileTransactionDeepLink',
-      sessionLength: session.length
-    });
-
-    logInfo('Fetched Session First 10 Characters', {
-      component: 'createMobileTransactionDeepLink',
-      sessionFirst10Chars: session.substring(0, 10)
-    });
     
-    // Rest of your existing code...
+    // Key retrieval - validate these keys exist
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-
-    // Create transaction
-    const connection = new Connection(endpoint, 'confirmed');
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
-
-    logInfo('Blockhash', {
-      blockhash: blockhash,
-      lastValidBlockHeight: lastValidBlockHeight
-    });
     
-    const transaction = new Transaction();
+    if (!phantomPublicKey || !dappEncryptionPublicKey || !storedPrivateKey) {
+      throw new Error('Missing required encryption keys');
+    }
+    
+    // Create transaction with simplified approach
+    const connection = new Connection(endpoint, 'confirmed');
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized');
+    
     const fromPubkey = new PublicKey(phantomPublicKey);
     const toPubkey = new PublicKey(destinationAddress);
-
-    if (!PublicKey.isOnCurve(fromPubkey) || !PublicKey.isOnCurve(toPubkey)) {
-      logError('Invalid public key', {
-        component: 'createMobileTransactionDeepLink',
-        fromPubkey: fromPubkey,
-        toPubkey: toPubkey
-      });
-      throw new Error('Invalid public key');
-    }
-
-    const instruction = SystemProgram.transfer({
-      fromPubkey,
-      toPubkey,
-      lamports: Math.round(amount * LAMPORTS_PER_SOL)
-    })
     
-    transaction.add(instruction);
-
-    logInfo('Amount', {
-      amount: amount,
-      lamports: Math.round(amount * LAMPORTS_PER_SOL)
-    });
+    // Create a simpler transaction
+    const transaction = new Transaction();
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey,
+        toPubkey,
+        lamports: Math.round(amount * LAMPORTS_PER_SOL)
+      })
+    );
     
     transaction.feePayer = fromPubkey;
     transaction.recentBlockhash = blockhash;
-    transaction.lastValidBlockHeight = lastValidBlockHeight; // Add this line
-
-    logInfo('Transaction:', {
-      feePayer: transaction.feePayer.toBase58(),
-      recentBlockhash: transaction.recentBlockhash,
-      instructions: transaction.instructions.map(ix => ({
-        keys: ix.keys.map(k => k.pubkey.toBase58()),
-        programId: ix.programId.toBase58(),
-        data: ix.data.toString('base64')
-      }))
-    });
     
+    // Try not to include lastValidBlockHeight as it might be handled differently
+    // transaction.lastValidBlockHeight = lastValidBlockHeight;
+    
+    // Add priority fee if needed
+    // transaction.instructions[0].setPriorityFee(100_000);
+    
+    // Serialize transaction without requiring signatures
     const serializedTransaction = transaction.serialize({
-      requireAllSignatures: false,
+      requireAllSignatures: false, 
       verifySignatures: false
     });
     
-    // Create payload with the actual session value
+    // Simplify the payload to just the essentials
     const payload = {
       transaction: Buffer.from(serializedTransaction).toString('base64'),
-      session: session,
-      options: {
-        commitment: 'confirmed', 
-        skipPreflight: false,
-        maxRetries: 3,
-        preflightCommitment: 'confirmed'
-      }
+      session
     };
-
-    // Encrypt payload
+    
+    // Encryption - ensure we're following exact Phantom specs
     const nonce = nacl.randomBytes(24);
+    
+    // Create shared secret using correct keys
+    const phantomSide = bs58.decode(dappEncryptionPublicKey);
+    const yourSide = bs58.decode(storedPrivateKey);
+    
     const sharedSecret = nacl.box.before(
-      bs58.decode(dappEncryptionPublicKey),
-      bs58.decode(storedPrivateKey)
+      phantomSide,
+      yourSide
     );
     
+    // Encrypt the payload
+    const payloadBytes = new TextEncoder().encode(JSON.stringify(payload));
     const encryptedData = nacl.box.after(
-      new TextEncoder().encode(JSON.stringify(payload)),
+      payloadBytes,
       nonce,
       sharedSecret
     );
-
     
+    // Build deep link with cleaner params
     const params = new URLSearchParams({
       dapp_encryption_public_key: dappEncryptionPublicKey,
       nonce: bs58.encode(nonce),
       redirect_link: 'https://www.theruggame.fun/market-callback',
       payload: bs58.encode(encryptedData)
     });
-
     
-   const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
-
-   
+    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
     return deepLink;
+    
   } catch (error) {
-    logError(error, {
-      component: 'createMobileTransactionDeepLink',
-      step: 'session processing'
-    });
+    console.error('Error creating deeplink:', error);
     throw error;
   }
 }
