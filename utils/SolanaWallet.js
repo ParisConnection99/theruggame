@@ -5,8 +5,6 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 import { logInfo, logError } from '@/utils/logger';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { PhantomWalletSDK } from '@phantom/wallet-sdk';
-
 // Constants - Replace with your values in production
 // Use a more reliable devnet RPC with proper WebSocket support
 // Using clusterApiUrl for more reliable connections
@@ -15,12 +13,6 @@ const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
 //const SITE_WALLET_ADDRESS = process.env.SITE_WALLET_ADDRESS;
-
-// Initialize SDK
-const sdk = new PhantomWalletSDK({
-  appUrl: 'https://www.theruggame.fun', // Replace with your app's URL
-  cluster: 'devnet' // or 'devnet' for testing
-});
 
 /**
  * Checks if a user has sufficient SOL balance for a transaction
@@ -390,7 +382,6 @@ export async function createMobileTransactionDeepLink(
   }
 }
 
-
 // New function for mobile transactions
 // export async function createMobileTransactionDeepLink(
 //   amount,
@@ -558,44 +549,3 @@ export async function handleTransactionCallback(encryptedData, nonceString) {
     throw new Error(`Failed to process transaction callback: ${error.message}`);
   }
 }
-
-// Test connection
-export const testPhantomSDKConnect = async () => {
-  try {
-    const connection = await sdk.connect();
-    console.log('Connected account:', connection.account);
-    return connection;
-  } catch (error) {
-    console.error('Connection error:', error);
-    throw error;
-  }
-};
-
-// Test transaction
-export const testPhantomSDKTransaction = async (amount) => {
-  try {
-    const transaction = await sdk.createTransaction({
-      to: 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU', // Replace with actual recipient address
-      value: amount * 1e9, // Convert SOL to lamports
-    });
-    const signature = await sdk.sendTransaction(transaction);
-    console.log('Transaction signature:', signature);
-    return signature;
-  } catch (error) {
-    console.error('Transaction error:', error);
-    throw error;
-  }
-};
-
-// Test sign message
-export const testPhantomSDKSignMessage = async () => {
-  try {
-    const message = 'Test message signing with Phantom SDK';
-    const signedMessage = await sdk.signMessage(message);
-    console.log('Signed message:', signedMessage);
-    return signedMessage;
-  } catch (error) {
-    console.error('Sign message error:', error);
-    throw error;
-  }
-};
