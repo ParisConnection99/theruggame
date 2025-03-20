@@ -206,7 +206,7 @@ export default function Header() {
             const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
             
             // Use window.open instead of location.href
-            window.open(disconnectDeepLink, '_blank');
+            window.location.href = disconnectDeepLink;
 
         } catch (error) {
             logError(error, {
