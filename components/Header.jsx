@@ -126,7 +126,7 @@ export default function Header() {
                 if (isMobileDevice) {
                     logInfo('Disconnecting from mobile', {
                         component: 'Header',
-                        isMobile: isMobile
+                        isMobile: isMobileDevice,
                     });
                     await handleMobileDisconnect();
                 } else {
