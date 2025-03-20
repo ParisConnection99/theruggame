@@ -15,13 +15,15 @@ export default function WalletCallbackPage() {
       const queryParams = new URLSearchParams(window.location.search);
       const isDisconnect = queryParams.get('disconnect');
 
-
       if (isDisconnect === 'true') {
         logInfo('Disconnecting wallet', {
           component: 'WalletCallbackPage',
-          action: 'disconnecting wallet'
+          action: 'disconnecting wallet',
+          queryParams: Object.fromEntries(queryParams)  // Log all query params
         });
-        // Clear all wallet-related data
+
+        // For disconnect, we don't need to verify any data
+        // Just clear the storage and dispatch the event
         localStorage.removeItem('phantomPublicKey');
         localStorage.removeItem('phantomSession');
         localStorage.removeItem('wallet_connect_pending');
@@ -40,12 +42,12 @@ export default function WalletCallbackPage() {
         action: 'connecting wallet'
       });
 
-
       const phantomEncryptionPublicKey = queryParams.get('phantom_encryption_public_key');
       const nonce = queryParams.get('nonce');
       const encryptedData = queryParams.get('data');
 
-      if (!phantomEncryptionPublicKey || !nonce || !encryptedData) {
+      // Only check for required parameters if we're not disconnecting
+      if (!isDisconnect && (!phantomEncryptionPublicKey || !nonce || !encryptedData)) {
         throw new Error('Missing required connection parameters');
       }
 
