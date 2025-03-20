@@ -201,7 +201,7 @@ export default function Header() {
             const params = new URLSearchParams({
                 dapp_encryption_public_key: dappEncryptionPublicKey,
                 nonce: nonceBase58,
-                redirect_link: 'https://theruggame.fun/wallet-callback',
+                redirect_link: 'https://theruggame.fun/disconnect-callback',
                 payload: bs58.encode(encryptedData)
             });
 

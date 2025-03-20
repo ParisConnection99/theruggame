@@ -9,89 +9,22 @@ import bs58 from 'bs58';
 export default function WalletCallbackPage() {
   const router = useRouter();
 
-  const handleDisconnect = () => {
-    try {
-      logInfo('Starting disconnect process', {
-        component: 'WalletCallbackPage',
-        action: 'disconnecting wallet'
-      });
-
-      // Check if we have any stored data to clear
-      const sessionData = localStorage.getItem('phantomSession');
-      const publicKey = localStorage.getItem('phantomPublicKey');
-
-      logInfo('Current stored data for disconnect', {
-        component: 'WalletCallbackPage',
-        hasSession: !!sessionData,
-        hasPublicKey: !!publicKey
-      });
-
-      // Clear all wallet-related storage
-      localStorage.removeItem('phantomPublicKey');
-      localStorage.removeItem('phantomSession');
-      localStorage.removeItem('wallet_connect_pending');
-      localStorage.removeItem('wallet_connect_timestamp');
-
-      // Dispatch disconnect event
-      window.dispatchEvent(new Event('wallet-disconnect-event'));
-
-      logInfo('Disconnect process completed', {
-        component: 'WalletCallbackPage',
-        action: 'disconnect complete'
-      });
-
-      // Delay redirect to ensure event is processed
-      setTimeout(() => {
-        router.push('/');
-      }, 500);
-    } catch (error) {
-      logError(error, {
-        component: 'WalletCallbackPage',
-        action: 'disconnect process'
-      });
-      
-      // Even if there's an error, try to clear storage and redirect
-      try {
-        localStorage.removeItem('phantomPublicKey');
-        localStorage.removeItem('phantomSession');
-        localStorage.removeItem('wallet_connect_pending');
-        localStorage.removeItem('wallet_connect_timestamp');
-      } catch (storageError) {
-        logError(storageError, {
-          component: 'WalletCallbackPage',
-          action: 'clearing storage during error'
-        });
-      }
-
-      // Redirect with error
-      setTimeout(() => {
-        router.push('/?error=disconnect_failed');
-      }, 500);
-    }
-  };
-
   useEffect(() => {
     try {
-      // Parse query parameters from the URL
-      const queryParams = new URLSearchParams(window.location.search);
-      const isDisconnect = queryParams.get('disconnect');
-
-      if (isDisconnect === 'true') {
-        handleDisconnect();
-        return;
-      }
-
       logInfo('Connecting wallet', {
         component: 'WalletCallbackPage',
         action: 'connecting wallet'
       });
 
+      const queryParams = new URLSearchParams(window.location.search);
       const phantomEncryptionPublicKey = queryParams.get('phantom_encryption_public_key');
       const nonce = queryParams.get('nonce');
       const encryptedData = queryParams.get('data');
 
-      // Only check for required parameters if we're not disconnecting
-      
+      if (!phantomEncryptionPublicKey || !nonce || !encryptedData) {
+        throw new Error('Missing required connection parameters');
+      }
+
       logInfo('Connection details stored', {
         component: 'WalletCallbackPage',
         phantomEncryptionPublicKey: phantomEncryptionPublicKey,
@@ -153,9 +86,8 @@ export default function WalletCallbackPage() {
         throw new Error('Missing required data in decrypted payload');
       }
     } catch (error) {
-      // Catch any errors that might occur
       logError(error, {
-        component: 'WalletCallBackPage',
+        component: 'WalletCallbackPage',
         action: 'processing wallet callback'
       });
       console.error('Error processing wallet callback:', error.message);
