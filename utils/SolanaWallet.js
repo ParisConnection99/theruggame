@@ -348,7 +348,8 @@ export async function createMobileTransactionDeepLink(
       options: {
         commitment: 'confirmed', 
         skipPreflight: false,
-        maxRetries: 3
+        maxRetries: 3,
+        preflightCommitment: 'confirmed'
       }
     };
 
@@ -392,8 +393,7 @@ export async function createMobileTransactionDeepLink(
       params: params.toString()
     });
     
-   //const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
-    const deepLink = `https://phantom.app/ul/v1/signTransaction?${params.toString()}`;
+   const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
     
     return deepLink;
   } catch (error) {
