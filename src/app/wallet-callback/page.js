@@ -5,9 +5,11 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { phantomConnect } from '@/utils/PhantomConnect';
 import { logError, logInfo } from '@/utils/logger';
+import { useRouter } from 'next/navigation';
 
 function WalletCallbackContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     
     useEffect(() => {
         const handleWalletConnection = async () => {
@@ -33,26 +35,33 @@ function WalletCallbackContent() {
                     publicKey: response.public_key
                 });
 
+                // Dispatch event to notify header
+                window.dispatchEvent(new CustomEvent('wallet-callback-event', {
+                    detail: response
+                }));
+
+                await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
+
+
                 // Redirect to home page after successful connection
-                window.location.href = '/';
+                router.push('/');
             } catch (error) {
                 logError(error, {
                     component: 'WalletCallback',
                     action: 'wallet connection'
                 });
                 // Redirect to home page with error
-                window.location.href = '/?error=connection_failed';
+                router.push('/?error=connection_failed');
             }
         };
 
         handleWalletConnection();
-    }, [searchParams]);
+    }, [searchParams, router]);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-900">
             <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-4">Connecting to Wallet...</h1>
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
             </div>
         </div>
     );
@@ -64,7 +73,6 @@ export default function WalletCallbackPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-900">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-white mb-4">Loading...</h1>
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
                 </div>
             </div>
         }>
