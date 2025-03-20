@@ -99,18 +99,27 @@ export default function Header() {
     // Listen for wallet disconnect event
     useEffect(() => {
         const handleWalletDisconnect = async () => {
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+        
             logInfo('Disconnect triggered', {
                 component: 'Header',
-                isMobileDevice: isMobile,
+                isMobileDevice: isMobileDevice,
                 userAgent: navigator.userAgent
             });
 
-            if (isMobile) {
+            if (isMobileDevice) {
+                logInfo('Disconnecting from mobile', {
+                    component: 'Header',
+                    isMobile: isMobile
+                });
                 await handleMobileDisconnect();
             } else {
                 try {
                     if (connected) {
                         await disconnect();
+
                         logInfo('Wallet disconnected', {
                             component: 'Header',
                             walletState: {
@@ -120,10 +129,10 @@ export default function Header() {
                         });
                     }
                 } catch (error) {
-                    logError(error, {
-                        component: 'Header',
-                        action: 'mobile disconnect'
-                    });
+                   logError(error, {
+                    component: 'Header',
+                    action: 'web disconnect'
+                   });
                 }
             }
         };
@@ -135,7 +144,7 @@ export default function Header() {
         return () => {
             window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
         };
-    }, [connected, disconnect]);
+    }, [connected, disconnect, isMobile]);
 
     const handleMobileDisconnect = async () => {
         try {
