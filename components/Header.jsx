@@ -145,29 +145,35 @@ export default function Header() {
     const handleMobileDisconnect = async () => {
         try {
             // Get stored session and dapp public key
-            const session = localStorage.getItem('phantomSession');
+            const sessionData = localStorage.getItem('phantomSession');
             const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
 
-            if (!session || !dappEncryptionPublicKey) {
-                throw new Error('Missing session or encryption key');
+            if (!sessionData || !dappEncryptionPublicKey) {
+                throw new Error('Missing session data or encryption key');
             }
 
-            // Create and encrypt the payload
+            // Parse the JSON string to get the session object
+            const sessionObj = JSON.parse(sessionData);
+            
+            // Create and encrypt the payload with the correct session value
             const payload = {
-                session: session
+                session: sessionObj.session // Access the nested session property
             };
 
-            // Generate new nonce
+            logInfo('Disconnect payload created', {
+                component: 'Header',
+                sessionData: sessionObj
+            });
+
+            // Rest of the function remains the same...
             const nonce = nacl.randomBytes(24);
             const nonceBase58 = bs58.encode(nonce);
 
-            // Get stored private key for encryption
             const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
             if (!storedPrivateKey) {
                 throw new Error('Encryption private key not found');
             }
 
-            // Encrypt the payload
             const dappPrivateKey = bs58.decode(storedPrivateKey);
             const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
             const encryptedData = nacl.box.after(
@@ -179,7 +185,6 @@ export default function Header() {
                 )
             );
 
-            // Create the deep link URL
             const params = new URLSearchParams({
                 dapp_encryption_public_key: dappEncryptionPublicKey,
                 nonce: nonceBase58,
