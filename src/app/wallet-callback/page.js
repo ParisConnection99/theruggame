@@ -37,44 +37,55 @@ export default function WalletCallbackPage() {
       const decryptedData = decryptPhantomData(phantomEncryptionPublicKey, nonce, encryptedData);
 
       // Parse the decrypted JSON data
-      const { public_key, session } = JSON.parse(decryptedData);
+      if (decryptedData) {
+        const { public_key, session } = JSON.parse(decryptedData);
 
-      if (public_key && session) {
-        // Save public key
-        localStorage.setItem('phantomPublicKey', public_key);
-        
-        // Save session directly as a string
-        localStorage.setItem('phantomSession', session);
+        if (public_key && session) {
+          // Save public key
+          localStorage.setItem('phantomPublicKey', public_key);
+          
+          // Save session directly as string
+          localStorage.setItem('phantomSession', session);
 
-        logInfo('Connection details stored', {
-          component: 'WalletCallbackPage',
-          publicKey: public_key,
-          hasSession: !!session
-        });
-
-        // Dispatch custom event with wallet data before redirecting
-        const walletEvent = new CustomEvent('wallet-callback-event', {
-          detail: {
+          logInfo('Connection details stored', {
+            component: 'WalletCallbackPage',
             publicKey: public_key,
-            session
-          }
-        });
+            hasSession: !!session,
+            sessionLength: session.length
+          });
 
-        console.log('Dispatching wallet-callback-event with public key:', public_key);
+          // Dispatch custom event with wallet data before redirecting
+          const walletEvent = new CustomEvent('wallet-callback-event', {
+            detail: {
+              publicKey: public_key,
+              session
+            }
+          });
 
-        logInfo('Dispatching wallet callback-event', {
-          component: 'WalletCallBackPage',
-          publicKey: public_key
-        });
+          console.log('Dispatching wallet-callback-event with public key:', public_key);
 
-        window.dispatchEvent(walletEvent);
+          logInfo('Dispatching wallet callback-event', {
+            component: 'WalletCallBackPage',
+            publicKey: public_key
+          });
 
-        // Short delay to ensure event is processed before redirecting
-        setTimeout(() => {
-          router.push('/');
-        }, 500);
-      } else {
-        throw new Error('Missing required data in decrypted payload');
+          window.dispatchEvent(walletEvent);
+
+          // Add a verification log
+          const savedSession = localStorage.getItem('phantomSession');
+          logInfo('Verifying saved session', {
+            component: 'WalletCallbackPage',
+            sessionSaved: !!savedSession,
+            sessionLength: savedSession?.length
+          });
+
+          // Short delay to ensure event is processed before redirecting
+          setTimeout(() => {
+            router.push('/');
+          }, 500);
+        } else {
+          throw new Error('Missing required data in decrypted payload');
+        }
       }
     } catch (error) {
       logError(error, {
