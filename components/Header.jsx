@@ -26,10 +26,6 @@ export default function Header() {
     const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
     const keypairRef = useRef(null);
 
-    console.log('Header re-rendered. isEffectivelyConnected:', isEffectivelyConnected);
-    logInfo(`Header re-rendered. isEffectivelyConnected:, ${isEffectivelyConnected}`, {});
-    logInfo(`Connection state: ${connected}`);
-
     // Detect if user is on mobile device
     useEffect(() => {
         const checkMobile = () => {
@@ -714,7 +710,6 @@ export default function Header() {
     };
 
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
-        logInfo(`Checking connected value in the layout: ${isEffectivelyConnected}`);
         return (
             <div>
                 {!isEffectivelyConnected ? (
