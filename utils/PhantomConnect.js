@@ -95,12 +95,20 @@ class PhantomConnect {
         });
 
         const url = buildUrl("connect", params);
-        window.open(url, '_blank');
+        try {
+            window.location.href = url;
+        } catch (error) {
+            logError(error, {
+                component: 'PhantomConnect',
+                action: 'connect navigation'
+            });
+            throw error;
+        }
     }
 
     disconnect() {
-        const session = localStorage.getItem('phantomSession');
-        const sharedSecret = localStorage.getItem('phantomSharedSecret');
+        const session = window.localStorage.getItem('phantomSession');
+        const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
 
         if (!session || !sharedSecret) {
             throw new Error("Missing session or shared secret");
@@ -120,7 +128,15 @@ class PhantomConnect {
         });
 
         const url = buildUrl("disconnect", params);
-        window.open(url, '_blank');
+        try {
+            window.location.href = url;
+        } catch (error) {
+            logError(error, {
+                component: 'PhantomConnect',
+                action: 'disconnect navigation'
+            });
+            throw error;
+        }
     }
 
     handleConnectResponse(data, nonce, phantomEncryptionPublicKey) {
@@ -132,9 +148,9 @@ class PhantomConnect {
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
         
         // Store for later use
-        localStorage.setItem('phantomSharedSecret', bs58.encode(sharedSecret));
-        localStorage.setItem('phantomPublicKey', decryptedData.public_key);
-        localStorage.setItem('phantomSession', decryptedData.session);
+        window.localStorage.setItem('phantomSharedSecret', bs58.encode(sharedSecret));
+        window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
+        window.localStorage.setItem('phantomSession', decryptedData.session);
 
         return decryptedData;
     }
