@@ -97,97 +97,41 @@ export default function Header() {
         }
     }, [connected, publicKey, auth]);
 
-    // Listen for wallet disconnect event
-    useEffect(() => {
-        let isDisconnecting = false; // Flag to prevent multiple calls
-
-        const handleWalletDisconnect = async () => {
-            // If already disconnecting, ignore subsequent calls
-            if (isDisconnecting) {
-                logInfo('Disconnect already in progress, ignoring call', {
-                    component: 'Header'
-                });
-                return;
-            }
-
-            isDisconnecting = true; // Set flag
-
-            try {
-                const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                    navigator.userAgent
-                );
-            
-                logInfo('Disconnect triggered', {
+    const handleDesktopDisconnect = async () => {
+        try {
+            if (connected) {
+                await disconnect();
+                // Clear any stored session data
+                window.localStorage.removeItem('phantomSession');
+                window.localStorage.removeItem('phantomSharedSecret');
+                window.localStorage.removeItem('phantomPublicKey');
+                logInfo('Desktop wallet disconnected', {
                     component: 'Header',
-                    isMobileDevice: isMobileDevice,
-                    userAgent: navigator.userAgent,
-                    hasSession: !!localStorage.getItem('phantomSession')
-                });
-
-                if (isMobileDevice) {
-                    logInfo('Disconnecting from mobile', {
-                        component: 'Header',
-                        isMobile: isMobileDevice,
-                    });
-                    await handleMobileDisconnect();
-                } else {
-                    if (connected) {
-                        await disconnect();
-                        logInfo('Wallet disconnected', {
-                            component: 'Header',
-                            walletState: {
-                                connected: connected,
-                                publicKey: publicKey?.toString()
-                            }
-                        });
+                    walletState: {
+                        connected: connected,
+                        publicKey: publicKey?.toString()
                     }
-                }
-
-                // Remove the event listener after successful disconnect
-                window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
-
-            } catch (error) {
-                logError(error, {
-                    component: 'Header',
-                    action: 'wallet disconnect'
                 });
-            } finally {
-                isDisconnecting = false; // Reset flag regardless of success or failure
             }
-        };
-
-        // Add event listener
-        window.addEventListener('wallet-disconnect-event', handleWalletDisconnect);
-
-        // Cleanup
-        return () => {
-            window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
-        };
-    }, [connected, disconnect]);
-
-    const encryptPayload = (payload, sharedSecret) => {
-        if (!sharedSecret) throw new Error("missing shared secret");
-
-        const nonce = nacl.randomBytes(24);
-        const encryptedPayload = nacl.box.after(
-            Buffer.from(JSON.stringify(payload)),
-            nonce,
-            sharedSecret
-        );
-
-        return [nonce, encryptedPayload];
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'desktop wallet disconnect'
+            });
+            throw error; // Re-throw to be caught by the parent handler
+        }
     };
 
     const handleMobileDisconnect = async () => {
         try {
-            const session = localStorage.getItem('phantomSession');
-            const sharedSecret = localStorage.getItem('phantomSharedSecret');
+            const session = window.localStorage.getItem('phantomSession');
+            const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
             
             if (!session || !sharedSecret) {
                 throw new Error('Missing session or shared secret');
             }
 
-            logInfo('Starting disconnect process', {
+            logInfo('Starting mobile disconnect process', {
                 component: 'Header',
                 hasSession: !!session,
                 hasSharedSecret: !!sharedSecret
@@ -197,15 +141,13 @@ export default function Header() {
                 session: session
             };
 
-            // Use the encryptPayload function
             const [nonce, encryptedPayload] = encryptPayload(
                 payload, 
-                bs58.decode(sharedSecret) // Convert shared secret back to Uint8Array
+                bs58.decode(sharedSecret)
             );
 
-            // Create the deep link URL
             const params = new URLSearchParams({
-                dapp_encryption_public_key: localStorage.getItem('dappEncryptionPublicKey'),
+                dapp_encryption_public_key: window.localStorage.getItem('dappEncryptionPublicKey'),
                 nonce: bs58.encode(nonce),
                 redirect_link: 'https://theruggame.fun/disconnect-callback',
                 payload: bs58.encode(encryptedPayload)
@@ -219,7 +161,69 @@ export default function Header() {
                 component: 'Header',
                 action: 'mobile disconnect'
             });
+            throw error; // Re-throw to be caught by the parent handler
         }
+    };
+
+    // Listen for wallet disconnect event
+    useEffect(() => {
+        let isDisconnecting = false;
+
+        const handleWalletDisconnect = async () => {
+            if (isDisconnecting) {
+                logInfo('Disconnect already in progress, ignoring call', {
+                    component: 'Header'
+                });
+                return;
+            }
+
+            isDisconnecting = true;
+
+            try {
+                const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                );
+            
+                logInfo('Disconnect triggered', {
+                    component: 'Header',
+                    isMobileDevice: isMobileDevice,
+                    userAgent: navigator.userAgent,
+                    hasSession: !!window.localStorage.getItem('phantomSession')
+                });
+
+                if (isMobileDevice) {
+                    await handleMobileDisconnect();
+                } else {
+                    await handleDesktopDisconnect();
+                }
+
+                window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
+
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'wallet disconnect'
+                });
+            } finally {
+                isDisconnecting = false;
+            }
+        };
+
+        window.addEventListener('wallet-disconnect-event', handleWalletDisconnect);
+        return () => window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
+    }, [connected, disconnect]);
+
+    const encryptPayload = (payload, sharedSecret) => {
+        if (!sharedSecret) throw new Error("missing shared secret");
+
+        const nonce = nacl.randomBytes(24);
+        const encryptedPayload = nacl.box.after(
+            Buffer.from(JSON.stringify(payload)),
+            nonce,
+            sharedSecret
+        );
+
+        return [nonce, encryptedPayload];
     };
 
     // Monitor connection states
