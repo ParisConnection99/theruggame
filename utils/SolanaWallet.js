@@ -5,7 +5,7 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 import { logInfo, logError } from '@/utils/logger';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { PhantomWalletSDK } from '@phantom-wallet/sdk';
+import { PhantomWalletSDK } from '@phantom/wallet-sdk';
 
 // Constants - Replace with your values in production
 // Use a more reliable devnet RPC with proper WebSocket support
@@ -17,9 +17,9 @@ const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // R
 //const SITE_WALLET_ADDRESS = process.env.SITE_WALLET_ADDRESS;
 
 // Initialize SDK
-const phantomSDK = new PhantomWalletSDK({
-  appUrl: 'https://theruggame.fun',
-  cluster: 'devnet'
+const sdk = new PhantomWalletSDK({
+  appUrl: 'https://www.theruggame.fun', // Replace with your app's URL
+  cluster: 'devnet' // or 'devnet' for testing
 });
 
 /**
@@ -560,84 +560,42 @@ export async function handleTransactionCallback(encryptedData, nonceString) {
 }
 
 // Test connection
-export async function testPhantomSDKConnect() {
+export const testPhantomSDKConnect = async () => {
   try {
-    logInfo('Testing Phantom SDK Connect', {
-      component: 'SolanaWallet'
-    });
-
-    const connection = await phantomSDK.connect();
-    
-    logInfo('Phantom SDK Connection Result', {
-      component: 'SolanaWallet',
-      publicKey: connection.publicKey,
-      connected: !!connection
-    });
-
+    const connection = await sdk.connect();
+    console.log('Connected account:', connection.account);
     return connection;
   } catch (error) {
-    logError(error, {
-      component: 'SolanaWallet',
-      action: 'testPhantomSDKConnect'
-    });
+    console.error('Connection error:', error);
     throw error;
   }
-}
+};
 
 // Test transaction
-export async function testPhantomSDKTransaction(amount = 0.1) {
+export const testPhantomSDKTransaction = async (amount) => {
   try {
-    logInfo('Testing Phantom SDK Transaction', {
-      component: 'SolanaWallet',
-      amount
+    const transaction = await sdk.createTransaction({
+      to: 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU', // Replace with actual recipient address
+      value: amount * 1e9, // Convert SOL to lamports
     });
-
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: new PublicKey(phantomSDK.publicKey),
-        toPubkey: new PublicKey(SITE_WALLET_ADDRESS),
-        lamports: Math.round(amount * LAMPORTS_PER_SOL)
-      })
-    );
-
-    const signature = await phantomSDK.signAndSendTransaction(transaction);
-
-    logInfo('Phantom SDK Transaction Result', {
-      component: 'SolanaWallet',
-      signature
-    });
-
+    const signature = await sdk.sendTransaction(transaction);
+    console.log('Transaction signature:', signature);
     return signature;
   } catch (error) {
-    logError(error, {
-      component: 'SolanaWallet',
-      action: 'testPhantomSDKTransaction'
-    });
+    console.error('Transaction error:', error);
     throw error;
   }
-}
+};
 
 // Test sign message
-export async function testPhantomSDKSignMessage(message = "Hello from The Rug Game!") {
+export const testPhantomSDKSignMessage = async () => {
   try {
-    logInfo('Testing Phantom SDK Sign Message', {
-      component: 'SolanaWallet',
-      message
-    });
-
-    const signedMessage = await phantomSDK.signMessage(message);
-
-    logInfo('Phantom SDK Sign Message Result', {
-      component: 'SolanaWallet',
-      signedMessage
-    });
-
+    const message = 'Test message signing with Phantom SDK';
+    const signedMessage = await sdk.signMessage(message);
+    console.log('Signed message:', signedMessage);
     return signedMessage;
   } catch (error) {
-    logError(error, {
-      component: 'SolanaWallet',
-      action: 'testPhantomSDKSignMessage'
-    });
+    console.error('Sign message error:', error);
     throw error;
   }
-}
+};
