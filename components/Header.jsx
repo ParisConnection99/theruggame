@@ -118,50 +118,22 @@ export default function Header() {
                 component: 'Header',
                 action: 'desktop wallet disconnect'
             });
-            throw error; // Re-throw to be caught by the parent handler
+            throw error;
         }
     };
 
     const handleMobileDisconnect = async () => {
         try {
-            const session = window.localStorage.getItem('phantomSession');
-            const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
-            
-            if (!session || !sharedSecret) {
-                throw new Error('Missing session or shared secret');
+            if (!phantomConnect) {
+                throw new Error('PhantomConnect not initialized');
             }
-
-            logInfo('Starting mobile disconnect process', {
-                component: 'Header',
-                hasSession: !!session,
-                hasSharedSecret: !!sharedSecret
-            });
-
-            const payload = {
-                session: session
-            };
-
-            const [nonce, encryptedPayload] = encryptPayload(
-                payload, 
-                bs58.decode(sharedSecret)
-            );
-
-            const params = new URLSearchParams({
-                dapp_encryption_public_key: window.localStorage.getItem('dappEncryptionPublicKey'),
-                nonce: bs58.encode(nonce),
-                redirect_link: 'https://theruggame.fun/disconnect-callback',
-                payload: bs58.encode(encryptedPayload)
-            });
-
-            const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
-            window.location.href = disconnectDeepLink;
-
+            await phantomConnect.disconnect();
         } catch (error) {
             logError(error, {
                 component: 'Header',
                 action: 'mobile disconnect'
             });
-            throw error; // Re-throw to be caught by the parent handler
+            throw error;
         }
     };
 
@@ -179,17 +151,18 @@ export default function Header() {
 
             isDisconnecting = true;
 
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+
             try {
-                const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                    navigator.userAgent
-                );
-            
                 logInfo('Disconnect triggered', {
                     component: 'Header',
-                    isMobileDevice: isMobileDevice,
-                    userAgent: navigator.userAgent,
+                    isMobile: isMobileDevice,
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
+
+               
 
                 if (isMobileDevice) {
                     await handleMobileDisconnect();
@@ -213,18 +186,6 @@ export default function Header() {
         return () => window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
     }, [connected, disconnect]);
 
-    const encryptPayload = (payload, sharedSecret) => {
-        if (!sharedSecret) throw new Error("missing shared secret");
-
-        const nonce = nacl.randomBytes(24);
-        const encryptedPayload = nacl.box.after(
-            Buffer.from(JSON.stringify(payload)),
-            nonce,
-            sharedSecret
-        );
-
-        return [nonce, encryptedPayload];
-    };
 
     // Monitor connection states
     useEffect(() => {
