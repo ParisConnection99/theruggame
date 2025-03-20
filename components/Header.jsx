@@ -157,36 +157,52 @@ export default function Header() {
 
     const handleMobileDisconnect = async () => {
         try {
-            // Get stored session and dapp public key
-            const sessionData = localStorage.getItem('phantomSession');
+            // Get stored session data and verify it exists
+            const sessionDataString = localStorage.getItem('phantomSession');
             const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
 
-            if (!sessionData || !dappEncryptionPublicKey) {
+            logInfo('Checking disconnect data', {
+                component: 'Header',
+                hasSessionData: !!sessionDataString,
+                hasDappKey: !!dappEncryptionPublicKey
+            });
+
+            if (!sessionDataString || !dappEncryptionPublicKey) {
                 throw new Error('Missing session data or encryption key');
             }
 
-            // Parse the JSON string to get the session object
-            const sessionObj = JSON.parse(sessionData);
+            // Parse the session data
+            const sessionData = JSON.parse(sessionDataString);
             
-            // Create and encrypt the payload with the correct session value
-            const payload = {
-                session: sessionObj.session // Access the nested session property
-            };
-
-            logInfo('Disconnect payload created', {
+            logInfo('Session data for disconnect', {
                 component: 'Header',
-                sessionData: sessionObj
+                sessionData: {
+                    hasSession: !!sessionData.session,
+                    hasPublicKey: !!sessionData.publicKey,
+                    created: sessionData.created
+                }
             });
 
-            // Rest of the function remains the same...
+            if (!sessionData.session) {
+                throw new Error('Invalid session data structure');
+            }
+
+            // Create and encrypt the payload with the session
+            const payload = {
+                session: sessionData.session // Use the nested session value
+            };
+
+            // Generate new nonce
             const nonce = nacl.randomBytes(24);
             const nonceBase58 = bs58.encode(nonce);
 
+            // Get stored private key for encryption
             const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
             if (!storedPrivateKey) {
                 throw new Error('Encryption private key not found');
             }
 
+            // Encrypt the payload
             const dappPrivateKey = bs58.decode(storedPrivateKey);
             const messageUint8 = new TextEncoder().encode(JSON.stringify(payload));
             const encryptedData = nacl.box.after(
@@ -198,6 +214,7 @@ export default function Header() {
                 )
             );
 
+            // Create the deep link URL with disconnect-callback
             const params = new URLSearchParams({
                 dapp_encryption_public_key: dappEncryptionPublicKey,
                 nonce: nonceBase58,
@@ -207,19 +224,29 @@ export default function Header() {
 
             const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
 
-            logInfo('Disconnecting deep link', {
+            logInfo('Created disconnect deep link', {
                 component: 'Header',
-                deepLink: disconnectDeepLink
+                hasPayload: !!payload,
+                hasNonce: !!nonceBase58
             });
+
             // Redirect to Phantom
             window.location.href = disconnectDeepLink;
 
         } catch (error) {
-            console.error('Error creating disconnect deep link:', error);
             logError(error, {
                 component: 'Header',
                 action: 'mobile disconnect'
             });
+            
+            // Clear data anyway in case of error
+            localStorage.removeItem('phantomPublicKey');
+            localStorage.removeItem('phantomSession');
+            localStorage.removeItem('wallet_connect_pending');
+            localStorage.removeItem('wallet_connect_timestamp');
+            
+            // Dispatch disconnect event even if there's an error
+            window.dispatchEvent(new Event('wallet-disconnect-event'));
         }
     };
 
