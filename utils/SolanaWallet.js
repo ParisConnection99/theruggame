@@ -394,6 +394,23 @@ export async function createMobileTransactionDeepLink(
     });
     
    const deepLink = `https://phantom.app/ul/v1/signAndSendTransaction?${params.toString()}`;
+
+   try {
+    // Validate the transaction
+    const txSim = await connection.simulateTransaction(transaction);
+    if (txSim.value.err) {
+      logError('Transaction simulation failed', {
+        component: 'createMobileTransactionDeepLink',
+        error: txSim.value.err
+      });
+      throw new Error(`Transaction simulation failed: ${JSON.stringify(txSim.value.err)}`);
+    }
+  } catch (simError) {
+    logError(simError, {
+      component: 'createMobileTransactionDeepLink',
+      step: 'transaction simulation'
+    });
+  }
     
     return deepLink;
   } catch (error) {
