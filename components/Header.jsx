@@ -164,56 +164,60 @@ export default function Header() {
         };
     }, [connected, disconnect]);
 
+    const encryptPayload = (payload, sharedSecret) => {
+        if (!sharedSecret) throw new Error("missing shared secret");
+
+        const nonce = nacl.randomBytes(24);
+        const encryptedPayload = nacl.box.after(
+            Buffer.from(JSON.stringify(payload)),
+            nonce,
+            sharedSecret
+        );
+
+        return [nonce, encryptedPayload];
+    };
+
     const handleMobileDisconnect = async () => {
         try {
             const session = localStorage.getItem('phantomSession');
-            const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
+            const sharedSecret = localStorage.getItem('phantomSharedSecret');
+            
+            if (!session || !sharedSecret) {
+                throw new Error('Missing session or shared secret');
+            }
 
             logInfo('Starting disconnect process', {
                 component: 'Header',
                 hasSession: !!session,
-                hasDappKey: !!dappEncryptionPublicKey
+                hasSharedSecret: !!sharedSecret
             });
 
-            if (!session || !dappEncryptionPublicKey) {
-                throw new Error('Missing session data or encryption key');
-            }
+            const payload = {
+                session: session
+            };
 
-            // Simplified payload - Phantom expects just the session
-            const payload = session;
-
-            // Create and encrypt the payload
-            const nonce = nacl.randomBytes(24);
-            const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-            
-            const encryptedData = nacl.box.after(
-                new TextEncoder().encode(payload),  // Send session directly, not as an object
-                nonce,
-                nacl.box.before(
-                    bs58.decode(dappEncryptionPublicKey),
-                    bs58.decode(storedPrivateKey)
-                )
+            // Use the encryptPayload function
+            const [nonce, encryptedPayload] = encryptPayload(
+                payload, 
+                bs58.decode(sharedSecret) // Convert shared secret back to Uint8Array
             );
 
             // Create the deep link URL
             const params = new URLSearchParams({
-                dapp_encryption_public_key: dappEncryptionPublicKey,
+                dapp_encryption_public_key: localStorage.getItem('dappEncryptionPublicKey'),
                 nonce: bs58.encode(nonce),
                 redirect_link: 'https://theruggame.fun/disconnect-callback',
-                payload: bs58.encode(encryptedData)
+                payload: bs58.encode(encryptedPayload)
             });
 
             const disconnectDeepLink = `https://phantom.app/ul/v1/disconnect?${params.toString()}`;
-            
-            // Use window.open instead of location.href
-            window.location.href = disconnectDeepLink;
+            window.open(disconnectDeepLink, '_blank');
 
         } catch (error) {
             logError(error, {
                 component: 'Header',
                 action: 'mobile disconnect'
             });
-            window.dispatchEvent(new Event('wallet-disconnect-event'));
         }
     };
 
