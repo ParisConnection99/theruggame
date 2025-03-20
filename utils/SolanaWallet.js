@@ -265,16 +265,6 @@ export async function createMobileTransactionDeepLink(
     // Use the actual session value from the object
     const session = sessionData.session;
 
-    logInfo('Fetched Session Length', {
-      component: 'createMobileTransactionDeepLink',
-      sessionLength: session.length
-    });
-
-    logInfo('Fetched Session First 10 Characters', {
-      component: 'createMobileTransactionDeepLink',
-      sessionFirst10Chars: session.substring(0, 10)
-    });
-    
     // Rest of your existing code...
     const phantomPublicKey = localStorage.getItem('phantomPublicKey');
     const dappEncryptionPublicKey = localStorage.getItem('dappEncryptionPublicKey');
