@@ -1,36 +1,48 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { logInfo, logError } from '@/utils/logger';
 
 export default function DisconnectCallbackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const handleDisconnect = async () => {
       try {
-        // Log current state before cleanup
-        logInfo('Starting disconnect cleanup', {
+        // Get encrypted data and nonce from URL params
+        const errorCode = searchParams.get('errorCode');
+        const encryptedData = searchParams.get('data');
+        const nonce = searchParams.get('nonce');
+
+        logInfo('Disconnect callback received', {
           component: 'DisconnectCallbackPage',
-          hasSession: !!localStorage.getItem('phantomSession'),
-          hasPublicKey: !!localStorage.getItem('phantomPublicKey')
+          hasError: !!errorCode,
+          hasEncryptedData: !!encryptedData,
+          hasNonce: !!nonce
         });
 
-        // Clean up all wallet-related data
+        // Check if there was an error or missing data
+        if (errorCode || !encryptedData || !nonce) {
+          throw new Error(errorCode || 'Invalid disconnect response');
+        }
+
+        // Decrypt and verify the response
+        // ... (we can add decryption logic if Phantom sends encrypted response)
+
+        // If we get here, disconnect was successful
         localStorage.removeItem('phantomPublicKey');
         localStorage.removeItem('phantomSession');
         localStorage.removeItem('wallet_connect_pending');
         localStorage.removeItem('wallet_connect_timestamp');
 
-        // Dispatch disconnect event
         window.dispatchEvent(new Event('wallet-disconnect-event'));
 
-        logInfo('Disconnect cleanup completed', {
+        logInfo('Disconnect successful', {
           component: 'DisconnectCallbackPage'
         });
 
-        // Delay redirect slightly to ensure cleanup is complete
         setTimeout(() => {
           router.push('/');
         }, 500);
@@ -38,20 +50,20 @@ export default function DisconnectCallbackPage() {
       } catch (error) {
         logError(error, {
           component: 'DisconnectCallbackPage',
-          action: 'disconnect cleanup'
+          action: 'disconnect verification'
         });
         
-        // Still try to redirect even if there's an error
+        // Don't clear data if disconnect wasn't authenticated
         router.push('/?error=disconnect_failed');
       }
     };
 
     handleDisconnect();
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <p className="text-white">Disconnecting wallet...</p>
+      <p className="text-white">Processing disconnect...</p>
     </div>
   );
 }
