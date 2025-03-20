@@ -30,6 +30,10 @@ function WalletCallbackContent() {
                     phantomEncryptionPublicKey
                 );
 
+                logInfo('Connect Response', {
+                    response: response.data
+                });
+
                 logInfo('Wallet connected successfully', {
                     component: 'WalletCallback',
                     publicKey: response.public_key
