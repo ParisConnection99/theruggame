@@ -33,16 +33,32 @@ const encryptPayload = (payload, sharedSecret) => {
 };
 
 const getUint8ArrayFromStorage = (key) => {
-    // Fetch the stored string from localStorage
+    // Fetch the stored secret from localStorage
     const storedSecretString = localStorage.getItem(key);
 
     // If there's no stored secret, return an empty Uint8Array
     if (!storedSecretString) {
+        console.error('No data found for the provided key.');
         return new Uint8Array();
     }
 
-    // Convert the string to a Uint8Array
-    return new Uint8Array(storedSecretString.split(',').map(Number));
+    try {
+        // Parse the stored secret string (which is in JSON format)
+        const storedSecretObj = JSON.parse(storedSecretString);
+
+        // Convert the object to an array of numbers and then to a Uint8Array
+        const uint8Array = new Uint8Array(Object.values(storedSecretObj));
+
+        // Check if the conversion was successful and values are within the valid range (0-255)
+        if (uint8Array.some(value => value < 0 || value > 255)) {
+            throw new Error('Invalid values in the stored array (should be between 0 and 255).');
+        }
+
+        return uint8Array;
+    } catch (error) {
+        console.error('Error converting stored data to Uint8Array:', error.message);
+        return new Uint8Array();
+    }
 }
 
 const buildUrl = (path, params) =>
@@ -132,7 +148,15 @@ class PhantomConnect {
             session
         };
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, getUint8ArrayFromStorage(sharedSecret));
+        const convertedSharedSecret = getUint8ArrayFromStorage(sharedSecret);
+
+        logInfo('Converted shared secret', {
+            component: 'Phantom connect',
+            type: `${typeof convertedSharedSecret}`,
+            secret: convertedSharedSecret
+        });
+
+        const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
 
         logInfo('DappPublicKey', {
             component: 'Phantom Connect',
