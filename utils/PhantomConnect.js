@@ -138,7 +138,7 @@ class PhantomConnect {
 
         logInfo('Converted shared secret', {
             component: 'Phantom connect',
-            type: `${typeof convertedSharedSecret}`,
+            type: `${convertedSharedSecret instanceof Uint8Array}`,
             secret: convertedSharedSecret
         });
 
