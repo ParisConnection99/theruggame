@@ -110,6 +110,11 @@ class PhantomConnect {
             redirect_link: "https://theruggame.fun/wallet-callback",
         });
 
+        logInfo('Connect public key', {
+            component: 'Phantom Connect',
+            publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
+        });
+
         const url = buildUrl("connect", params);
         try {
             window.location.href = url;
@@ -138,9 +143,9 @@ class PhantomConnect {
 
         const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
 
-        logInfo('DappPublicKey', {
+        logInfo('DisConnect public key', {
             component: 'Phantom Connect',
-            publicKey: this.dappKeyPair.publicKey
+            publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
         });
 
         const params = new URLSearchParams({
@@ -173,11 +178,6 @@ class PhantomConnect {
         // Convert the Uint8Array to a plain object so it can be stored in localStorage
         const sharedSecretObject = Array.from(sharedSecret);
 
-        logInfo('Session type', {
-            component: 'Phantom Session',
-            type: `${typeof decryptedData.session}`
-        });
-   
         // Store for later use
         window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));
         window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
