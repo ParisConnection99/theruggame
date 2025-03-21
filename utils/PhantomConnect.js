@@ -121,6 +121,11 @@ class PhantomConnect {
 
         const [nonce, encryptedPayload] = encryptPayload(payload, bs58.decode(sharedSecret));
 
+        logInfo('DappPublicKey', {
+            component: 'Phantom Connect',
+            publicKey: this.dappKeyPair.publicKey
+        });
+
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             nonce: bs58.encode(nonce),
