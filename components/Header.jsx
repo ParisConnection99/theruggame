@@ -202,21 +202,27 @@ export default function Header() {
             localStorage.setItem('wallet_connect_pending', 'true');
             localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
 
-            const params = new URLSearchParams({
-                dapp_encryption_public_key: localStorage.getItem('dappEncryptionPublicKey'),
-                cluster: "mainnet-beta",
-                app_url: 'https://theruggame.fun',
-                redirect_link: 'https://theruggame.fun/wallet-callback'
+            // const params = new URLSearchParams({
+            //     dapp_encryption_public_key: localStorage.getItem('dappEncryptionPublicKey'),
+            //     cluster: "mainnet-beta",
+            //     app_url: 'https://theruggame.fun',
+            //     redirect_link: 'https://theruggame.fun/wallet-callback'
+            // });
+
+            // const url = buildUrl("connect", params);
+
+            // logInfo('Connect deeplink created', {
+            //     component: 'Header',
+            //     url: url
+            // });
+
+            // window.location.href = url;
+
+            logInfo('Connecting to phantom connect', {
+                component: 'Header'
             });
 
-            const url = buildUrl("connect", params);
-
-            logInfo('Connect deeplink created', {
-                component: 'Header',
-                url: url
-            });
-
-            window.location.href = url;
+            await phantomConnect.connect();
 
         } catch (error) {
             logError(error, {
