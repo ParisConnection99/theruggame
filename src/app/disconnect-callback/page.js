@@ -44,7 +44,7 @@ function DisconnectHandler() {
                 localStorage.removeItem('wallet_connect_pending');
                 localStorage.removeItem('wallet_connect_timestamp');
 
-                window.dispatchEvent(new Event('wallet-disconnect-event'));
+               // window.dispatchEvent(new Event('wallet-disconnect-event'));
 
                 logInfo('Disconnect successful', {
                     component: 'DisconnectCallbackPage'

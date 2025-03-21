@@ -184,6 +184,8 @@ export default function ProfilePage() {
                 action: 'sign out'
             });
 
+            await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
+
             router.push('/');
         } catch (error) {
             console.error('Error signing out:', error);

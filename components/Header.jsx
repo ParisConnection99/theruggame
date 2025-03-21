@@ -39,56 +39,6 @@ export default function Header() {
         checkMobile();
     }, []);
 
-    // Create a keypair for the dapp
-    // useEffect(() => {
-    //     // Check if we already have a keypair stored
-    //     const storedPrivateKey = localStorage.getItem('dappEncryptionPrivateKey');
-    //     const storedPublicKey = localStorage.getItem('dappEncryptionPublicKey');
-
-    //     if (storedPrivateKey && storedPublicKey) {
-    //         try {
-    //             // Use existing keypair
-    //             const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-    //             keypairRef.current = existingKeypair;
-    //             setDappEncryptionPublicKey(storedPublicKey);
-                
-    //             logInfo('Using existing keypair', {
-    //                 component: 'Header',
-    //                 publicKey: storedPublicKey
-    //             });
-    //         } catch (error) {
-    //             logError(error, {
-    //                 component: 'Header',
-    //                 action: 'loading existing keypair'
-    //             });
-    //             // If there's an error with stored keys, remove them and generate new ones
-    //             localStorage.removeItem('dappEncryptionPrivateKey');
-    //             localStorage.removeItem('dappEncryptionPublicKey');
-    //             generateNewKeypair();
-    //         }
-    //     } else {
-    //         // No existing keypair, generate new one
-    //         generateNewKeypair();
-    //     }
-
-    //     function generateNewKeypair() {
-    //         const keypair = nacl.box.keyPair();
-    //         keypairRef.current = keypair;
-
-    //         const publicKeyBase58 = bs58.encode(keypair.publicKey);
-    //         const privateKeyBase58 = bs58.encode(keypair.secretKey);
-
-    //         setDappEncryptionPublicKey(publicKeyBase58);
-    //         localStorage.setItem('dappEncryptionPublicKey', publicKeyBase58);
-    //         localStorage.setItem('dappEncryptionPrivateKey', privateKeyBase58);
-
-    //         logInfo('Generated new keypair', {
-    //             component: 'Header',
-    //             publicKey: publicKeyBase58
-    //         });
-    //     }
-    // }, []); // Empty dependency array means this runs once on mount
-
     // Handle wallet connection when connected
     useEffect(() => {
         if (connected && publicKey && auth) {
@@ -128,7 +78,10 @@ export default function Header() {
             if (!phantomConnect) {
                 throw new Error('PhantomConnect not initialized');
             }
+
             await phantomConnect.disconnect();
+
+            setIsEffectivelyConnected(false);
             
         } catch (error) {
             logError(error, {
@@ -164,8 +117,7 @@ export default function Header() {
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
 
-               
-
+            
                 if (isMobileDevice) {
                     await handleMobileDisconnect();
                 } else {
@@ -303,7 +255,7 @@ export default function Header() {
             } catch (error) {
                 console.error('Error during wallet callback:', error);
                 setConnectionStatus('error');
-                showConnectionError(error.message || 'Connection failed, please try again');
+                showConnectionError('Connection failed, please try again');
                 logError(error, {
                     component: 'Header',
                     action: 'Error during wallet callback'
