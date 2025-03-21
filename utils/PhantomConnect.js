@@ -169,6 +169,12 @@ class PhantomConnect {
             publicKey: decryptedData.public_key
         });
 
+        logInfo('Stored shared secret', {
+            component: 'Phantom connect',
+            type: `${typeof window.localStorage.getItem('phantomSharedSecret')}`,
+            storedSecret: `${window.localStorage.getItem('phantomSharedSecret')}`
+        });
+
         return { session: decryptedData.session, publicKey: decryptedData.public_key };
     }
 }
