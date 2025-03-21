@@ -153,6 +153,11 @@ class PhantomConnect {
         window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
         window.localStorage.setItem('phantomSession', decryptedData.session);
 
+        logInfo('Decrypted Data', {
+            session: decryptedData.session,
+            publicKey: decryptedData.public_key
+        });
+
         return decryptedData;
     }
 }
