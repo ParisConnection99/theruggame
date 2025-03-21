@@ -116,6 +116,12 @@ class PhantomConnect {
         });
 
         const url = buildUrl("connect", params);
+
+        logInfo('connect deeplink',{
+            component: 'Phantom connect',
+            link: url
+        });
+        
         try {
             window.location.href = url;
         } catch (error) {
@@ -168,7 +174,7 @@ class PhantomConnect {
             component: 'Phantom connect',
             link: url
         });
-        
+
         try {
             window.location.href = url;
         } catch (error) {
