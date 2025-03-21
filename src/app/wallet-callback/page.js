@@ -63,7 +63,7 @@ function WalletCallbackContent() {
     }, [searchParams, router]);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
                 <h1 className="text-2xl font-bold text-white mb-4">Connecting to Wallet...</h1>
             </div>
@@ -74,7 +74,7 @@ function WalletCallbackContent() {
 export default function WalletCallbackPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center bg-gray-900">
+            <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-white mb-4">Loading...</h1>
                 </div>
