@@ -290,8 +290,8 @@ export default function Header() {
                 // Process the connection with the received data
                 if (event.detail && event.detail.publicKey) {
                     await handleWalletCallbackConnection({
-                        publicKey: event.detail.publicKey,
-                        session: event.detail.session
+                        publicKey: event.publicKey,
+                        session: event.session
                     });
 
                     setConnectionStatus('success');

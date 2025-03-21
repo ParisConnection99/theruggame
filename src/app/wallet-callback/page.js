@@ -41,7 +41,8 @@ function WalletCallbackContent() {
 
                 // Dispatch event to notify header
                 window.dispatchEvent(new CustomEvent('wallet-callback-event', {
-                    detail: response
+                    publicKey: response.public_key,
+                    session: response.session
                 }));
 
                 await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
