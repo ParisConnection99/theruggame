@@ -158,7 +158,7 @@ class PhantomConnect {
             publicKey: decryptedData.public_key
         });
 
-        return decryptedData;
+        return { session: decryptedData.session, publicKey: decryptedData.public_key };
     }
 }
 

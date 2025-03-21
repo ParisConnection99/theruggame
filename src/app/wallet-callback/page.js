@@ -24,7 +24,7 @@ function WalletCallbackContent() {
                 }
 
                 // Handle the connection response
-                const response = phantomConnect.handleConnectResponse(
+                const { session, publicKey } = phantomConnect.handleConnectResponse(
                     data,
                     nonce,
                     phantomEncryptionPublicKey
@@ -32,8 +32,8 @@ function WalletCallbackContent() {
 
                 // Dispatch event to notify header
                 window.dispatchEvent(new CustomEvent('wallet-callback-event', {
-                    publicKey: response.public_key,
-                    session: response.session
+                    publicKey_ca: publicKey,
+                    session: session
                 }));
 
                 await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
