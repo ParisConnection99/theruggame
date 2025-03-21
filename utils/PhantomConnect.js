@@ -119,7 +119,7 @@ class PhantomConnect {
             session
         };
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, bs58.decode(sharedSecret));
+        const [nonce, encryptedPayload] = encryptPayload(payload, sharedSecret);
 
         logInfo('DappPublicKey', {
             component: 'Phantom Connect',
