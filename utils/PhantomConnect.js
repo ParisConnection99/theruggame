@@ -136,12 +136,6 @@ class PhantomConnect {
 
         const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
-        logInfo('Converted shared secret', {
-            component: 'Phantom connect',
-            type: `${convertedSharedSecret instanceof Uint8Array}`,
-            secret: convertedSharedSecret
-        });
-
         const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
 
         logInfo('DappPublicKey', {
@@ -176,36 +170,18 @@ class PhantomConnect {
 
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
 
-        logInfo('Shared secret', {
-            component: 'Phantom connect',
-            type: `${typeof sharedSecret}`,
-            secret: sharedSecret
-        });
-
         // Convert the Uint8Array to a plain object so it can be stored in localStorage
         const sharedSecretObject = Array.from(sharedSecret);
 
-        logInfo('Shared Secret Before storage', {
-            component: 'Phantom connect',
-            secret: sharedSecretObject,
-            type: `${typeof sharedSecretObject}`
-        })
-        
+        logInfo('Session type', {
+            component: 'Phantom Session',
+            type: `${typeof decryptedData.session}`
+        });
+   
         // Store for later use
         window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));
         window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
         window.localStorage.setItem('phantomSession', decryptedData.session);
-
-        logInfo('Decrypted Data', {
-            session: decryptedData.session,
-            publicKey: decryptedData.public_key
-        });
-
-        logInfo('Stored shared secret', {
-            component: 'Phantom connect',
-            type: `${typeof window.localStorage.getItem('phantomSharedSecret')}`,
-            storedSecret: `${window.localStorage.getItem('phantomSharedSecret')}`
-        });
 
         return { session: decryptedData.session, publicKey: decryptedData.public_key };
     }
