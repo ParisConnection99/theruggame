@@ -32,6 +32,19 @@ const encryptPayload = (payload, sharedSecret) => {
     return [nonce, encryptedPayload];
 };
 
+const getUint8ArrayFromStorage = (key) => {
+    // Fetch the stored string from localStorage
+    const storedSecretString = localStorage.getItem(key);
+
+    // If there's no stored secret, return an empty Uint8Array
+    if (!storedSecretString) {
+        return new Uint8Array();
+    }
+
+    // Convert the string to a Uint8Array
+    return new Uint8Array(storedSecretString.split(',').map(Number));
+}
+
 const buildUrl = (path, params) =>
     `https://phantom.app/ul/v1/${path}?${params.toString()}`;
 
@@ -119,7 +132,7 @@ class PhantomConnect {
             session
         };
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, sharedSecret);
+        const [nonce, encryptedPayload] = encryptPayload(payload, getUint8ArrayFromStorage(sharedSecret));
 
         logInfo('DappPublicKey', {
             component: 'Phantom Connect',
