@@ -154,7 +154,7 @@ class PhantomConnect {
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
         
         // Store for later use
-        window.localStorage.setItem('phantomSharedSecret', bs58.encode(sharedSecret));
+        window.localStorage.setItem('phantomSharedSecret', sharedSecret);
         window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
         window.localStorage.setItem('phantomSession', decryptedData.session);
 
