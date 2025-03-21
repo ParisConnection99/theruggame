@@ -163,6 +163,12 @@ class PhantomConnect {
         });
 
         const url = buildUrl("disconnect", params);
+
+        logInfo('Disconnect deeplink',{
+            component: 'Phantom connect',
+            link: url
+        });
+        
         try {
             window.location.href = url;
         } catch (error) {
