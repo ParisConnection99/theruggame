@@ -30,9 +30,14 @@ function WalletCallbackContent() {
                     phantomEncryptionPublicKey
                 );
 
+                logInfo('Fetched Data', {
+                    session: session,
+                    publicKey: publicKey
+                });
+
                 // Dispatch event to notify header
                 window.dispatchEvent(new CustomEvent('wallet-callback-event', {
-                    publicKey_ca: publicKey,
+                    publicKey: publicKey,
                     session: session
                 }));
 
