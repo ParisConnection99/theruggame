@@ -152,6 +152,12 @@ class PhantomConnect {
         );
 
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
+
+        logInfo('Shared secret', {
+            component: 'Phantom connect',
+            type: `${typeof sharedSecret}`,
+            secret: sharedSecret
+        });
         
         // Store for later use
         window.localStorage.setItem('phantomSharedSecret', sharedSecret);
