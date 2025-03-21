@@ -32,32 +32,18 @@ const encryptPayload = (payload, sharedSecret) => {
     return [nonce, encryptedPayload];
 };
 
-const getUint8ArrayFromStorage = (key) => {
-    // Fetch the stored secret from localStorage
-    const storedSecretString = localStorage.getItem(key);
-
-    // If there's no stored secret, return an empty Uint8Array
-    if (!storedSecretString) {
-        console.error('No data found for the provided key.');
-        return new Uint8Array();
-    }
-
+const getUint8ArrayFromJsonString = (jsonString) => {
     try {
-        // Parse the stored secret string (which is in JSON format)
-        const storedSecretObj = JSON.parse(storedSecretString);
+        // Parse the JSON string into an object (or an array of numbers)
+        const storedSecretArray = JSON.parse(jsonString);
 
-        // Convert the object to an array of numbers and then to a Uint8Array
-        const uint8Array = new Uint8Array(Object.values(storedSecretObj));
-
-        // Check if the conversion was successful and values are within the valid range (0-255)
-        if (uint8Array.some(value => value < 0 || value > 255)) {
-            throw new Error('Invalid values in the stored array (should be between 0 and 255).');
-        }
+        // Convert the array of numbers into a Uint8Array
+        const uint8Array = new Uint8Array(storedSecretArray);
 
         return uint8Array;
     } catch (error) {
         console.error('Error converting stored data to Uint8Array:', error.message);
-        return new Uint8Array();
+        return new Uint8Array();  // Return an empty Uint8Array in case of an error
     }
 }
 
@@ -148,7 +134,7 @@ class PhantomConnect {
             session
         };
 
-        const convertedSharedSecret = getUint8ArrayFromStorage(sharedSecret);
+        const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
         logInfo('Converted shared secret', {
             component: 'Phantom connect',
@@ -195,9 +181,18 @@ class PhantomConnect {
             type: `${typeof sharedSecret}`,
             secret: sharedSecret
         });
+
+        // Convert the Uint8Array to a plain object so it can be stored in localStorage
+        const sharedSecretObject = Array.from(sharedSecret);
+
+        logInfo('Shared Secret Before storage', {
+            component: 'Phantom connect',
+            secret: sharedSecretObject,
+            type: `${typeof sharedSecretObject}`
+        })
         
         // Store for later use
-        window.localStorage.setItem('phantomSharedSecret', sharedSecret);
+        window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));
         window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
         window.localStorage.setItem('phantomSession', decryptedData.session);
 
