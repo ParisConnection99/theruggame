@@ -103,16 +103,16 @@ class PhantomConnect {
     }
 
     connect() {
+        logInfo('Connect public key', {
+            component: 'Phantom Connect',
+            publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
+        });
+
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             cluster: "mainnet-beta",
             app_url: "https://theruggame.fun",
             redirect_link: "https://theruggame.fun/wallet-callback",
-        });
-
-        logInfo('Connect public key', {
-            component: 'Phantom Connect',
-            publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
         });
 
         const url = buildUrl("connect", params);
