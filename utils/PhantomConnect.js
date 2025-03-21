@@ -155,9 +155,12 @@ class PhantomConnect {
             payload: bs58.encode(encryptedPayload),
         });
 
-        logInfo('Redirct link', {
-            link: params.redirect_link
-        })
+        const redirectLink = params.get('redirect_link');
+
+        // Log the redirect link
+        logInfo('Redirect link', {
+            link: redirectLink
+        });
 
         const url = buildUrl("disconnect", params);
         try {
