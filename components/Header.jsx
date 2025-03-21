@@ -284,11 +284,12 @@ export default function Header() {
 
                 logInfo('Recieved wallet-callback event', {
                     component: 'Header',
-                    event: event.detail
+                    publicKey: event.publicKey,
+                    session: event.session
                 });
 
                 // Process the connection with the received data
-                if (event.detail && event.detail.publicKey) {
+                if (event.publicKey && event.session) {
                     await handleWalletCallbackConnection({
                         publicKey: event.publicKey,
                         session: event.session
