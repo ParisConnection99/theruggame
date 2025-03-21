@@ -157,7 +157,7 @@ class PhantomConnect {
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             nonce: bs58.encode(nonce),
-            redirect_link: 'https://theruggame.fun/disconnect-callback',
+            redirect_link: 'https://theruggame.fun/disconnect-callback/',
             payload: bs58.encode(encryptedPayload),
         });
 
