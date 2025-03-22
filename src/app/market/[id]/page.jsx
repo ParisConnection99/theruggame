@@ -24,6 +24,7 @@ const oddsService = new OddsService(supabase);
 
 export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
+  const searchParams = useSearchParams();
   const id = pathname ? pathname.split("/").pop() : null;
   const PLATFORM_FEE = 0.02;
   const MIN_BET_AMOUNT = 0.07;
@@ -58,6 +59,17 @@ export default function MarketPage() {
   }
 
   // Added state for search params
+  useEffect(() => {
+    const signature = searchParams.get('txSignature');
+    const error = searchParams.get('error');
+
+    if (error) {
+      alert(`Error placing bet.`);
+    } else {
+      alert('Your bet has been successfully placed.');
+    }
+
+  }, [searchParams]);
 
   useEffect(() => {
     const checkMobile = () => {
