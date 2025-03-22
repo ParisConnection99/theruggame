@@ -7,12 +7,12 @@ import { logInfo, logError } from '@/utils/logger';
 import { decryptPayload, getUint8ArrayFromJsonString } from '@/utils/PhantomConnect';
 import CryptoJS from 'crypto-js';
 
-const encryptKey = process.env.ENCRYPTION_KEY;
+
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  
   useEffect(() => {
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
@@ -108,6 +108,12 @@ function CallbackContent() {
   }, [searchParams, router]);
 
   async function completeBetAndBalanceUpdate() {
+    const encryptKey = process.env.ENCRYPTION_KEY;
+
+    if (!encryptKey) {
+      throw new Error('Encryption key is missing or undefined');
+    }
+    
     const encryptedBalanceResponse = localStorage.getItem('encryptedBalanceData');
     const encryptedBetResponse = localStorage.getItem('encryptedBetData');
   
