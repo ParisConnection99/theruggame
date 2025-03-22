@@ -180,7 +180,7 @@ class PhantomConnect {
     }
 
     async signAndSendTransaction(betAmount, publicKey) {
-        const transaction = await this.createTransferTransaction(betAmount, publicKey);
+        const transaction = await createTransferTransaction(betAmount, publicKey);
 
         const serializedTransaction = transaction.serialize({
             requireAllSignatures: false,
@@ -221,7 +221,7 @@ class PhantomConnect {
     }
 
     createTransferTransaction = async (amount, publicKey) => {
-        if (!phantomWalletPublicKey) throw new Error("missing public key from user");
+        if (!publicKey) throw new Error("missing public key from user");
 
         const connection = new Connection(endpoint, 'confirmed');
 
