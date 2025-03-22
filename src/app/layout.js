@@ -29,7 +29,7 @@ export const metadata = {
     siteName: "The Rug Game",
     images: [
       {
-        url: "https://theruggame.fun/images/logo1.png",
+        url: "https://theruggame.fun/logo.png",
         width: 1200,
         height: 630,
       }
@@ -41,7 +41,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "The Rug Game",
     description: "Guess pump or rug correctly & win Big!",
-    images: ["https://theruggame.fun/images/logo1.png"],
+    images: ["https://theruggame.fun/logo.png"],
   },
   icons: {
     icon: "/favicon.ico",
