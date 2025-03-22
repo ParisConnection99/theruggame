@@ -51,6 +51,36 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
     throw new Error(`Failed to check wallet balance: ${error.message}`);
   }
 }
+
+export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_ENDPOINT) {
+  const publicKeyOrString = localStorage.getItem('phantomPublicKey'); // Retrieve from localStorage
+
+  if (!publicKeyOrString) {
+    throw new Error('Wallet not connected on mobile');
+  }
+
+  try {
+    const connection = new Connection(endpoint, 'confirmed');
+
+    // Convert string to PublicKey if needed
+    const publicKey = new PublicKey(publicKeyOrString);
+
+    const lamports = await connection.getBalance(publicKey);
+    const solBalance = lamports / LAMPORTS_PER_SOL;
+
+    // Add small buffer for transaction fees
+    const requiredAmount = amount + 0.000005;
+
+    return solBalance >= requiredAmount;
+  } catch (error) {
+    console.error('Error checking balance on mobile:', error);
+    logInfo('Error checking balance on mobile', {
+      error: error.message,
+      publicKey: publicKeyOrString
+    });
+    throw new Error(`Failed to check wallet balance on mobile: ${error.message}`);
+  }
+}
 // export async function checkSufficientBalance(publicKey, amount, endpoint = RPC_ENDPOINT) {
 //   if (!publicKey) {
 //     throw new Error('Wallet not connected');
@@ -169,6 +199,12 @@ export async function placeBet(
 ) {
   if (setLoading) setLoading(true);
 
+  logInfo('Placing bet', {
+    component: 'Solana Wallet',
+    pubKey: publicKey,
+    isMobile: isMobile
+  });
+
   try {
     if (!publicKey) {
       throw new Error('Wallet not connected');
@@ -184,7 +220,13 @@ export async function placeBet(
     }
 
     // Check balance (works for both mobile and web)
-    const hasEnough = await checkSufficientBalance(publicKeyToCheck, betAmount);
+    let hasEnough;
+    if (isMobile) {
+      hasEnough = await checkSufficientBalanceForMobile(betAmount);
+    } else {
+      hasEnough = await checkSufficientBalance(publicKeyToCheck, betAmount);
+    }
+    
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
     }

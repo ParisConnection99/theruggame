@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet, testSignMessage } from '@/utils/SolanaWallet.js';
+import { checkSufficientBalance, placeBet, checkSufficientBalanceForMobile } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
@@ -472,10 +472,14 @@ export default function MarketPage() {
       } else {
         logInfo('Balance is not enough need to check wallet', {});
 
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+
         // Get the appropriate public key based on platform
         let userPublicKey;
 
-        if (isMobile) {
+        if (isMobileDevice) {
           localStorage.setItem('pending_bet_type', isPumpActive ? 'PUMP' : 'RUG');
           localStorage.setItem('pending_transaction_amount', betAmount.toString());
           localStorage.setItem('pending_transaction_market_id', market.id);
@@ -508,7 +512,14 @@ export default function MarketPage() {
         });
 
         // Need to use wallet payment
-        const hasEnough = await checkSufficientBalance(userPublicKey, betWithFees);
+        let hasEnough;
+
+        if (isMobileDevice) {
+          hasEnough = await checkSufficientBalanceForMobile(betWithFees);
+        } else {
+          hasEnough = await checkSufficientBalance(userPublicKey, betWithFees);
+        }
+        
 
         if (!hasEnough) {
           logInfo('You dont have enough SOL', {});
@@ -603,7 +614,7 @@ export default function MarketPage() {
             },
             // Loading state (already handled by the outer function)
             null,
-            isMobile,
+            isMobileDevice,
             market.id
           );
         });
