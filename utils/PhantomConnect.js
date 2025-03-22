@@ -1,8 +1,11 @@
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 global.Buffer = global.Buffer || Buffer;
+const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
+const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 
 // Utility functions for encryption/decryption
 const decryptPayload = (data, nonce, sharedSecret) => {
@@ -66,7 +69,7 @@ class PhantomConnect {
                 // Use existing keypair
                 const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
                 this.dappKeyPair = existingKeypair;
-                
+
                 logInfo('Using existing keypair', {
                     component: 'PhantomConnect',
                     publicKey: storedPublicKey
@@ -95,7 +98,7 @@ class PhantomConnect {
         this.dappKeyPair = nacl.box.keyPair();
         window.localStorage.setItem('dappEncryptionPublicKey', bs58.encode(this.dappKeyPair.publicKey));
         window.localStorage.setItem('dappEncryptionPrivateKey', bs58.encode(this.dappKeyPair.secretKey));
-        
+
         logInfo('Generated new keypair', {
             component: 'PhantomConnect',
             publicKey: bs58.encode(this.dappKeyPair.publicKey)
@@ -118,11 +121,11 @@ class PhantomConnect {
 
         const url = buildUrl("connect", params);
 
-        logInfo('connect deeplink',{
+        logInfo('connect deeplink', {
             component: 'Phantom connect',
             link: url
         });
-        
+
         try {
             window.location.href = url;
         } catch (error) {
@@ -174,6 +177,65 @@ class PhantomConnect {
             throw error;
         }
     }
+
+    async signAndSendTransaction(betAmount, publicKey) {
+        const transaction = await createTransferTransaction(betAmount, publicKey);
+
+        const serializedTransaction = transaction.serialize({
+            requireAllSignatures: false,
+        });
+
+        const session = window.localStorage.getItem('phantomSession');
+        const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
+
+        const payload = {
+            session,
+            transaction: bs58.encode(serializedTransaction),
+        };
+
+        const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
+
+        const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
+
+        const params = new URLSearchParams({
+            dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
+            nonce: bs58.encode(nonce),
+            redirect_link: 'https://theruggame.fun/market-callback',
+            payload: bs58.encode(encryptedPayload),
+        });
+
+        logInfo('Sending transaction.....', {});
+
+        const url = buildUrl("signAndSendTransaction", params);
+
+        try {
+            window.location.href = url;
+        } catch (error) {
+            logError(error, {
+                component: 'PhantomConnect',
+                action: 'signAndSend navigation'
+            });
+            throw error;
+        }
+    }
+
+    createTransferTransaction = async (amount, publicKey) => {
+        if (!phantomWalletPublicKey) throw new Error("missing public key from user");
+
+        const connection = new Connection(endpoint, 'confirmed');
+
+        let transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: publicKey,
+                toPubkey: SITE_WALLET_ADDRESS,
+                lamports: Math.round(amount * LAMPORTS_PER_SOL),
+            })
+        );
+        transaction.feePayer = publicKey;
+        logInfo('Getting recent blockhash', {});
+        transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        return transaction;
+    };
 
     handleConnectResponse(data, nonce, phantomEncryptionPublicKey) {
         const sharedSecret = nacl.box.before(
