@@ -17,6 +17,7 @@ import MarketChart from '@/components/MarketChart';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { logInfo, logError } from '@/utils/logger';
+import CryptoJS from 'crypto-js';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
@@ -27,6 +28,7 @@ export default function MarketPage() {
   const PLATFORM_FEE = 0.02;
   const MIN_BET_AMOUNT = 0.07;
   const MAX_BET_AMOUNT = 100;
+  const encryptKey = process.env.ENCRYPTION_KEY;
   const inputRef = useRef(null); // Add ref for the input element
   const { publicKey, sendTransaction, connected } = useWallet();
   const analytics = useAnalytics();
@@ -48,7 +50,7 @@ export default function MarketPage() {
   const [priceHistory, setPriceHistory] = useState([]);
   const [marketOutcome, setMarketOutcome] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [isPumpActive, setIsPumpActive] = useState(true); 
+  const [isPumpActive, setIsPumpActive] = useState(true);
   const [isBetting, setIsBetting] = useState(false);
 
   if (!id) {
@@ -56,7 +58,7 @@ export default function MarketPage() {
   }
 
   // Added state for search params
- 
+
   useEffect(() => {
     const checkMobile = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -484,7 +486,7 @@ export default function MarketPage() {
           localStorage.setItem('pending_transaction_amount', betAmount.toString());
           localStorage.setItem('pending_transaction_market_id', market.id);
           localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
-          
+
           // For mobile, get the public key from localStorage
           userPublicKey = localStorage.getItem('phantomPublicKey');
           logInfo('User public key', {
@@ -519,7 +521,6 @@ export default function MarketPage() {
         } else {
           hasEnough = await checkSufficientBalance(userPublicKey, betWithFees);
         }
-        
 
         if (!hasEnough) {
           logInfo('You dont have enough SOL', {});
@@ -533,6 +534,37 @@ export default function MarketPage() {
           component: 'Market Page'
         });
 
+        if (isMobileDevice) {
+          logInfo('Encrypting data', {
+            component: 'Market Page'
+          });
+
+          const balanceData = {
+            userId: dbUser.user_id,
+            amount: betWithFees
+          }
+
+          const data = {
+            marketId: market.id,
+            userId: dbUser.user_id,
+            amount: betAmount,
+            betType: betType,
+            token_name: market.name,
+          };
+
+          // Encrypt the data
+          const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
+          const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(data), encryptKey).toString();
+          console.log('Encrypted Data:', encryptedData);
+
+          // Save the encrypted data to local storage
+          localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
+          localStorage.setItem('encryptedBetData', encryptedData);
+
+          logInfo('Encrypted data saved to local storage', {
+            component: 'Market Page'
+          });
+        }
         // Use placeBet with proper callbacks
         await new Promise((resolve, reject) => {
           placeBet(
@@ -621,6 +653,11 @@ export default function MarketPage() {
       }
     } catch (error) {
       console.error('Error placing bet: ', error);
+
+      localStorage.removeItem('encryptedBalanceData');
+      localStorage.removeItem('encryptedBetData');
+
+      // delete saved data
       logEvent(analytics, 'market_page_error', {
         error_message: error.message,
         error_code: error.code || 'unknown'

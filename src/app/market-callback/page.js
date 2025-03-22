@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { handleTransactionCallback } from '@/utils/SolanaWallet';
 import { logInfo, logError } from '@/utils/logger';
 import { decryptPayload, getUint8ArrayFromJsonString } from '@/utils/PhantomConnect';
+import CryptoJS from 'crypto-js';
+
+const encryptKey = process.env.ENCRYPTION_KEY;
 
 function CallbackContent() {
   const router = useRouter();
@@ -39,7 +42,7 @@ function CallbackContent() {
         const data = searchParams.get('data');
         const nonce = searchParams.get('nonce');
 
-        logInfo('Transaction data:', { data, nonce });  
+        logInfo('Transaction data:', { data, nonce });
 
         if (!data || !nonce) {
           throw new Error('Missing transaction data parameters');
@@ -61,7 +64,9 @@ function CallbackContent() {
           signature,
           marketId,
           amount
-        }); 
+        });
+
+        await completeBetAndBalanceUpdate();
 
         // Clear stored transaction data
         localStorage.removeItem('pending_transaction_amount');
@@ -74,9 +79,9 @@ function CallbackContent() {
         logError('Error in callback:', {
           marketId,
           error: error.message
-        }); 
+        });
         console.error('Error in callback:', error);
-        
+
         // Clear stored transaction data
         try {
           localStorage.removeItem('pending_transaction_amount');
@@ -101,6 +106,78 @@ function CallbackContent() {
       router.push('/market/1544?error=Critical+callback+error');
     }
   }, [searchParams, router]);
+
+  async function completeBetAndBalanceUpdate() {
+    const encryptedBalanceResponse = localStorage.getItem('encryptedBalanceData');
+    const encryptedBetResponse = localStorage.getItem('encryptedBetData');
+  
+    if (encryptedBetResponse && encryptedBalanceResponse) {
+      try {
+        // Decrypt the balance response
+        const decryptedBalanceBytes = CryptoJS.AES.decrypt(encryptedBalanceResponse, encryptKey);
+        const decryptedBalanceData = JSON.parse(decryptedBalanceBytes.toString(CryptoJS.enc.Utf8));
+  
+        // Decrypt the bet response
+        const decryptedBetBytes = CryptoJS.AES.decrypt(encryptedBetResponse, encryptKey);
+        const decryptedBetData = JSON.parse(decryptedBetBytes.toString(CryptoJS.enc.Utf8));
+  
+        // Log the decrypted data
+        logInfo('Decrypted data', {
+          component: 'Market-callback',
+          balance: decryptedBalanceData,
+          bet: decryptedBetData,
+        });
+  
+        // Update user balance
+        const updatedUserResponse = await fetch(`/api/users`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(decryptedBalanceData),
+        });
+  
+        if (!updatedUserResponse.ok) {
+          const errorData = await updatedUserResponse.json();
+          logInfo('Error updating users balance', { errorMessage: errorData });
+          throw new Error(errorData.message || errorData.error || 'Error recording bet');
+        }
+  
+        // Create the bet in the database
+        const response = await fetch(`/api/betting`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(decryptedBetData),
+        });
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          logInfo('Error creating bet in database', { errorMessage: errorData });
+          throw new Error(errorData.message || errorData.error || 'Error recording bet');
+        }
+  
+        // Remove the encrypted data from localStorage after successful processing
+        localStorage.removeItem('encryptedBalanceData');
+        localStorage.removeItem('encryptedBetData');
+  
+        logInfo('Encrypted data removed from localStorage', {
+          component: 'Market-callback',
+        });
+      } catch (error) {
+        logError('Error decrypting or processing data', {
+          component: 'Market-callback',
+          error: error.message,
+        });
+        console.error('Error decrypting or processing data:', error);
+      }
+    } else {
+      logError('Missing encrypted data in localStorage', {
+        component: 'Market-callback',
+      });
+    }
+  }
 
   return (
     <div className="text-center">
