@@ -223,7 +223,7 @@ class PhantomConnect {
     createTransferTransaction = async (amount, publicKey) => {
         if (!publicKey) throw new Error("missing public key from user");
 
-        const connection = new Connection(endpoint, 'confirmed');
+        const connection = new Connection(RPC_ENDPOINT, 'confirmed');
 
         let transaction = new Transaction().add(
             SystemProgram.transfer({
