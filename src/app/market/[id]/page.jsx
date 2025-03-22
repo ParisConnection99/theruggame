@@ -65,7 +65,7 @@ export default function MarketPage() {
 
     if (error) {
       alert(`Error placing bet.`);
-    } else {
+    } else if (signature) {
       alert('Your bet has been successfully placed.');
     }
 
