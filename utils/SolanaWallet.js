@@ -59,6 +59,10 @@ export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_END
     throw new Error('Wallet not connected on mobile');
   }
 
+  logInfo('Checking balance for mobile', {
+    component: 'Solana wallet'
+  });
+
   try {
     const connection = new Connection(endpoint, 'confirmed');
 
@@ -66,8 +70,13 @@ export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_END
     const publicKey = new PublicKey(publicKeyOrString);
 
     const lamports = await connection.getBalance(publicKey);
+
     const solBalance = lamports / LAMPORTS_PER_SOL;
 
+    logInfo('Sol balance', {
+      component: 'Solana wallet',
+      balance: solBalance
+    });
     // Add small buffer for transaction fees
     const requiredAmount = amount + 0.000005;
 
@@ -248,7 +257,7 @@ export async function placeBet(
           throw new Error('PhantomConnect not initialized');
         }
 
-        await phantomConnect.signAndSendTransaction(betAmount, publicKey);
+        await phantomConnect.signAndSendTransaction(betAmount, publicKeyToCheck);
 
       } catch (error) {
         logError(error, {
