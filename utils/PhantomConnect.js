@@ -182,6 +182,11 @@ class PhantomConnect {
     async signAndSendTransaction(betAmount, publicKey) {
         const transaction = await this.createTransferTransaction(betAmount, publicKey);
 
+        logInfo('Created transaction:', {
+            component: 'Phantom connect',
+            transaction: transaction
+        });
+
         const serializedTransaction = transaction.serialize({
             requireAllSignatures: false,
         });
@@ -193,6 +198,11 @@ class PhantomConnect {
             session,
             transaction: bs58.encode(serializedTransaction),
         };
+
+        logInfo('Created payload', {
+            component: 'phantom connect',
+            transaction: transaction
+        });
 
         const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
