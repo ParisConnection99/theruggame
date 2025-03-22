@@ -4,6 +4,7 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 global.Buffer = global.Buffer || Buffer;
+const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 
