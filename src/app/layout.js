@@ -33,6 +33,7 @@ const geistMono = Geist_Mono({
 //         width: 1200,
 //         height: 630,
 //       }
+
 //     ],
 //     locale: 'en_US',
 //     type: "website",
