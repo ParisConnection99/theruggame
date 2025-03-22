@@ -247,7 +247,7 @@ class PhantomConnect {
         transaction.feePayer = publicKey;
         logInfo('Getting recent blockhash', {});
         transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-        
+
         return transaction;
     };
 
@@ -273,4 +273,4 @@ class PhantomConnect {
 
 // Export both the instance and the buildUrl function
 export const phantomConnect = typeof window !== 'undefined' ? new PhantomConnect() : null;
-export { buildUrl }; 
+export { buildUrl, decryptPayload, getUint8ArrayFromJsonString }; 
