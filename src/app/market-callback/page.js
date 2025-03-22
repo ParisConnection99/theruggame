@@ -103,17 +103,17 @@ function CallbackContent() {
     } catch (error) {
       console.error('Critical error in callback:', error);
       // Fallback redirect in case of critical error
-      router.push('/market/1544?error=Critical+callback+error');
+      router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
   }, [searchParams, router]);
 
   async function completeBetAndBalanceUpdate() {
-    const encryptKey = process.env.ENCRYPTION_KEY;
+    const encryptKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
 
     if (!encryptKey) {
       throw new Error('Encryption key is missing or undefined');
     }
-    
+
     const encryptedBalanceResponse = localStorage.getItem('encryptedBalanceData');
     const encryptedBetResponse = localStorage.getItem('encryptedBetData');
   

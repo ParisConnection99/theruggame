@@ -28,7 +28,7 @@ export default function MarketPage() {
   const PLATFORM_FEE = 0.02;
   const MIN_BET_AMOUNT = 0.07;
   const MAX_BET_AMOUNT = 100;
-  const encryptKey = process.env.ENCRYPTION_KEY;
+  const encryptKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
   const inputRef = useRef(null); // Add ref for the input element
   const { publicKey, sendTransaction, connected } = useWallet();
   const analytics = useAnalytics();
