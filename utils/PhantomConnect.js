@@ -233,18 +233,21 @@ class PhantomConnect {
     createTransferTransaction = async (amount, publicKey) => {
         if (!publicKey) throw new Error("missing public key from user");
 
+        publicKey = new PublicKey(publicKey);
+
         const connection = new Connection(RPC_ENDPOINT, 'confirmed');
 
         let transaction = new Transaction().add(
             SystemProgram.transfer({
                 fromPubkey: publicKey,
-                toPubkey: SITE_WALLET_ADDRESS,
+                toPubkey: new PublicKey(SITE_WALLET_ADDRESS),
                 lamports: Math.round(amount * LAMPORTS_PER_SOL),
             })
         );
         transaction.feePayer = publicKey;
         logInfo('Getting recent blockhash', {});
         transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+        
         return transaction;
     };
 
