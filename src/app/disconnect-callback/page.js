@@ -13,6 +13,7 @@ function DisconnectHandler() {
             try {
                 // Get encrypted data and nonce from URL params
                 const errorCode = searchParams.get('errorCode');
+                const errorMessage = searchParams.get('errorMessage');
                 const encryptedData = searchParams.get('data');
                 const nonce = searchParams.get('nonce');
 
@@ -32,6 +33,11 @@ function DisconnectHandler() {
 
                 // Check if there was an error or missing data
                 if (errorCode || !encryptedData || !nonce) {
+                    logInfo('Disconnect error', {
+                        component: 'Disconnect callback',
+                        error: errorMessage,
+                        errorCode: errorCode
+                    });
                     throw new Error(errorCode || 'Invalid disconnect response');
                 }
 

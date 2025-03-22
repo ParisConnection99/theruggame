@@ -157,23 +157,11 @@ class PhantomConnect {
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             nonce: bs58.encode(nonce),
-            redirect_link: 'https://theruggame.fun/disconnect-callback/',
+            redirect_link: 'https://theruggame.fun/disconnect-callback',
             payload: bs58.encode(encryptedPayload),
         });
 
-        const redirectLink = params.get('redirect_link');
-
-        // Log the redirect link
-        logInfo('Redirect link', {
-            link: redirectLink
-        });
-
         const url = buildUrl("disconnect", params);
-
-        logInfo('Disconnect deeplink',{
-            component: 'Phantom connect',
-            link: url
-        });
 
         try {
             window.location.href = url;
