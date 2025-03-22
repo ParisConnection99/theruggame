@@ -544,7 +544,7 @@ export default function MarketPage() {
             amount: betWithFees
           }
 
-          const data = {
+          const betData = {
             marketId: market.id,
             userId: dbUser.user_id,
             amount: betAmount,
@@ -552,14 +552,18 @@ export default function MarketPage() {
             token_name: market.name,
           };
 
+          if (!encryptKey) {
+            throw new Error('Encryption key is missing or undefined.');
+          }
+
           // Encrypt the data
           const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
-          const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(data), encryptKey).toString();
-          console.log('Encrypted Data:', encryptedData);
+          const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
+          
 
           // Save the encrypted data to local storage
           localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
-          localStorage.setItem('encryptedBetData', encryptedData);
+          localStorage.setItem('encryptedBetData', encryptedBetData);
 
           logInfo('Encrypted data saved to local storage', {
             component: 'Market Page'
