@@ -180,7 +180,7 @@ class PhantomConnect {
     }
 
     async signAndSendTransaction(betAmount, publicKey) {
-        const transaction = await createTransferTransaction(betAmount, publicKey);
+        const transaction = await this.createTransferTransaction(betAmount, publicKey);
 
         const serializedTransaction = transaction.serialize({
             requireAllSignatures: false,
