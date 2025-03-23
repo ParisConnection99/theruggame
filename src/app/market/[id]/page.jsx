@@ -711,7 +711,8 @@ export default function MarketPage() {
             dbUser.user_id,
             betWithFees,
             betType,
-            market.name
+            market.name,
+            token
           );
         });
       }

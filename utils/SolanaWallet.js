@@ -188,7 +188,8 @@ export async function placeBet(
   userId,
   amountToAdd,
   betType,
-  token_name
+  token_name, 
+  token
 ) {
   if (setLoading) setLoading(true);
 
