@@ -608,34 +608,34 @@ export default function MarketPage() {
             // Success callback
             async (transferResult) => {
               try {
-                console.log("Transfer successful:", transferResult);
+                // console.log("Transfer successful:", transferResult);
 
-                logInfo('Transfer successful', {});
+                // logInfo('Transfer successful', {});
 
-                const response = await fetch(`/api/betting/transfer`, {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                     marketId: market.id,
-                     userId: dbUser.user_id,
-                     amountToAddToBalance: betWithFees,
-                     amount: betAmount,
-                     betType: betType,
-                     token_name: market.name
-                  })
-                });
+                // const response = await fetch(`/api/betting/transfer`, {
+                //   method: 'POST',
+                //   headers: {
+                //     Authorization: `Bearer ${token}`,
+                //     'Content-Type': 'application/json',
+                //   },
+                //   body: JSON.stringify({
+                //      marketId: market.id,
+                //      userId: dbUser.user_id,
+                //      amountToAddToBalance: betWithFees,
+                //      amount: betAmount,
+                //      betType: betType,
+                //      token_name: market.name
+                //   })
+                // });
 
-                if (!response.ok) {
-                  const errorData = await response.json();
-                  logInfo('Error placing bet', {
-                    errorData: errorData,
-                    component: 'Market Page'
-                  });
-                  reject(new Error(errorData.message || errorData.error || 'Error saving bet details'));
-                }
+                // if (!response.ok) {
+                //   const errorData = await response.json();
+                //   logInfo('Error placing bet', {
+                //     errorData: errorData,
+                //     component: 'Market Page'
+                //   });
+                //   reject(new Error(errorData.message || errorData.error || 'Error saving bet details'));
+                // }
 
                 // Update the users balance 
                 // const updatedUserResponse = await fetch(`/api/users`, {
@@ -707,7 +707,11 @@ export default function MarketPage() {
             // Loading state (already handled by the outer function)
             null,
             isMobileDevice,
-            market.id
+            market.id,
+            dbUser.user_id,
+            betWithFees,
+            betType,
+            market.name
           );
         });
       }

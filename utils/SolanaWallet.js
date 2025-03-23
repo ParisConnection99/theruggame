@@ -184,9 +184,17 @@ export async function placeBet(
   onError,
   setLoading = null,
   isMobile = false,
-  marketId = null // Add marketId parameter
+  marketId = null, // Add marketId parameter
+  userId,
+  amountToAdd,
+  betType,
+  token_name
 ) {
   if (setLoading) setLoading(true);
+
+  if (!betAmount || !userId || !amountToAdd || !betType || !token_name) {
+    throw new Error('Inputs cant be empty');
+  }
 
   logInfo('Placing bet', {
     component: 'Solana Wallet',
@@ -215,7 +223,7 @@ export async function placeBet(
     } else {
       hasEnough = await checkSufficientBalance(publicKeyToCheck, betAmount);
     }
-    
+
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
     }
@@ -255,6 +263,31 @@ export async function placeBet(
 
       if (result.success) {
         // we can call the endpoint from here
+
+        const response = await fetch(`/api/betting/transfer`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            marketId: marketId,
+            userId: userId,
+            amountToAddToBalance: amountToAdd,
+            amount: betAmount,
+            betType: betType,
+            token_name: token_name
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          logInfo('Error placing bet', {
+            errorData: errorData,
+            component: 'Market Page'
+          });
+          throw new Error(errorData.message || errorData.error || 'Error saving bet details');
+        }
         onSuccess(result);
       } else {
         throw new Error(result.error);
