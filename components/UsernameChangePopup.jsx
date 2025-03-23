@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useAnalytics } from '@/components/FirebaseProvider';
+import { logEvent } from 'firebase/analytics';
 
 // This component can be added to your ProfilePage component
 export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUsername = "" }) {
