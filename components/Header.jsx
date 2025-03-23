@@ -402,152 +402,161 @@ export default function Header() {
 
     // Function to handle wallet connection from callback data
     const handleWalletCallbackConnection = async (walletData) => {
+        // try {
+        //     console.log("Starting wallet callback connection process");
+        //     setConnectionStatus('connecting');
+
+        //     logInfo("Starting wallet callback connection process", {
+        //         component: 'Header'
+        //     });
+
+        //     if (!walletData.publicKey || !auth) {
+        //         console.log("Wallet connection aborted: publicKey or auth not available");
+        //         setConnectionStatus('error');
+        //         // Show error message to user
+        //         const errorMessage = !walletData.publicKey ? "Wallet not connected properly" : "Authentication service unavailable";
+        //         showConnectionError(errorMessage);
+        //         logError(
+        //             new Error(errorMessage),
+        //             {
+        //                 component: 'Header',
+        //                 method: 'handleWalletCallbackConnection',
+        //                 publicKeyAvailable: !!walletData.publicKey,
+        //                 authAvailable: !!auth,
+        //                 connectionStatus: 'error'
+        //             }
+        //         );
+        //         return;
+        //     }
+
+        //     console.log(`Checking user in supabase...`);
+        //     logInfo("Checking user in supabase...", {
+        //         component: 'Header'
+        //     });
+
+        //     const token = await auth.currentUser?.getIdToken();
+
+        //     // const userResponse = await fetch(`/api/users?wallet=${walletData.publicKey}`, {
+        //     //     method: 'GET',
+        //     //     headers: { 'Content-Type': 'application/json' }
+        //     // });
+
+        //     const userResponse = await fetch(`/api/users`, {
+        //         method: 'GET',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             Authorization: `Bearer ${token}`, // Send token in Authorization header
+        //         },
+        //     });
+
+        //     let user = null;
+
+        //     if (userResponse.status === 404) {
+        //         // User not found, need to create a new user
+        //         console.log("User not found, creating new user...");
+
+        //         logInfo('User not found in database', {
+        //             component: "Header"
+        //         });
+        //         const createUserResponse = await fetch('/api/users', {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json' },
+        //             body: JSON.stringify({
+        //                 wallet_ca: walletData.publicKey,
+        //                 username: walletData.publicKey.slice(0, 6) // Simple username from public key
+        //             })
+        //         });
+
+        //         if (!createUserResponse.ok) {
+        //             const errorData = await createUserResponse.json();
+        //             throw new Error(errorData.error || 'Failed to create user');
+        //         }
+
+        //         // Fetch the newly created user
+        //         user = await createUserResponse.json();
+
+        //         logInfo('Fetched user', {
+        //             component: "Header",
+        //             user: JSON.stringify(user, null, 2)
+        //         });
+
+        //     } else if (!userResponse.ok) {
+        //         // Handle other API errors
+        //         const errorData = await userResponse.json();
+        //         throw new Error(errorData.error || 'Failed to fetch user');
+        //     } else {
+        //         // User exists
+        //         user = await userResponse.json();
+        //     }
+
+        //     // Get Firebase custom token
+        //     console.log("Getting Firebase token for:", walletData.publicKey);
+        //     logInfo("Getting Firebase token for:", {
+        //         component: "Header",
+        //         publicKey: walletData.publicKey
+        //     });
+
+        //     const response = await fetch('/api/auth', {
+        //         method: 'POST',
+        //         headers: { 'Content-Type': 'application/json' },
+        //         body: JSON.stringify({ publicKey: walletData.publicKey })
+        //     });
+
+        //     const data = await response.json();
+
+        //     if (data.error) {
+        //         setConnectionStatus('error');
+        //         showConnectionError(`Authentication error: ${data.error}`);
+        //         throw new Error(data.error);
+        //     }
+
+        //     console.log("Signing in with custom token...");
+
+        //     logInfo("Signing in with custom token...", {
+        //         component: "Header"
+        //     });
+
+        //     await signInWithCustomToken(auth, data.token);
+        //     console.log("Firebase sign in successful");
+
+        //     logInfo("Firebase sign in successful", {
+        //         component: "Header"
+        //     });
+
+        //     // Set the user profile from the API response
+        //     setUserProfile(user);
+        //     setConnectionStatus('success');
+
+        //     logInfo('Checking connected value', {
+        //         is_connected: connected,
+        //         component: 'Header'
+        //     });
+        // } catch (error) {
+        //     console.error('Error during authentication:', error);
+        //     setConnectionStatus('error');
+
+        //     logError(error, {
+        //         component: 'Header',
+        //         action: 'Error during authentication'
+        //     });
+
+        //     // Provide specific error messages based on where the failure occurred
+        //     if (error.message?.includes('Firebase')) {
+        //         showConnectionError('Failed to authenticate with the server');
+        //     } else if (error.message?.includes('token')) {
+        //         showConnectionError('Failed to create user session');
+        //     } else {
+        //         showConnectionError(error.message || 'Connection failed, please try again');
+        //     }
+        // }
+
         try {
-            console.log("Starting wallet callback connection process");
-            setConnectionStatus('connecting');
-
-            logInfo("Starting wallet callback connection process", {
-                component: 'Header'
-            });
-
-            if (!walletData.publicKey || !auth) {
-                console.log("Wallet connection aborted: publicKey or auth not available");
-                setConnectionStatus('error');
-                // Show error message to user
-                const errorMessage = !walletData.publicKey ? "Wallet not connected properly" : "Authentication service unavailable";
-                showConnectionError(errorMessage);
-                logError(
-                    new Error(errorMessage),
-                    {
-                        component: 'Header',
-                        method: 'handleWalletCallbackConnection',
-                        publicKeyAvailable: !!walletData.publicKey,
-                        authAvailable: !!auth,
-                        connectionStatus: 'error'
-                    }
-                );
-                return;
-            }
-
-            console.log(`Checking user in supabase...`);
-            logInfo("Checking user in supabase...", {
-                component: 'Header'
-            });
-
-            const token = await auth.currentUser?.getIdToken();
-
-            // const userResponse = await fetch(`/api/users?wallet=${walletData.publicKey}`, {
-            //     method: 'GET',
-            //     headers: { 'Content-Type': 'application/json' }
-            // });
-
-            const userResponse = await fetch(`/api/users`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`, // Send token in Authorization header
-                },
-            });
-
-            let user = null;
-
-            if (userResponse.status === 404) {
-                // User not found, need to create a new user
-                console.log("User not found, creating new user...");
-
-                logInfo('User not found in database', {
-                    component: "Header"
-                });
-                const createUserResponse = await fetch('/api/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        wallet_ca: walletData.publicKey,
-                        username: walletData.publicKey.slice(0, 6) // Simple username from public key
-                    })
-                });
-
-                if (!createUserResponse.ok) {
-                    const errorData = await createUserResponse.json();
-                    throw new Error(errorData.error || 'Failed to create user');
-                }
-
-                // Fetch the newly created user
-                user = await createUserResponse.json();
-
-                logInfo('Fetched user', {
-                    component: "Header",
-                    user: JSON.stringify(user, null, 2)
-                });
-
-            } else if (!userResponse.ok) {
-                // Handle other API errors
-                const errorData = await userResponse.json();
-                throw new Error(errorData.error || 'Failed to fetch user');
-            } else {
-                // User exists
-                user = await userResponse.json();
-            }
-
-            // Get Firebase custom token
-            console.log("Getting Firebase token for:", walletData.publicKey);
-            logInfo("Getting Firebase token for:", {
-                component: "Header",
-                publicKey: walletData.publicKey
-            });
-
-            const response = await fetch('/api/auth', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ publicKey: walletData.publicKey })
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                setConnectionStatus('error');
-                showConnectionError(`Authentication error: ${data.error}`);
-                throw new Error(data.error);
-            }
-
-            console.log("Signing in with custom token...");
-
-            logInfo("Signing in with custom token...", {
-                component: "Header"
-            });
-
-            await signInWithCustomToken(auth, data.token);
-            console.log("Firebase sign in successful");
-
-            logInfo("Firebase sign in successful", {
-                component: "Header"
-            });
-
-            // Set the user profile from the API response
-            setUserProfile(user);
-            setConnectionStatus('success');
-
-            logInfo('Checking connected value', {
-                is_connected: connected,
-                component: 'Header'
-            });
+            await connectUser(walletData.publicKey);
         } catch (error) {
-            console.error('Error during authentication:', error);
-            setConnectionStatus('error');
-
             logError(error, {
                 component: 'Header',
-                action: 'Error during authentication'
-            });
-
-            // Provide specific error messages based on where the failure occurred
-            if (error.message?.includes('Firebase')) {
-                showConnectionError('Failed to authenticate with the server');
-            } else if (error.message?.includes('token')) {
-                showConnectionError('Failed to create user session');
-            } else {
-                showConnectionError(error.message || 'Connection failed, please try again');
-            }
+                action: 'Connecting user'
+            })
         }
     };
 
