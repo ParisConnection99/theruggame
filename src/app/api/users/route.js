@@ -1,4 +1,5 @@
 import { serviceRepo } from '@/services/ServiceRepository';
+import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
   try {
