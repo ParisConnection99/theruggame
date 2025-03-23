@@ -11,6 +11,17 @@ if (!admin.apps.length) {
   });
 }
 
+export const generateCustomToken = async (uid) => {
+  try {
+    // Generate a custom token for the user
+    const customToken = await admin.auth().createCustomToken(uid);
+    return customToken;
+  } catch (error) {
+    console.error('Error generating custom token:', error);
+    throw new Error('Failed to generate custom token');
+  }
+};
+
 export async function verifyAuthToken(token) {
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);

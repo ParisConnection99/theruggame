@@ -498,9 +498,9 @@ export default function Header() {
                 throw new Error(data.error);
             }
 
-            console.log("Signing in with custom token...");
+            logInfo("Signing in with custom token...", {});
             await signInWithCustomToken(auth, data.token);
-            console.log("Firebase sign in successful");
+            logInfo("Firebase sign in successful", {});
 
             // Set the user profile from the API response
             setUserProfile(user);
