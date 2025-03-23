@@ -10,4 +10,14 @@ if (!admin.apps.length) {
   });
 }
 
+export async function verifyAuthToken(token) {
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    return decodedToken;
+  } catch (error) {
+    console.error('Error verifying token:', error);
+    throw new Error('Invalid or expired token');
+  }
+}
+
 export { admin };

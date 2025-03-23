@@ -1,74 +1,118 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 
+// export async function GET(request) {
+//   const url = new URL(request.url);
+
+//   try {
+//     try {
+//       // Extract the Authorization header
+//       const authHeader = request.headers.get('Authorization');
+//       if (!authHeader) {
+//         return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
+//           status: 401,
+//           headers: { 'Content-Type': 'application/json' },
+//         });
+//       }
+  
+//       // Verify the token
+//       const token = authHeader.split(' ')[1]; // Bearer <token>
+//       const decodedToken = await verifyAuthToken(token);
+//       const uid = decodedToken.uid;
+  
+//       // Fetch user data securely
+//       const user = await serviceRepo.userService.getUserByWallet(uid);
+//       if (!user) {
+//         return new Response(JSON.stringify({ error: 'User not found' }), {
+//           status: 404,
+//           headers: { 'Content-Type': 'application/json' },
+//         });
+//       }
+  
+//       return new Response(JSON.stringify(user), {
+//         status: 200,
+//         headers: { 'Content-Type': 'application/json' },
+//       });
+//     } catch (error) {
+//       console.error('Error fetching user data:', error);
+//       return new Response(JSON.stringify({ error: error.message }), {
+//         status: 500,
+//         headers: { 'Content-Type': 'application/json' },
+//       });
+//     }
+//   }
+
+//   // Check if username is available
+//   if (url.searchParams.has('username_check')) {
+//     try {
+//       const username = url.searchParams.get('username_check');
+//       const isAvailable = await serviceRepo.userService.isUsernameAvailable(username);
+
+//       return new Response(JSON.stringify({ available: isAvailable }), {
+//         status: 200,
+//         headers: { 'Content-Type': 'application/json' }
+//       });
+//     } catch (error) {
+//       return new Response(JSON.stringify({ error: error.message }), {
+//         status: 500,
+//         headers: { 'Content-Type': 'application/json' }
+//       });
+//     }
+//   }
+
+//   return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+//     status: 400,
+//     headers: { 'Content-Type': 'application/json' }
+//   });
+// }
 export async function GET(request) {
   const url = new URL(request.url);
 
-  // Search users by username
-  if (url.searchParams.has('search')) {
-    try {
-      const searchTerm = url.searchParams.get('search');
-      const limit = parseInt(url.searchParams.get('limit')) || 10;
-      const users = await serviceRepo.userService.searchUsers(searchTerm, limit);
-      return new Response(JSON.stringify(users), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-  }
-
-  // Get user by wallet
-  if (url.searchParams.has('wallet')) {
-    try {
-      const wallet = url.searchParams.get('wallet');
-      const user = await serviceRepo.userService.getUserByWallet(wallet);
-
-      console.log(`Fetched user:`, user);
-      if (!user) {
-        return new Response(JSON.stringify({ error: 'User not found' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-
-      return new Response(JSON.stringify(user), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-  }
-
-  // Check if username is available
-  if (url.searchParams.has('username_check')) {
-    try {
+  try {
+    // Check if the request is for username availability
+    if (url.searchParams.has('username_check')) {
       const username = url.searchParams.get('username_check');
       const isAvailable = await serviceRepo.userService.isUsernameAvailable(username);
 
       return new Response(JSON.stringify({ available: isAvailable }), {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
-  }
 
-  return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
-    status: 400,
-    headers: { 'Content-Type': 'application/json' }
-  });
+    // Otherwise, fetch user data by UID (requires Authorization header)
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Verify the token and extract the UID
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    const decodedToken = await verifyAuthToken(token);
+    const uid = decodedToken.uid;
+
+    // Fetch user data securely
+    const user = await serviceRepo.userService.getUserByWallet(uid);
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify(user), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error in GET /api/users:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
 }
 
 export async function POST(request) {
@@ -193,3 +237,49 @@ export async function PATCH(request) {
     });
   }
 }
+
+/*
+// Search users by username
+  // if (url.searchParams.has('search')) {
+  //   try {
+  //     const searchTerm = url.searchParams.get('search');
+  //     const limit = parseInt(url.searchParams.get('limit')) || 10;
+  //     const users = await serviceRepo.userService.searchUsers(searchTerm, limit);
+  //     return new Response(JSON.stringify(users), {
+  //       status: 200,
+  //       headers: { 'Content-Type': 'application/json' }
+  //     });
+  //   } catch (error) {
+  //     return new Response(JSON.stringify({ error: error.message }), {
+  //       status: 500,
+  //       headers: { 'Content-Type': 'application/json' }
+  //     });
+  //   }
+  // }
+
+  // // Get user by wallet
+  // if (url.searchParams.has('wallet')) {
+  //   try {
+  //     const wallet = url.searchParams.get('wallet');
+  //     const user = await serviceRepo.userService.getUserByWallet(wallet);
+
+  //     console.log(`Fetched user:`, user);
+  //     if (!user) {
+  //       return new Response(JSON.stringify({ error: 'User not found' }), {
+  //         status: 404,
+  //         headers: { 'Content-Type': 'application/json' }
+  //       });
+  //     }
+
+  //     return new Response(JSON.stringify(user), {
+  //       status: 200,
+  //       headers: { 'Content-Type': 'application/json' }
+  //     });
+  //   } catch (error) {
+  //     return new Response(JSON.stringify({ error: error.message }), {
+  //       status: 500,
+  //       headers: { 'Content-Type': 'application/json' }
+  //     });
+  //   }
+  // }
+*/

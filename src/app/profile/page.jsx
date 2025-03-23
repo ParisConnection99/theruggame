@@ -49,9 +49,17 @@ export default function ProfilePage() {
                 return;
             }
 
+            const token = await authUser.getIdToken();
+
             try {
                 setUserLoading(true);
-                const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+                //const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+                const response = await fetch(`/api/users`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
                 if (!response.ok) {
                     throw new Error('Failed to fetch user data');
