@@ -435,7 +435,7 @@ export default function Header() {
             const token = await auth.currentUser?.getIdToken();
 
             logInfo('Token', {
-                token: token
+                token: JSON.stringify(token, null, 2)
             });
 
             const userResponse = await fetch(`/api/users`, {
