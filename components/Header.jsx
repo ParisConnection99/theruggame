@@ -169,7 +169,7 @@ export default function Header() {
         }
     }, [connected, publicKey]);
 
-    const handleConnect = async () => {
+    const handleDesktopWalletConnection = async () => {
         try {
             setConnectionStatus('connecting');
 
@@ -467,10 +467,12 @@ export default function Header() {
                 {!isEffectivelyConnected ? (
                     <div
                         onClick={() => {
+                            if (connectionStatus === 'connecting') return;
+                            
                             if (isMobile) {
                                 handleMobileWalletConnection();
                             } else {
-                                handleConnect();
+                                handleDesktopWalletConnection();
                             }
 
                             closeMenu(); // Close the burger menu
