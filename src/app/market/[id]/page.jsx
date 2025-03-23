@@ -630,8 +630,8 @@ export default function MarketPage() {
 
                 if (!response.ok) {
                   const errorData = await response.json();
-                  logError(error, {
-                    action: 'Placing Bet',
+                  logInfo('Error placing bet', {
+                    errorData: errorData,
                     component: 'Market Page'
                   });
                   reject(new Error(errorData.message || errorData.error || 'Error saving bet details'));
