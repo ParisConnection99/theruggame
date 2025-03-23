@@ -137,7 +137,15 @@ export default function MarketPage() {
       try {
         setUserLoading(true);
         console.log(`Auth user uid: ${authUser.uid}`);
-        const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+        //const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+        const token = await authUser.getIdToken();
+
+        const response = await fetch(`/api/users`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch user data');
