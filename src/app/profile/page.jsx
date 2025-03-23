@@ -65,7 +65,7 @@ export default function ProfilePage() {
 
             try {
                 setUserLoading(true);
-                //const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+                
                 const response = await fetch(`/api/users`, {
                     method: 'GET',
                     headers: {

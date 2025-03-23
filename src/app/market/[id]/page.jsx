@@ -414,7 +414,14 @@ export default function MarketPage() {
     try {
       console.log(`Fetching user`);
 
-      const response = await fetch(`/api/users?wallet=${authUser.uid}`);
+      const token = await authUser.getIdToken();
+
+      const response = await fetch(`/api/users`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
@@ -571,7 +578,7 @@ export default function MarketPage() {
           // Encrypt the data
           const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
           const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
-          
+
 
           // Save the encrypted data to local storage
           localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
