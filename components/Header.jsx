@@ -423,11 +423,21 @@ export default function Header() {
                 return;
             }
 
-            console.log(`Checking user in supabase...`);
-            const userResponse = await fetch(`/api/users?wallet=${publicKey.toString()}`, {
+            const token = await auth.currentUser?.getIdToken();
+
+            const userResponse = await fetch(`/api/users`, {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`, // Send token in Authorization header
+                },
             });
+
+            // console.log(`Checking user in supabase...`);
+            // const userResponse = await fetch(`/api/users?wallet=${publicKey.toString()}`, {
+            //     method: 'GET',
+            //     headers: { 'Content-Type': 'application/json' }
+            // });
 
             let user = null;
 
