@@ -544,6 +544,8 @@ export default function MarketPage() {
         // Need to use wallet payment
         let hasEnough;
 
+        // We need to add the amount in the users balance + extras needed from the wallet
+
         if (isMobileDevice) {
           hasEnough = await checkSufficientBalanceForMobile(betWithFees);
         } else {
@@ -610,54 +612,79 @@ export default function MarketPage() {
 
                 logInfo('Transfer successful', {});
 
-                // Update the users balance 
-                const updatedUserResponse = await fetch(`/api/users`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    userId: dbUser.user_id,
-                    amount: betWithFees
-                  })
-                });
-
-                if (!updatedUserResponse.ok) {
-                  const errorData = await updatedUserResponse.json();
-
-                  logInfo('Error updating users balance', {
-                    errorMessage: errorData
-                  });
-                  reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
-                  return;
-                }
-
-                // Now create the bet in the database
-                const response = await fetch(`/api/betting`, {
+                const response = await fetch(`/api/betting/transfer`, {
                   method: 'POST',
                   headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
-                    marketId: market.id,
-                    userId: dbUser.user_id,
-                    amount: betAmount,
-                    betType: betType,
-                    token_name: market.name
+                     marketId: market.id,
+                     userId: dbUser.user_id,
+                     amountToAddToBalance: betWithFees,
+                     amount: betAmount,
+                     betType: betType,
+                     token_name: market.name
                   })
                 });
 
                 if (!response.ok) {
                   const errorData = await response.json();
-                  // If API fails, we should handle this situation
-
-                  logInfo('Error creating bet in database', {
-                    errorMessage: errorData
+                  logError(error, {
+                    action: 'Placing Bet',
+                    component: 'Market Page'
                   });
-                  reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
-                  return;
+                  reject(new Error(errorData.message || errorData.error || 'Error saving bet details'));
                 }
+
+                // Update the users balance 
+                // const updatedUserResponse = await fetch(`/api/users`, {
+                //   method: 'POST',
+                //   headers: {
+                //     'Content-Type': 'application/json',
+                //   },
+                //   body: JSON.stringify({
+                //     userId: dbUser.user_id,
+                //     amount: betWithFees
+                //   })
+                // });
+
+                // if (!updatedUserResponse.ok) {
+                //   const errorData = await updatedUserResponse.json();
+
+                //   logInfo('Error updating users balance', {
+                //     errorMessage: errorData
+                //   });
+                //   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
+                //   return;
+                // }
+
+                // // Now create the bet in the database
+                // const response = await fetch(`/api/betting`, {
+                //   method: 'POST',
+                //   headers: {
+                //     Authorization: `Bearer ${token}`,
+                //     'Content-Type': 'application/json',
+                //   },
+                //   body: JSON.stringify({
+                //     marketId: market.id,
+                //     userId: dbUser.user_id,
+                //     amount: betAmount,
+                //     betType: betType,
+                //     token_name: market.name
+                //   })
+                // });
+
+                // if (!response.ok) {
+                //   const errorData = await response.json();
+                //   // If API fails, we should handle this situation
+
+                //   logInfo('Error creating bet in database', {
+                //     errorMessage: errorData
+                //   });
+                //   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
+                //   return;
+                // }
 
                 // Reset form
                 setBetAmount(0);

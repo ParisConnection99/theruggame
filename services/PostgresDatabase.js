@@ -599,47 +599,92 @@ class PostgresDatabase {
         }
     }
 
-    async runInTransaction(operation) {
+    async runInTransaction(operation, isolationLevel = 'READ COMMITTED', context = {}) {
         const client = await this.pool.connect();
         let retries = 3;
-
+    
         while (retries > 0) {
             try {
-                console.log(`Starting transaction... Retries left: ${retries}`);
-
-                await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
-
+                console.log(`Starting transaction... Context: ${JSON.stringify(context)}, Retries left: ${retries}`);
+    
+                await client.query(`BEGIN ISOLATION LEVEL ${isolationLevel}`);
+    
                 const result = await operation(this.createTransactionDatabase(client));
-
+    
                 await client.query('COMMIT');
-                console.log(`Transaction committed successfully.`);
+                console.log(`Transaction committed successfully. Context: ${JSON.stringify(context)}`);
                 return result;
-
+    
             } catch (error) {
                 await client.query('ROLLBACK');
-                console.error(`Transaction failed. Rolling back...`, error);
-
-                // Retry if serialization failure (40001) or deadlock (40P01)
+                console.error(`Transaction failed. Context: ${JSON.stringify(context)}. Rolling back...`, error);
+    
+                if (error.code === '23505') {
+                    console.error('Unique constraint violation:', error.detail);
+                    throw new Error('Duplicate entry detected');
+                }
+                
                 if ((error.code === '40001' || error.code === '40P01') && retries > 1) {
                     retries--;
-                    console.warn(`Retrying transaction due to serialization failure/deadlock...`);
+                    console.warn(`Retrying transaction due to serialization failure/deadlock... Context: ${JSON.stringify(context)}`);
                     continue;
                 }
-
-                // If it's a different error, log and throw
-                console.error(`Transaction permanently failed: ${error.message}`, error.stack);
+    
+                console.error(`Transaction permanently failed: ${error.message}. Context: ${JSON.stringify(context)}`, error.stack);
                 throw error;
-
+    
             } finally {
                 try {
-                    client.release(true); // Ensure client is released
-                    console.log(`Database connection released.`);
+                    client.release(true);
+                    console.log(`Database connection released. Context: ${JSON.stringify(context)}`);
                 } catch (releaseError) {
-                    console.error(`Error releasing database connection: ${releaseError.message}`, releaseError.stack);
+                    console.error(`Error releasing database connection: ${releaseError.message}. Context: ${JSON.stringify(context)}`, releaseError.stack);
                 }
             }
         }
     }
+
+    // async runInTransaction(operation) {
+    //     const client = await this.pool.connect();
+    //     let retries = 3;
+
+    //     while (retries > 0) {
+    //         try {
+    //             console.log(`Starting transaction... Retries left: ${retries}`);
+
+    //             await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+
+    //             const result = await operation(this.createTransactionDatabase(client));
+
+    //             await client.query('COMMIT');
+    //             console.log(`Transaction committed successfully.`);
+    //             return result;
+
+    //         } catch (error) {
+    //             await client.query('ROLLBACK');
+    //             console.error(`Transaction failed. Rolling back...`, error);
+
+    //             // Retry if serialization failure (40001) or deadlock (40P01)
+    //             if ((error.code === '40001' || error.code === '40P01') && retries > 1) {
+    //                 retries--;
+    //                 console.warn(`Retrying transaction due to serialization failure/deadlock...`);
+    //                 continue;
+    //             }
+
+    //             // If it's a different error, log and throw
+    //             console.error(`Transaction permanently failed: ${error.message}`, error.stack);
+    //             throw error;
+
+    //         } finally {
+    //             try {
+    //                 client.release(true); // Ensure client is released
+    //                 console.log(`Database connection released.`);
+    //             } catch (releaseError) {
+    //                 console.error(`Error releasing database connection: ${releaseError.message}`, releaseError.stack);
+    //             }
+    //         }
+    //     }
+    // }
 
 
     setPool(pool) {

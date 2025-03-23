@@ -90,26 +90,6 @@ export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_END
     throw new Error(`Failed to check wallet balance on mobile: ${error.message}`);
   }
 }
-// export async function checkSufficientBalance(publicKey, amount, endpoint = RPC_ENDPOINT) {
-//   if (!publicKey) {
-//     throw new Error('Wallet not connected');
-//   }
-
-//   try {
-//     const connection = new Connection(endpoint, 'confirmed');
-//     const lamports = await connection.getBalance(publicKey);
-//     const solBalance = lamports / LAMPORTS_PER_SOL;
-
-//     // Add small buffer for transaction fees
-//     const requiredAmount = amount + 0.000005;
-
-//     return solBalance >= requiredAmount;
-//   } catch (error) {
-//     console.error('Error checking balance:', error);
-//     logInfo('Error checking balance', {});
-//     throw new Error(`Failed to check wallet balance: ${error.message}`);
-//   }
-// }
 
 /**
  * Transfers SOL from user wallet to the site wallet
@@ -274,6 +254,7 @@ export async function placeBet(
       const result = await transferSOL(publicKey, sendTransaction, betAmount);
 
       if (result.success) {
+        // we can call the endpoint from here
         onSuccess(result);
       } else {
         throw new Error(result.error);

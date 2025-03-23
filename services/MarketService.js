@@ -86,6 +86,65 @@ class MarketService {
   async createMessages(marketId, startTime, duration, endTime) {
      await marketPhaseMessageService.scheduleMarketPhaseChecks(marketId, startTime, duration, endTime);
   }
+
+  async placeBetFromTransfer(marketId, betData, amountToAddToBalance) {
+    if (!marketId || !betData || !amountToAddToBalance) {
+      throw new Error('Error processing Bet.');
+    }
+
+    if (amountToAddToBalance <= 0) {
+      throw new Error('Amount added must be positive');
+    }
+
+    // Validate positive values for all numeric fields
+    if (betData.amount <= 0) {
+      throw new Error('Bet amount must be positive.');
+    }
+
+    if (betData.netAmount <= 0) {
+      throw new Error('Net amount must be positive.');
+    }
+
+    if (betData.fee <= 0) {
+      throw new Error('Fee must be positive.');
+    }
+
+    if (betData.odds <= 0) {
+      throw new Error('Odds must be positive.');
+    }
+
+    if (betData.potentialPayout <= 0) {
+      throw new Error('Potential payout must be positive.');
+    }
+
+    console.log(`Before market expiry service.`);
+
+    try {
+      // Validate market is in betting phase
+      await this.expiryService.validateBetPlacement(marketId);
+
+      // Call the transaction function
+      const { data, error } = await this.supabase.rpc('update_balance_and_place_bet', {
+        user_id_param: betData.userId,
+        amount_to_add_param: amountToAddToBalance,
+        market_id_param: marketId,
+        amount_param: betData.amount,
+        net_amount_param: betData.netAmount,
+        fee_param: betData.fee,
+        bet_type_param: betData.betType,
+        odds_locked_param: betData.odds,
+        potential_payout_param: betData.potentialPayout,
+        token_name_param: betData.token_name
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error placing bet:', error);
+      throw error;
+    }
+
+  }
   
   async placeBet(marketId, betData) {
     if (!marketId || !betData) {

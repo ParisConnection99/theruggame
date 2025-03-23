@@ -136,6 +136,7 @@ class ServiceRepository {
   get tokenService() { return this.get('tokenService'); }
   get cashoutService() { return this.get('cashoutService'); }
   get expiryService() { return this.get('expiryService'); }
+  get database() { return this.get('db'); }
 }
 
 // Create and export a singleton instance

@@ -27,6 +27,21 @@ pool.on('connect', (client) => {
   client.query('SET statement_timeout = 10000');
 });
 
+async function withTransaction(callback) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');  // ✅ Ensure commit happens before returning
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 // Enhanced test connection function
 async function testConnection() {
   let client;
@@ -74,6 +89,7 @@ async function closePool() {
 // Export functions and pool
 module.exports = {
   pool,
+  withTransaction,
   testConnection,
   closePool
 };
