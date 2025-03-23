@@ -1,5 +1,4 @@
 'use client';
-import { useWallet } from '@solana/wallet-adapter-react';
 import { useAuth } from '@/components/FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -14,7 +13,6 @@ import { UAParser } from 'ua-parser-js';
 import { logInfo, logError } from '@/utils/logger';
 
 export default function ProfilePage() {
-    //const { disconnect, connected } = useWallet();
     const { user: authUser, auth } = useAuth();
     const parser = new UAParser();
     const analytics = useAnalytics();

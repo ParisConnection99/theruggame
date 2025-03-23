@@ -16,7 +16,7 @@ export default function Fees() {
           <tbody>
             <tr>
               <td className="border border-gray-300 px-4 py-2">Place a bet</td>
-              <td className="border border-gray-300 px-4 py-2">1% of the bet amount (in SOL)</td>
+              <td className="border border-gray-300 px-4 py-2">2% of the bet amount (in SOL)</td>
             </tr>
             <tr className="bg-gray-800">
               <td className="border border-gray-300 px-4 py-2">Claim winnings</td>
