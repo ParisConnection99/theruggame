@@ -101,7 +101,7 @@ export default function CashoutModal({ isOpen, onClose, onSubmit, maxAmount, def
           
           <div className="bg-yellow-800 bg-opacity-30 rounded border border-yellow-700 p-3 mb-4">
             <p className="text-yellow-300 text-sm">
-              Note: Cashout processing may take up to 5 hours. A 1% fee applies to all withdrawals.
+              Note: Cashout processing may take up to 5 hours.
             </p>
           </div>
           
