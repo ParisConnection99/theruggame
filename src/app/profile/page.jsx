@@ -291,6 +291,11 @@ export default function ProfilePage() {
                 username_changed_at: new Date().toISOString(),
             };
 
+            logInfo('Saving updated username', {
+                component: 'Profile Page',
+                updatedData: JSON.stringify(updatedData, null, 2)
+            });
+
             await fetch('/api/users', {
                 method: 'PATCH',
                 headers: {
