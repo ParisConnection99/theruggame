@@ -187,7 +187,7 @@ export default function ProfilePage() {
             });
         }
         try {
-            await signOut(auth);
+            //await signOut(auth);
             //await disconnect();
 
             // Add event

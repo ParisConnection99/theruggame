@@ -6,11 +6,10 @@ import Link from 'next/link';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { FaBars, FaTimes } from 'react-icons/fa';
 import { useAuth } from './FirebaseProvider';
+import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import nacl from 'tweetnacl';
-import bs58 from 'bs58';
-import { phantomConnect, buildUrl } from '@/utils/PhantomConnect';
+import { phantomConnect } from '@/utils/PhantomConnect';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -63,6 +62,8 @@ export default function Header() {
 
     const handleDesktopDisconnect = async () => {
         try {
+            await signOut(auth);
+
             if (connected) {
                 await disconnect();
                 // Clear any stored session data
@@ -89,6 +90,8 @@ export default function Header() {
 
     const handleMobileDisconnect = async () => {
         try {
+            await signOut(auth);
+
             if (!phantomConnect) {
                 throw new Error('PhantomConnect not initialized');
             }
