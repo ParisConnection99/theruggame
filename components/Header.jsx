@@ -42,7 +42,9 @@ export default function Header() {
     // Handle wallet connection when connected
     useEffect(() => {
         if (connected && publicKey && auth) {
-            console.log("Wallet connected:", publicKey.toString());
+            logInfo("Wallet connected:", {
+                publicKey: publicKey.toString()
+            });
             handleWalletConnection();
         }
     }, [connected, publicKey, auth]);
