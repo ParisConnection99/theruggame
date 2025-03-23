@@ -411,10 +411,14 @@ export default function Header() {
 
     const handleWalletConnection = async () => {
         try {
-            console.log("Starting wallet connection process");
+            logInfo("Starting wallet connection process", {});
             setConnectionStatus('connecting');
 
             if (!publicKey || !auth) {
+                logInfo('Error', {
+                    component: 'Header',
+                    error: "Wallet connection aborted: publicKey or auth not available"
+                })
                 console.log("Wallet connection aborted: publicKey or auth not available");
                 setConnectionStatus('error');
                 // Show error message to user
@@ -422,6 +426,11 @@ export default function Header() {
                 showConnectionError(errorMessage);
                 return;
             }
+
+            logInfo('Auth', {
+                auth: auth,
+                publicKey: publicKey
+            });
 
             const token = await auth.currentUser?.getIdToken();
 
