@@ -51,6 +51,11 @@ export default function ProfilePage() {
 
             const token = await authUser.getIdToken();
 
+            logInfo('User token', {
+                token: token,
+                component: 'Profile Page'
+            });
+
             try {
                 setUserLoading(true);
                 //const response = await fetch(`/api/users?wallet=${authUser.uid}`);
