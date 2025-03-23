@@ -470,6 +470,7 @@ export default function MarketPage() {
         const response = await fetch(`/api/betting`, {
           method: 'POST',
           headers: {
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -635,6 +636,7 @@ export default function MarketPage() {
                 const response = await fetch(`/api/betting`, {
                   method: 'POST',
                   headers: {
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
