@@ -259,7 +259,146 @@ export default function Header() {
         return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
 
-    
+    const connectUser = async (publicKey) => {
+        try {
+            logInfo("Starting wallet connection process", { component: "Header" });
+            setConnectionStatus("connecting");
+        
+            if (!publicKey || !auth) {
+              const errorMessage = !publicKey
+                ? "Wallet not connected properly"
+                : "Authentication service unavailable";
+        
+              logInfo("Wallet connection aborted", {
+                component: "Header",
+                error: errorMessage,
+                publicKeyAvailable: !!publicKey,
+                authAvailable: !!auth,
+              });
+        
+              setConnectionStatus("error");
+              showConnectionError(errorMessage);
+              return;
+            }
+        
+            logInfo("Fetching Firebase custom token", {
+              component: "Header",
+              publicKey: publicKey.toString(),
+            });
+        
+            // Fetch Firebase custom token
+            const response = await fetch("/api/auth", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ publicKey: publicKey.toString() }),
+            });
+        
+            const data = await response.json();
+        
+            if (data.error) {
+              logInfo("Error fetching Firebase custom token", {
+                component: "Header",
+                error: data.error,
+              });
+        
+              setConnectionStatus("error");
+              showConnectionError(`Authentication error: ${data.error}`);
+              throw new Error(data.error);
+            }
+        
+            logInfo("Signing in with custom token", { component: "Header" });
+        
+            // Sign in with the custom token
+            const userCredential = await signInWithCustomToken(auth, data.token);
+            logInfo("Firebase sign-in successful", {
+              component: "Header",
+              user: userCredential.user,
+            });
+        
+            // Check if user exists in the database
+            logInfo("Checking if user exists in the database", {
+              component: "Header",
+            });
+        
+            const userResponse = await fetch(`/api/users`, {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+              },
+            });
+        
+            let user = null;
+        
+            if (userResponse.status === 404) {
+              logInfo("User not found, creating new user", {
+                component: "Header",
+                publicKey: publicKey.toString(),
+              });
+        
+              const createUserResponse = await fetch("/api/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  wallet_ca: publicKey.toString(),
+                  username: getDefaultUsername(),
+                }),
+              });
+        
+              if (!createUserResponse.ok) {
+                const errorData = await createUserResponse.json();
+                logInfo("Error creating new user", {
+                  component: "Header",
+                  error: errorData.error,
+                });
+                throw new Error(errorData.error || "Failed to create user");
+              }
+        
+              user = await createUserResponse.json();
+              logInfo("New user created successfully", {
+                component: "Header",
+                user,
+              });
+            } else if (!userResponse.ok) {
+              const errorData = await userResponse.json();
+              logInfo("Error fetching user from database", {
+                component: "Header",
+                error: errorData.error,
+              });
+              throw new Error(errorData.error || "Failed to fetch user");
+            } else {
+              user = await userResponse.json();
+              logInfo("User fetched successfully from database", {
+                component: "Header",
+                user,
+              });
+            }
+        
+            // Set the user profile
+            setUserProfile(user);
+            setConnectionStatus("success");
+            logInfo("Wallet connection process completed successfully", {
+              component: "Header",
+              userProfile: user,
+            });
+          } catch (error) {
+            logInfo("Error during wallet connection process", {
+              component: "Header",
+              error: error.message,
+            });
+        
+            console.error("Error during authentication:", error);
+            setConnectionStatus("error");
+        
+            if (error.message?.includes("Firebase")) {
+              showConnectionError("Failed to authenticate with the server");
+            } else if (error.message?.includes("token")) {
+              showConnectionError("Failed to create user session");
+            } else {
+              showConnectionError(error.message || "Connection failed, please try again");
+            }
+          }
+    }
 
     // Function to handle wallet connection from callback data
     const handleWalletCallbackConnection = async (walletData) => {
@@ -413,144 +552,153 @@ export default function Header() {
     };
 
     const handleWalletConnection = async () => {
+        // try {
+        //   logInfo("Starting wallet connection process", { component: "Header" });
+        //   setConnectionStatus("connecting");
+      
+        //   if (!publicKey || !auth) {
+        //     const errorMessage = !publicKey
+        //       ? "Wallet not connected properly"
+        //       : "Authentication service unavailable";
+      
+        //     logInfo("Wallet connection aborted", {
+        //       component: "Header",
+        //       error: errorMessage,
+        //       publicKeyAvailable: !!publicKey,
+        //       authAvailable: !!auth,
+        //     });
+      
+        //     setConnectionStatus("error");
+        //     showConnectionError(errorMessage);
+        //     return;
+        //   }
+      
+        //   logInfo("Fetching Firebase custom token", {
+        //     component: "Header",
+        //     publicKey: publicKey.toString(),
+        //   });
+      
+        //   // Fetch Firebase custom token
+        //   const response = await fetch("/api/auth", {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify({ publicKey: publicKey.toString() }),
+        //   });
+      
+        //   const data = await response.json();
+      
+        //   if (data.error) {
+        //     logInfo("Error fetching Firebase custom token", {
+        //       component: "Header",
+        //       error: data.error,
+        //     });
+      
+        //     setConnectionStatus("error");
+        //     showConnectionError(`Authentication error: ${data.error}`);
+        //     throw new Error(data.error);
+        //   }
+      
+        //   logInfo("Signing in with custom token", { component: "Header" });
+      
+        //   // Sign in with the custom token
+        //   const userCredential = await signInWithCustomToken(auth, data.token);
+        //   logInfo("Firebase sign-in successful", {
+        //     component: "Header",
+        //     user: userCredential.user,
+        //   });
+      
+        //   // Check if user exists in the database
+        //   logInfo("Checking if user exists in the database", {
+        //     component: "Header",
+        //   });
+      
+        //   const userResponse = await fetch(`/api/users`, {
+        //     method: "GET",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //       Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+        //     },
+        //   });
+      
+        //   let user = null;
+      
+        //   if (userResponse.status === 404) {
+        //     logInfo("User not found, creating new user", {
+        //       component: "Header",
+        //       publicKey: publicKey.toString(),
+        //     });
+      
+        //     const createUserResponse = await fetch("/api/users", {
+        //       method: "POST",
+        //       headers: { "Content-Type": "application/json" },
+        //       body: JSON.stringify({
+        //         wallet_ca: publicKey.toString(),
+        //         username: getDefaultUsername(),
+        //       }),
+        //     });
+      
+        //     if (!createUserResponse.ok) {
+        //       const errorData = await createUserResponse.json();
+        //       logInfo("Error creating new user", {
+        //         component: "Header",
+        //         error: errorData.error,
+        //       });
+        //       throw new Error(errorData.error || "Failed to create user");
+        //     }
+      
+        //     user = await createUserResponse.json();
+        //     logInfo("New user created successfully", {
+        //       component: "Header",
+        //       user,
+        //     });
+        //   } else if (!userResponse.ok) {
+        //     const errorData = await userResponse.json();
+        //     logInfo("Error fetching user from database", {
+        //       component: "Header",
+        //       error: errorData.error,
+        //     });
+        //     throw new Error(errorData.error || "Failed to fetch user");
+        //   } else {
+        //     user = await userResponse.json();
+        //     logInfo("User fetched successfully from database", {
+        //       component: "Header",
+        //       user,
+        //     });
+        //   }
+      
+        //   // Set the user profile
+        //   setUserProfile(user);
+        //   setConnectionStatus("success");
+        //   logInfo("Wallet connection process completed successfully", {
+        //     component: "Header",
+        //     userProfile: user,
+        //   });
+        // } catch (error) {
+        //   logInfo("Error during wallet connection process", {
+        //     component: "Header",
+        //     error: error.message,
+        //   });
+      
+        //   console.error("Error during authentication:", error);
+        //   setConnectionStatus("error");
+      
+        //   if (error.message?.includes("Firebase")) {
+        //     showConnectionError("Failed to authenticate with the server");
+        //   } else if (error.message?.includes("token")) {
+        //     showConnectionError("Failed to create user session");
+        //   } else {
+        //     showConnectionError(error.message || "Connection failed, please try again");
+        //   }
+        // }
         try {
-          logInfo("Starting wallet connection process", { component: "Header" });
-          setConnectionStatus("connecting");
-      
-          if (!publicKey || !auth) {
-            const errorMessage = !publicKey
-              ? "Wallet not connected properly"
-              : "Authentication service unavailable";
-      
-            logInfo("Wallet connection aborted", {
-              component: "Header",
-              error: errorMessage,
-              publicKeyAvailable: !!publicKey,
-              authAvailable: !!auth,
-            });
-      
-            setConnectionStatus("error");
-            showConnectionError(errorMessage);
-            return;
-          }
-      
-          logInfo("Fetching Firebase custom token", {
-            component: "Header",
-            publicKey: publicKey.toString(),
-          });
-      
-          // Fetch Firebase custom token
-          const response = await fetch("/api/auth", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ publicKey: publicKey.toString() }),
-          });
-      
-          const data = await response.json();
-      
-          if (data.error) {
-            logInfo("Error fetching Firebase custom token", {
-              component: "Header",
-              error: data.error,
-            });
-      
-            setConnectionStatus("error");
-            showConnectionError(`Authentication error: ${data.error}`);
-            throw new Error(data.error);
-          }
-      
-          logInfo("Signing in with custom token", { component: "Header" });
-      
-          // Sign in with the custom token
-          const userCredential = await signInWithCustomToken(auth, data.token);
-          logInfo("Firebase sign-in successful", {
-            component: "Header",
-            user: userCredential.user,
-          });
-      
-          // Check if user exists in the database
-          logInfo("Checking if user exists in the database", {
-            component: "Header",
-          });
-      
-          const userResponse = await fetch(`/api/users`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
-            },
-          });
-      
-          let user = null;
-      
-          if (userResponse.status === 404) {
-            logInfo("User not found, creating new user", {
-              component: "Header",
-              publicKey: publicKey.toString(),
-            });
-      
-            const createUserResponse = await fetch("/api/users", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                wallet_ca: publicKey.toString(),
-                username: getDefaultUsername(),
-              }),
-            });
-      
-            if (!createUserResponse.ok) {
-              const errorData = await createUserResponse.json();
-              logInfo("Error creating new user", {
-                component: "Header",
-                error: errorData.error,
-              });
-              throw new Error(errorData.error || "Failed to create user");
-            }
-      
-            user = await createUserResponse.json();
-            logInfo("New user created successfully", {
-              component: "Header",
-              user,
-            });
-          } else if (!userResponse.ok) {
-            const errorData = await userResponse.json();
-            logInfo("Error fetching user from database", {
-              component: "Header",
-              error: errorData.error,
-            });
-            throw new Error(errorData.error || "Failed to fetch user");
-          } else {
-            user = await userResponse.json();
-            logInfo("User fetched successfully from database", {
-              component: "Header",
-              user,
-            });
-          }
-      
-          // Set the user profile
-          setUserProfile(user);
-          setConnectionStatus("success");
-          logInfo("Wallet connection process completed successfully", {
-            component: "Header",
-            userProfile: user,
-          });
+            await connectUser(publicKey);
         } catch (error) {
-          logInfo("Error during wallet connection process", {
-            component: "Header",
-            error: error.message,
-          });
-      
-          console.error("Error during authentication:", error);
-          setConnectionStatus("error");
-      
-          if (error.message?.includes("Firebase")) {
-            showConnectionError("Failed to authenticate with the server");
-          } else if (error.message?.includes("token")) {
-            showConnectionError("Failed to create user session");
-          } else {
-            showConnectionError(error.message || "Connection failed, please try again");
-          }
+            logError(error, {
+                component: 'Header',
+                action: 'Connecting user'
+            })
         }
+        
       };
 
     // const handleWalletConnection = async () => {
