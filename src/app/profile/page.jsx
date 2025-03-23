@@ -202,7 +202,7 @@ export default function ProfilePage() {
                 action: 'sign out'
             });
 
-            await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
+            //await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
 
             router.push('/');
         } catch (error) {
