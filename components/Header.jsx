@@ -432,7 +432,7 @@ export default function Header() {
                 publicKey: publicKey
             });
 
-            const token = await auth.currentUser?.getIdToken();
+            const token = await auth().currentUser?.getIdToken();
 
             const userResponse = await fetch(`/api/users`, {
                 method: 'GET',
