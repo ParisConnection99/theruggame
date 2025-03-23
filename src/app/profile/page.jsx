@@ -330,6 +330,10 @@ export default function ProfilePage() {
     };
 
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
+        if (!authUser) {
+            throw new Error("User data not available");
+        }
+
         const deviceInfo = {
             browser: parser.getBrowser(),
             device: parser.getDevice(),
@@ -337,10 +341,12 @@ export default function ProfilePage() {
         };
 
         try {
+            const token = await authUser.getIdToken();
 
             const response = await fetch('/api/cashouts', {
-                method: 'POST',
+                method: 'POST', 
                 headers: {
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
