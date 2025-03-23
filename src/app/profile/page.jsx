@@ -98,13 +98,21 @@ export default function ProfilePage() {
     // Fetch the users bet history - only runs when userData is available
     useEffect(() => {
         const fetchBets = async () => {
-            if (!userData || !userData.user_id) {
+            if (!userData || !userData.user_id || !authUser) {
                 return;
             }
 
             try {
                 setBetsLoading(true);
-                const response = await fetch(`/api/betting/user/${userData.user_id}`);
+                const token = await authUser.getIdToken();
+
+                //const response = await fetch(`/api/betting/user/${userData.user_id}`);
+                const response = await fetch(`/api/betting/user/${userData.user_id}`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
                 if (!response.ok) {
                     const errorData = await response.json();
