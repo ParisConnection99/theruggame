@@ -62,19 +62,19 @@ export default function ProfilePage() {
             try {
                 setUserLoading(true);
                 //const response = await fetch(`/api/users?wallet=${authUser.uid}`);
-                const response = await fetch(`/api/users`, {
-                    method: 'GET',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                // const response = await fetch(`/api/users`, {
+                //     method: 'GET',
+                //     headers: {
+                //         Authorization: `Bearer ${token}`,
+                //     },
+                // });
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user data');
-                }
+                // if (!response.ok) {
+                //     throw new Error('Failed to fetch user data');
+                // }
 
-                const dbUser = await response.json();
-                setUserData(dbUser);
+                // const dbUser = await response.json();
+                // setUserData(dbUser);
             } catch (error) {
                 console.error("Error fetching user data:", error);
                 logEvent(analytics, 'profile_page_error', {
