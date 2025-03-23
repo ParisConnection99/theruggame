@@ -187,9 +187,7 @@ export default function ProfilePage() {
             });
         }
         try {
-            //await signOut(auth);
-            //await disconnect();
-
+            
             // Add event
             const walletEvent = new CustomEvent('wallet-disconnect-event', {
                 timestamp: new Date()
@@ -201,8 +199,6 @@ export default function ProfilePage() {
                 component: 'ProfilePage',
                 action: 'sign out'
             });
-
-            //await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
 
             router.push('/');
         } catch (error) {
