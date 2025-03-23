@@ -49,6 +49,9 @@ export default function ProfilePage() {
                 return;
             }
 
+            logInfo('Before token id token fetching', {
+                component: 'Profile Page'
+            });
             const token = await authUser.getIdToken();
 
             logInfo('User token', {
