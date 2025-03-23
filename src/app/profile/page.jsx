@@ -1,6 +1,5 @@
 'use client';
 import { useAuth } from '@/components/FirebaseProvider';
-import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -295,6 +294,7 @@ export default function ProfilePage() {
             await fetch('/api/users', {
                 method: 'PATCH',
                 headers: {
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
