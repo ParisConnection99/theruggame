@@ -280,7 +280,7 @@ export default function ProfilePage() {
     };
 
     const handleSaveUsername = async (newUsername) => {
-        if (!userData || !userData.user_id) {
+        if (!userData || !userData.user_id || !authUser) {
             throw new Error("User data not available");
         }
 
@@ -295,6 +295,8 @@ export default function ProfilePage() {
                 component: 'Profile Page',
                 updatedData: JSON.stringify(updatedData, null, 2)
             });
+
+            const token = await authUser.getIdToken();
 
             await fetch('/api/users', {
                 method: 'PATCH',
