@@ -59,7 +59,7 @@ export async function POST(request) {
         await serviceRepo.bettingService.placeBetFromTransfer(marketId, betData, amountToAddToBalance);
 
         // Return the response
-        return new Response(JSON.stringify({ success: true, ...result }), {
+        return new Response(JSON.stringify({ success: true }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
         });
