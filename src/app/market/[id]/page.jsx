@@ -580,9 +580,11 @@ export default function MarketPage() {
           return;
         }
 
+
+
         const amountToAdd = Math.max(0, solanaBalance + balance - betWithFees);
 
-        alert(amountToAdd);
+        alert(`Balance= ${balance}, walletBalance= ${solanaBalance}, amountToAdd= ${amountToAdd}`);
 
         throw new Error('Test');
 
