@@ -116,7 +116,7 @@ class PhantomConnect {
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             //cluster: "mainnet-beta",
             cluster: 'devnet',
-            app_url: "https://theruggame.fun/",
+            app_url: "https://phantom.app/",
             redirect_link: "https://theruggame.fun/wallet-callback",
         });
 
