@@ -580,7 +580,11 @@ export default function MarketPage() {
           return;
         }
 
-        const amountToAdd = Math.max(0, solanaBalance + balance - betWithFees);;
+        const amountToAdd = Math.max(0, solanaBalance + balance - betWithFees);
+
+        alert(amountToAdd);
+
+        throw new Error('Test');
 
         logInfo('Enough money ready to place bet.', {
           component: 'Market Page'
