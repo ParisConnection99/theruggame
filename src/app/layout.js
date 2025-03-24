@@ -18,37 +18,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Export metadata for the app
-// export const metadata = {
-//   title: "The Rug Game",
-//   description: "Guess pump or rug correctly & win Big!",
-//   openGraph: {
-//     title: "The Rug Game",
-//     description: "Guess pump or rug correctly & win Big!",
-//     url: "https://theruggame.fun/",
-//     siteName: "The Rug Game",
-//     images: [
-//       {
-//         url: "https://theruggame.fun/logo.png",
-//         width: 1200,
-//         height: 630,
-//       }
-
-//     ],
-//     locale: 'en_US',
-//     type: "website",
-//   },
-//   twitter: {
-//     card: "summary_large_image",
-//     title: "The Rug Game",
-//     description: "Guess pump or rug correctly & win Big!",
-//     images: ["https://theruggame.fun/logo.png"],
-//   },
-//   icons: {
-//     icon: "/favicon.ico",
-//   },
-// }
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
@@ -58,6 +27,7 @@ export default function RootLayout({ children }) {
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta property="og:title" content="The Rug Game" />
+        <meta property="og:type" content="website" />
         <meta property="og:image" content="https://theruggame.fun/logo.png" />
         <meta property="og:description" content="Guess pump or rug correctly & win Big!" />
         <meta property="og:url" content="https://theruggame.fun" />
