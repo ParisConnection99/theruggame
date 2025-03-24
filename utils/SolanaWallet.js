@@ -180,16 +180,16 @@ export async function transferSOL(
 export async function placeBet(
   publicKey,
   sendTransaction,
-  betAmount,
+  betAmount, // Full bet amount without fees / will be added to create bet
   onSuccess,
   onError,
   setLoading = null,
   isMobile = false,
   marketId = null, // Add marketId parameter
   userId,
-  amountToAdd,
+  amountToAdd, // This is the amount needed to be fetched from wallet
   betType,
-  token_name, 
+  token_name,
   token
 ) {
   if (setLoading) setLoading(true);
@@ -220,10 +220,22 @@ export async function placeBet(
 
     // Check balance (works for both mobile and web)
     let hasEnough;
+
     if (isMobile) {
-      hasEnough = await checkSufficientBalanceForMobile(betAmount);
+      try {
+        const { isEnough } = await checkSufficientBalanceForMobile(amountToAdd);
+        hasEnough = isEnough;
+      } catch (error) {
+        throw new Error('Failed to fetch wallet balance');
+      }
+
     } else {
-      hasEnough = await checkSufficientBalance(publicKeyToCheck, betAmount);
+      try {
+        const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
+        hasEnough = isEnough;
+      } catch (error) {
+        throw new Error('Failed to fetch wallet balance');
+      }
     }
 
     if (!hasEnough) {
@@ -246,7 +258,7 @@ export async function placeBet(
           throw new Error('PhantomConnect not initialized');
         }
 
-        await phantomConnect.signAndSendTransaction(betAmount, publicKeyToCheck);
+        await phantomConnect.signAndSendTransaction(amountToAdd, publicKeyToCheck);
 
         logInfo('Bet was successfull on mobile', {
           component: 'Solana wallet'
@@ -261,7 +273,7 @@ export async function placeBet(
       }
     } else {
       // Handle web transaction as before
-      const result = await transferSOL(publicKey, sendTransaction, betAmount);
+      const result = await transferSOL(publicKey, sendTransaction, amountToAdd);
 
       if (result.success) {
         // we can call the endpoint from here

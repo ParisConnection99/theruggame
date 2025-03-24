@@ -137,7 +137,7 @@ export default function MarketPage() {
       try {
         setUserLoading(true);
         console.log(`Auth user uid: ${authUser.uid}`);
-        
+
         const token = await authUser.getIdToken();
 
         const response = await fetch(`/api/users`, {
@@ -544,23 +544,47 @@ export default function MarketPage() {
         // Need to use wallet payment
         let hasEnough;
         let solanaBalance;
+        // Balance + wallet amount - bet amount
+
+        /*
+        - Fetch the solana balance
+        - Add it balance if its greater or equal to the bet amount 
+        - enough is true
+        */
 
         // We need to add the amount in the users balance + extras needed from the wallet
 
         if (isMobileDevice) {
-           const { isEnough, solBalance } = await checkSufficientBalanceForMobile(betWithFees);
-           hasEnough = isEnough;
-           solanaBalance = solBalance;
-        } else {
-          const { isEnough, solBalance } = await checkSufficientBalance(userPublicKey, betWithFees);
-          hasEnough = isEnough;
-          solanaBalance = solBalance;
-        }
+          try {
+            const { solBalance } = await checkSufficientBalanceForMobile(betWithFees);
 
-        logInfo('Balance', {
-          sol: solanaBalance,
-        });
-        throw new Error('TESTING 123..');
+            solanaBalance = solBalance;
+          } catch (error) {
+            logError(error, {
+              component: 'Market Page'
+            });
+            alert("Failed to fetch wallet balance. Please try again.");
+            setIsBetting(false);
+            setLoading(false);
+            return;
+          }
+
+          hasEnough = solanaBalance + balance > betWithFees;
+
+        } else {
+          try {
+            const { solBalance } = await checkSufficientBalance(userPublicKey, betWithFees);
+
+            solanaBalance = solBalance;
+          } catch (error) {
+            alert("Failed to fetch wallet balance. Please try again.");
+            setIsBetting(false);
+            setLoading(false);
+            return;
+          }
+          
+          hasEnough = solanaBalance + balance > betWithFees;
+        }
 
         if (!hasEnough) {
           logInfo('You dont have enough SOL', {});
@@ -570,51 +594,53 @@ export default function MarketPage() {
           return;
         }
 
+        const amountToAdd = Math.max(0, solanaBalance + balance - betWithFees);;
+
         logInfo('Enough money ready to place bet.', {
           component: 'Market Page'
         });
 
-        if (isMobileDevice) {
-          logInfo('Encrypting data', {
-            component: 'Market Page'
-          });
+        // if (isMobileDevice) {
+        //   logInfo('Encrypting data', {
+        //     component: 'Market Page'
+        //   });
 
-          const balanceData = {
-            userId: dbUser.user_id,
-            amount: betWithFees
-          }
+        //   const balanceData = {
+        //     userId: dbUser.user_id,
+        //     amount: betWithFees
+        //   }
 
-          const betData = {
-            marketId: market.id,
-            userId: dbUser.user_id,
-            amount: betAmount,
-            betType: betType,
-            token_name: market.name,
-          };
+        //   const betData = {
+        //     marketId: market.id,
+        //     userId: dbUser.user_id,
+        //     amount: betAmount,
+        //     betType: betType,
+        //     token_name: market.name,
+        //   };
 
-          if (!encryptKey) {
-            throw new Error('Encryption key is missing or undefined.');
-          }
+        //   if (!encryptKey) {
+        //     throw new Error('Encryption key is missing or undefined.');
+        //   }
 
-          // Encrypt the data
-          const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
-          const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
+        //   // Encrypt the data
+        //   const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
+        //   const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
 
 
-          // Save the encrypted data to local storage
-          localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
-          localStorage.setItem('encryptedBetData', encryptedBetData);
+        //   // Save the encrypted data to local storage
+        //   localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
+        //   localStorage.setItem('encryptedBetData', encryptedBetData);
 
-          logInfo('Encrypted data saved to local storage', {
-            component: 'Market Page'
-          });
-        }
+        //   logInfo('Encrypted data saved to local storage', {
+        //     component: 'Market Page'
+        //   });
+        // }
         // Use placeBet with proper callbacks
         await new Promise((resolve, reject) => {
           placeBet(
             userPublicKey,
             sendTransaction,
-            betWithFees,
+            betAmount,
             // Success callback
             async (transferResult) => {
               try {
@@ -641,7 +667,7 @@ export default function MarketPage() {
             isMobileDevice,
             market.id,
             dbUser.user_id,
-            betWithFees,
+            amountToAdd,
             betType,
             market.name,
             token
