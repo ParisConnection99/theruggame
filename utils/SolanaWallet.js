@@ -41,7 +41,8 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
     // Add small buffer for transaction fees
     const requiredAmount = amount + 0.000005;
 
-    return solBalance >= requiredAmount;
+    return { isEnough: solBalance >= requiredAmount, solBalance: solBalance };
+
   } catch (error) {
     console.error('Error checking balance:', error);
     logInfo('Error checking balance', {
@@ -80,7 +81,7 @@ export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_END
     // Add small buffer for transaction fees
     const requiredAmount = amount + 0.000005;
 
-    return solBalance >= requiredAmount;
+    return { isEnough: solBalance >= requiredAmount, solBalance: solBalance };
   } catch (error) {
     console.error('Error checking balance on mobile:', error);
     logInfo('Error checking balance on mobile', {

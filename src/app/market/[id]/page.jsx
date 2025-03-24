@@ -543,14 +543,24 @@ export default function MarketPage() {
 
         // Need to use wallet payment
         let hasEnough;
+        let solanaBalance;
 
         // We need to add the amount in the users balance + extras needed from the wallet
 
         if (isMobileDevice) {
-          hasEnough = await checkSufficientBalanceForMobile(betWithFees);
+           const { isEnough, solBalance } = await checkSufficientBalanceForMobile(betWithFees);
+           hasEnough = isEnough;
+           solanaBalance = solBalance;
         } else {
-          hasEnough = await checkSufficientBalance(userPublicKey, betWithFees);
+          const { isEnough, solBalance } = await checkSufficientBalance(userPublicKey, betWithFees);
+          hasEnough = isEnough;
+          solanaBalance = solBalance;
         }
+
+        logInfo('Balance', {
+          sol: solanaBalance,
+        });
+        throw new Error('TESTING 123..');
 
         if (!hasEnough) {
           logInfo('You dont have enough SOL', {});
@@ -608,84 +618,6 @@ export default function MarketPage() {
             // Success callback
             async (transferResult) => {
               try {
-                // console.log("Transfer successful:", transferResult);
-
-                // logInfo('Transfer successful', {});
-
-                // const response = await fetch(`/api/betting/transfer`, {
-                //   method: 'POST',
-                //   headers: {
-                //     Authorization: `Bearer ${token}`,
-                //     'Content-Type': 'application/json',
-                //   },
-                //   body: JSON.stringify({
-                //      marketId: market.id,
-                //      userId: dbUser.user_id,
-                //      amountToAddToBalance: betWithFees,
-                //      amount: betAmount,
-                //      betType: betType,
-                //      token_name: market.name
-                //   })
-                // });
-
-                // if (!response.ok) {
-                //   const errorData = await response.json();
-                //   logInfo('Error placing bet', {
-                //     errorData: errorData,
-                //     component: 'Market Page'
-                //   });
-                //   reject(new Error(errorData.message || errorData.error || 'Error saving bet details'));
-                // }
-
-                // Update the users balance 
-                // const updatedUserResponse = await fetch(`/api/users`, {
-                //   method: 'POST',
-                //   headers: {
-                //     'Content-Type': 'application/json',
-                //   },
-                //   body: JSON.stringify({
-                //     userId: dbUser.user_id,
-                //     amount: betWithFees
-                //   })
-                // });
-
-                // if (!updatedUserResponse.ok) {
-                //   const errorData = await updatedUserResponse.json();
-
-                //   logInfo('Error updating users balance', {
-                //     errorMessage: errorData
-                //   });
-                //   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
-                //   return;
-                // }
-
-                // // Now create the bet in the database
-                // const response = await fetch(`/api/betting`, {
-                //   method: 'POST',
-                //   headers: {
-                //     Authorization: `Bearer ${token}`,
-                //     'Content-Type': 'application/json',
-                //   },
-                //   body: JSON.stringify({
-                //     marketId: market.id,
-                //     userId: dbUser.user_id,
-                //     amount: betAmount,
-                //     betType: betType,
-                //     token_name: market.name
-                //   })
-                // });
-
-                // if (!response.ok) {
-                //   const errorData = await response.json();
-                //   // If API fails, we should handle this situation
-
-                //   logInfo('Error creating bet in database', {
-                //     errorMessage: errorData
-                //   });
-                //   reject(new Error(errorData.message || errorData.error || 'Error recording bet'));
-                //   return;
-                // }
-
                 // Reset form
                 setBetAmount(0);
                 setHouseFee(0);
