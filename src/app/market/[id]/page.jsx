@@ -542,17 +542,8 @@ export default function MarketPage() {
         });
 
         // Need to use wallet payment
-        let hasEnough;
+        
         let solanaBalance;
-        // Balance + wallet amount - bet amount
-
-        /*
-        - Fetch the solana balance
-        - Add it balance if its greater or equal to the bet amount 
-        - enough is true
-        */
-
-        // We need to add the amount in the users balance + extras needed from the wallet
 
         try {
           const { solBalance } = isMobileDevice
@@ -570,19 +561,17 @@ export default function MarketPage() {
           return;
         }
 
-        hasEnough = solanaBalance + balance > betWithFees;
+        const amountToAdd = Math.max(0, betWithFees - balance);
+
+        logInfo('Calculated amountToAdd:', { amountToAdd, solanaBalance, balance, betWithFees });
         
-        if (!hasEnough) {
+        if (solanaBalance < amountToAdd) {
           logInfo('You dont have enough SOL', {});
           alert("You don't have enough SOL to place this bet.");
           setIsBetting(false);
           setLoading(false);
           return;
         }
-
-
-
-        const amountToAdd = Math.max(0, solanaBalance + balance - betWithFees);
 
         logInfo('Enough money ready to place bet.', {
           component: 'Market Page'
