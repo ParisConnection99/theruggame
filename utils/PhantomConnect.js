@@ -52,7 +52,7 @@ const getUint8ArrayFromJsonString = (jsonString) => {
 }
 
 const buildUrl = (path, params) =>
-    `phantom.app//v1/${path}?${params.toString()}`;
+    `https://phantom.app/ul/v1/${path}?${params.toString()}`;
 
 class PhantomConnect {
     constructor() {
