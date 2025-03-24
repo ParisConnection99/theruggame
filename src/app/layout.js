@@ -53,23 +53,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <title>Google</title>
-        <link rel="icon" href="https://www.google.com/favicon.ico" />
-        <link rel="shortcut icon" href="https://www.google.com/favicon.ico" />
-        <link rel="apple-touch-icon" href="https://www.google.com/apple-touch-icon.png" />
-
-        <meta property="og:title" content="Google" />
-        <meta property="og:image" content="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />
-        <meta property="og:description" content="Search the world's information, including webpages, images, videos, and more." />
-        <meta property="og:url" content="https://www.google.com" />
-        <meta property="og:type" content="website" />
-
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Google" />
-        <meta name="twitter:description" content="Search the world's information, including webpages, images, videos, and more." />
-        <meta name="twitter:image" content="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" />
-      </head>
-      {/* <head>
         <title>The Rug Game</title>
         <link rel="icon" href="/favicon.ico?v=1" />
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -82,7 +65,7 @@ export default function RootLayout({ children }) {
         <meta name="twitter:title" content="The Rug Game" />
         <meta name="twitter:description" content="Guess pump or rug correctly & win Big!" />
         <meta name="twitter:image" content="https://theruggame.fun/logo.png" />
-      </head> */}
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-blue-900`}>
         <GlobalErrorHandler>
           <ClientProviders>
