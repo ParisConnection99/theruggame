@@ -38,126 +38,6 @@ export default function Header() {
         checkMobile();
     }, []);
 
-    // Handle wallet connection when connected
-    useEffect(() => {
-        const handleAsyncEffect = async () => {
-          try {
-            if (connected && publicKey && auth) {
-              logInfo("Wallet connected:", {
-                publicKey: publicKey.toString(),
-              });
-              await handleWalletConnection();
-              setIsEffectivelyConnected(true);
-            }
-          } catch (error) {
-            logError(error, {
-              component: "Header",
-              action: "Handling wallet connection",
-            });
-          }
-        };
-      
-        handleAsyncEffect();
-      }, [connected, publicKey, auth]);
-
-    const handleDesktopDisconnect = async () => {
-        try {
-            await signOut(auth);
-
-            if (connected) {
-                await disconnect();
-                // Clear any stored session data
-                setIsEffectivelyConnected(false);
-                window.localStorage.removeItem('phantomSession');
-                window.localStorage.removeItem('phantomSharedSecret');
-                window.localStorage.removeItem('phantomPublicKey');
-                logInfo('Desktop wallet disconnected', {
-                    component: 'Header',
-                    walletState: {
-                        connected: connected,
-                        publicKey: publicKey?.toString()
-                    }
-                });
-            }
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'desktop wallet disconnect'
-            });
-            throw error;
-        }
-    };
-
-    const handleMobileDisconnect = async () => {
-        try {
-            await signOut(auth);
-
-            if (!phantomConnect) {
-                throw new Error('PhantomConnect not initialized');
-            }
-
-            await phantomConnect.disconnect();
-
-            setIsEffectivelyConnected(false);
-            
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'mobile disconnect'
-            });
-            throw error;
-        }
-    };
-
-    // Listen for wallet disconnect event
-    useEffect(() => {
-        let isDisconnecting = false;
-
-        const handleWalletDisconnect = async () => {
-            if (isDisconnecting) {
-                logInfo('Disconnect already in progress, ignoring call', {
-                    component: 'Header'
-                });
-                return;
-            }
-
-            isDisconnecting = true;
-
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                navigator.userAgent
-            );
-
-            try {
-                logInfo('Disconnect triggered', {
-                    component: 'Header',
-                    isMobile: isMobileDevice,
-                    hasSession: !!window.localStorage.getItem('phantomSession')
-                });
-
-            
-                if (isMobileDevice) {
-                    await handleMobileDisconnect();
-                } else {
-                    await handleDesktopDisconnect();
-                }
-
-                window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
-
-            } catch (error) {
-                logError(error, {
-                    component: 'Header',
-                    action: 'wallet disconnect'
-                });
-            } finally {
-                isDisconnecting = false;
-            }
-        };
-
-        window.addEventListener('wallet-disconnect-event', handleWalletDisconnect);
-        return () => window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
-    }, [connected, disconnect]);
-
-
     // Monitor connection states
     useEffect(() => {
         if (connected) {
@@ -168,6 +48,8 @@ export default function Header() {
             setConnectionStatus('success');
         }
     }, [connected, publicKey]);
+
+    // < -- HANDLE DESKTOP CONNECTIONS --> 
 
     const handleDesktopWalletConnection = async () => {
         try {
@@ -209,6 +91,205 @@ export default function Header() {
             showConnectionError(error.message || 'Connection failed, please try again');
         }
     };
+
+    const handleDesktopDisconnect = async () => {
+        try {
+            await signOut(auth);
+
+            if (connected) {
+                await disconnect();
+                // Clear any stored session data
+                setIsEffectivelyConnected(false);
+                logInfo('Desktop wallet disconnected', {
+                    component: 'Header',
+                    walletState: {
+                        connected: connected,
+                        publicKey: publicKey?.toString()
+                    }
+                });
+            }
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'desktop wallet disconnect'
+            });
+            throw error;
+        }
+    };
+
+    // Handle wallet connection when connected
+    useEffect(() => {
+        const handleAsyncEffect = async () => {
+            try {
+                if (connected && publicKey && auth) {
+                    logInfo("Wallet connected:", {
+                        publicKey: publicKey.toString(),
+                    });
+                    await handleDesktopUserConnection();
+                    setIsEffectivelyConnected(true);
+                }
+            } catch (error) {
+                logError(error, {
+                    component: "Header",
+                    action: "Handling wallet connection",
+                });
+            }
+        };
+
+        handleAsyncEffect();
+    }, [connected, publicKey, auth]);
+
+    const handleDesktopUserConnection = async () => {
+        try {
+            await connectDesktopUser(publicKey);
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'Connecting user'
+            })
+        }
+    };
+
+    const connectDesktopUser = async (publicKey) => {
+        try {
+            setConnectionStatus("connecting");
+
+            if (!publicKey || !auth) {
+                const errorMessage = !publicKey
+                    ? "Wallet not connected properly"
+                    : "Authentication service unavailable";
+
+                setConnectionStatus("error");
+                showConnectionError(errorMessage);
+                return;
+            }
+
+            // Fetch Firebase custom token
+            const response = await fetch("/api/auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ publicKey: publicKey.toString() }),
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                logInfo("Error fetching Firebase custom token", {
+                    component: "Header",
+                    error: data.error,
+                });
+
+                setConnectionStatus("error");
+                showConnectionError(`Authentication error: ${data.error}`);
+                throw new Error(data.error);
+            }
+
+            // Sign in with the custom token
+            const userCredential = await signInWithCustomToken(auth, data.token);
+            logInfo("Firebase sign-in successful", {
+                component: "Header",
+                user: userCredential.user,
+            });
+
+            // Instead of fetching the user we want to check if the user exists
+            const userResponse = await fetch(`/api/users/check`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+                },
+            });
+
+            if (!userResponse.ok) {
+                const errorData = await userResponse.json();
+                throw new Error(errorData.error || "Failed to check if user exists.");
+            }
+
+            setConnectionStatus("success");
+        } catch (error) {
+            console.error("Error during authentication:", error);
+            setConnectionStatus("error");
+
+            if (error.message?.includes("Firebase")) {
+                showConnectionError("Connection failed, please try again");
+            } else if (error.message?.includes("token")) {
+                showConnectionError("Connection failed, please try again");
+            } else {
+                showConnectionError("Connection failed, please try again");
+            }
+        }
+    }
+
+    // < -- HANDLE MOBILE CONNECTIONS -- >
+
+    const handleMobileDisconnect = async () => {
+        try {
+            await signOut(auth);
+
+            if (!phantomConnect) {
+                throw new Error('PhantomConnect not initialized');
+            }
+
+            await phantomConnect.disconnect();
+
+            setIsEffectivelyConnected(false);
+
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'mobile disconnect'
+            });
+            throw error;
+        }
+    };
+
+    // Listen for wallet disconnect event
+    useEffect(() => {
+        let isDisconnecting = false;
+
+        const handleWalletDisconnect = async () => {
+            if (isDisconnecting) {
+                logInfo('Disconnect already in progress, ignoring call', {
+                    component: 'Header'
+                });
+                return;
+            }
+
+            isDisconnecting = true;
+
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+
+            try {
+                logInfo('Disconnect triggered', {
+                    component: 'Header',
+                    isMobile: isMobileDevice,
+                    hasSession: !!window.localStorage.getItem('phantomSession')
+                });
+
+
+                if (isMobileDevice) {
+                    await handleMobileDisconnect();
+                } else {
+                    await handleDesktopDisconnect();
+                }
+
+                window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
+
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'wallet disconnect'
+                });
+            } finally {
+                isDisconnecting = false;
+            }
+        };
+
+        window.addEventListener('wallet-disconnect-event', handleWalletDisconnect);
+        return () => window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
+    }, [connected, disconnect]);
 
     const handleMobileWalletConnection = async () => {
         if (!isMobile) return;
@@ -275,143 +356,94 @@ export default function Header() {
 
     const connectUser = async (publicKey) => {
         try {
-            logInfo("Starting wallet connection process", { component: "Header" });
             setConnectionStatus("connecting");
-        
+
             if (!publicKey || !auth) {
-              const errorMessage = !publicKey
-                ? "Wallet not connected properly"
-                : "Authentication service unavailable";
-        
-              logInfo("Wallet connection aborted", {
-                component: "Header",
-                error: errorMessage,
-                publicKeyAvailable: !!publicKey,
-                authAvailable: !!auth,
-              });
-        
-              setConnectionStatus("error");
-              showConnectionError(errorMessage);
-              return;
+                const errorMessage = !publicKey
+                    ? "Wallet not connected properly"
+                    : "Authentication service unavailable";
+
+                setConnectionStatus("error");
+                showConnectionError(errorMessage);
+                return;
             }
-        
-            logInfo("Fetching Firebase custom token", {
-              component: "Header",
-              publicKey: publicKey.toString(),
-            });
-        
+
             // Fetch Firebase custom token
             const response = await fetch("/api/auth", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ publicKey: publicKey.toString() }),
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ publicKey: publicKey.toString() }),
             });
-        
+
             const data = await response.json();
-        
+
             if (data.error) {
-              logInfo("Error fetching Firebase custom token", {
-                component: "Header",
-                error: data.error,
-              });
-        
-              setConnectionStatus("error");
-              showConnectionError(`Authentication error: ${data.error}`);
-              throw new Error(data.error);
+                logInfo("Error fetching Firebase custom token", {
+                    component: "Header",
+                    error: data.error,
+                });
+
+                setConnectionStatus("error");
+                showConnectionError(`Authentication error: ${data.error}`);
+                throw new Error(data.error);
             }
-        
-            logInfo("Signing in with custom token", { component: "Header" });
-        
+
             // Sign in with the custom token
             const userCredential = await signInWithCustomToken(auth, data.token);
             logInfo("Firebase sign-in successful", {
-              component: "Header",
-              user: userCredential.user,
+                component: "Header",
+                user: userCredential.user,
             });
-        
-            // Check if user exists in the database
-            logInfo("Checking if user exists in the database", {
-              component: "Header",
-            });
-        
+
+            // Instead of fetching the user we want to check if the user exists
             const userResponse = await fetch(`/api/users`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
-              },
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+                },
             });
-        
+
             let user = null;
-        
+
             if (userResponse.status === 404) {
-              logInfo("User not found, creating new user", {
-                component: "Header",
-                publicKey: publicKey.toString(),
-              });
-        
-              const createUserResponse = await fetch("/api/users", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  wallet_ca: publicKey.toString(),
-                  username: getDefaultUsername(),
-                }),
-              });
-        
-              if (!createUserResponse.ok) {
-                const errorData = await createUserResponse.json();
-                logInfo("Error creating new user", {
-                  component: "Header",
-                  error: errorData.error,
+                const createUserResponse = await fetch("/api/users", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        wallet_ca: publicKey.toString(),
+                        username: getDefaultUsername(),
+                    }),
                 });
-                throw new Error(errorData.error || "Failed to create user");
-              }
-        
-              user = await createUserResponse.json();
-              logInfo("New user created successfully", {
-                component: "Header",
-                user,
-              });
+
+                if (!createUserResponse.ok) {
+                    const errorData = await createUserResponse.json();
+                    throw new Error(errorData.error || "Failed to create user");
+                }
+
+                user = await createUserResponse.json();
             } else if (!userResponse.ok) {
-              const errorData = await userResponse.json();
-              logInfo("Error fetching user from database", {
-                component: "Header",
-                error: errorData.error,
-              });
-              throw new Error(errorData.error || "Failed to fetch user");
+                const errorData = await userResponse.json();
+                throw new Error(errorData.error || "Failed to fetch user");
             } else {
-              user = await userResponse.json();
-              logInfo("User fetched successfully from database", {
-                component: "Header",
-                user,
-              });
+                user = await userResponse.json();
             }
-        
+
             // Set the user profile
             setUserProfile(user);
             setConnectionStatus("success");
-            logInfo("Wallet connection process completed successfully", {
-              component: "Header",
-              userProfile: user,
-            });
-          } catch (error) {
-            logInfo("Error during wallet connection process", {
-              component: "Header",
-              error: error.message,
-            });
-        
+        } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
-        
+
             if (error.message?.includes("Firebase")) {
-              showConnectionError("Connection failed, please try again");
+                showConnectionError("Connection failed, please try again");
             } else if (error.message?.includes("token")) {
-              showConnectionError("Connection failed, please try again");
+                showConnectionError("Connection failed, please try again");
             } else {
-              showConnectionError("Connection failed, please try again");
+                showConnectionError("Connection failed, please try again");
             }
-          }
+        }
     }
 
     // Function to handle wallet connection from callback data
@@ -425,18 +457,6 @@ export default function Header() {
             })
         }
     };
-
-    const handleWalletConnection = async () => {
-        try {
-            await connectUser(publicKey);
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'Connecting user'
-            })
-        }
-        
-      };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -468,7 +488,7 @@ export default function Header() {
                     <div
                         onClick={() => {
                             if (connectionStatus === 'connecting') return;
-                            
+
                             if (isMobile) {
                                 handleMobileWalletConnection();
                             } else {
