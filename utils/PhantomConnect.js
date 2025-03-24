@@ -52,7 +52,7 @@ const getUint8ArrayFromJsonString = (jsonString) => {
 }
 
 const buildUrl = (path, params) =>
-    `https://phantom.app/ul/v1/${path}?${params.toString()}`;
+    `phantom.app/ul/v1/${path}?${params.toString()}`;
 
 class PhantomConnect {
     constructor() {
@@ -116,8 +116,10 @@ class PhantomConnect {
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             //cluster: "mainnet-beta",
             cluster: 'devnet',
-            app_url: "https://theruggame.fun/",
-            redirect_link: "https://theruggame.fun/wallet-callback",
+            //app_url: "https://theruggame.fun/",
+            app_url: window.location.origin,
+            redirect_url: `${window.location.origin}/wallet-callback`
+            //redirect_link: "https://theruggame.fun/wallet-callback",
         });
 
         const url = buildUrl("connect", params);
