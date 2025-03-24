@@ -51,7 +51,7 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" prefix="og: https://ogp.me/ns#">
+    <html lang="en">
       <head>
         <title>The Rug Game</title>
         <link rel="icon" href="/favicon.ico?v=1" />
