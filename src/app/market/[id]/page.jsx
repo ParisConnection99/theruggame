@@ -554,38 +554,24 @@ export default function MarketPage() {
 
         // We need to add the amount in the users balance + extras needed from the wallet
 
-        if (isMobileDevice) {
-          try {
-            const { solBalance } = await checkSufficientBalanceForMobile(betWithFees);
+        try {
+          const { solBalance } = isMobileDevice
+            ? await checkSufficientBalanceForMobile(betWithFees)
+            : await checkSufficientBalance(userPublicKey, betWithFees);
 
-            solanaBalance = solBalance;
-          } catch (error) {
-            logError(error, {
-              component: 'Market Page'
-            });
-            alert("Failed to fetch wallet balance. Please try again.");
-            setIsBetting(false);
-            setLoading(false);
-            return;
-          }
-
-          hasEnough = solanaBalance + balance > betWithFees;
-
-        } else {
-          try {
-            const { solBalance } = await checkSufficientBalance(userPublicKey, betWithFees);
-
-            solanaBalance = solBalance;
-          } catch (error) {
-            alert("Failed to fetch wallet balance. Please try again.");
-            setIsBetting(false);
-            setLoading(false);
-            return;
-          }
-          
-          hasEnough = solanaBalance + balance > betWithFees;
+          solanaBalance = solBalance;
+        } catch (error) {
+          logError(error, {
+            component: 'Market Page'
+          });
+          alert("Failed to fetch wallet balance. Please try again.");
+          setIsBetting(false);
+          setLoading(false);
+          return;
         }
 
+        hasEnough = solanaBalance + balance > betWithFees;
+        
         if (!hasEnough) {
           logInfo('You dont have enough SOL', {});
           alert("You don't have enough SOL to place this bet.");
