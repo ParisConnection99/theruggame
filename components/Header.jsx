@@ -180,7 +180,7 @@ export default function Header() {
                 });
 
                 setConnectionStatus("error");
-                showConnectionError(`Authentication error: ${data.error}`);
+                showConnectionError("Error authenticating user.");
                 throw new Error(data.error);
             }
 
