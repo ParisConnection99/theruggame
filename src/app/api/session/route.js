@@ -6,6 +6,8 @@ export async function GET(request) {
         const sessionId = url.searchParams.get('id'); // Extract 'id' from query params
         const publicKey = url.searchParams.get('key');
 
+        console.log(`Key in the route: ${publicKey}`);
+
 
         if (sessionId) {
             const session = await serviceRepo.sessionDataService.getById(sessionId);
@@ -14,6 +16,7 @@ export async function GET(request) {
                 headers: { 'Content-Type': 'application/json' }
             });
         } else if (publicKey) {
+            console.log(`PublicKey: ${publicKey} in the route`);
             const session = await serviceRepo.sessionDataService.getByWallet_ca(publicKey);
             return new Response(JSON.stringify(session), {
                 status: 200,

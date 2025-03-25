@@ -200,6 +200,11 @@ class PhantomConnect {
             throw new Error('Public Key needed.');
         }
 
+        logInfo('Starting disconnect', {
+            component: 'Phantom connect',
+            key: key
+        });
+
         const response = await fetch(`${APP_URL}/api/session?key=${key}`, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
