@@ -3,8 +3,9 @@ import bs58 from 'bs58';
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
-//import { v4 as uuidv4 } from 'uuid';
-import { serviceRepo } from '@/services/ServiceRepository';
+import { v4 as uuidv4 } from 'uuid';
+import { logInfo, logError } from '@/utils/logger';
+//import { serviceRepo } from '@/services/ServiceRepository';
 global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
@@ -112,8 +113,8 @@ class PhantomConnect {
         }
 
         this.dappKeyPair = nacl.box.keyPair();
-        window.localStorage.setItem('dappEncryptionPublicKey', bs58.encode(this.dappKeyPair.publicKey));
-        window.localStorage.setItem('dappEncryptionPrivateKey', bs58.encode(this.dappKeyPair.secretKey));
+        //window.localStorage.setItem('dappEncryptionPublicKey', bs58.encode(this.dappKeyPair.publicKey));
+        //window.localStorage.setItem('dappEncryptionPrivateKey', bs58.encode(this.dappKeyPair.secretKey));
 
         logInfo('Generated new keypair', {
             component: 'PhantomConnect',
@@ -123,7 +124,7 @@ class PhantomConnect {
 
     async saveKeyPair() {
         this.dappKeyPair = nacl.box.keyPair();
-        const id = '123123';//uuidv4();
+        const id = uuidv4();
 
         const sessionData = {
             id: id,
@@ -135,7 +136,19 @@ class PhantomConnect {
         }
 
         try {
-            await serviceRepo.sessionDataService.createSession(sessionData);
+            
+            const response = await fetch('/api/session', {
+                method: 'POST',
+                headers: { "Content-Type": "application/json"},
+                body: JSON.stringify(sessionData)
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                logError(error, {
+                    component: 'Phantom connect'
+                });
+            }
 
             return id;
         } catch (error) {
