@@ -36,6 +36,18 @@ class SessionDataService {
 
         return data;
     }
+
+    async updateSession(id, updateData) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .update(updateData)
+            .eq('id', id)
+
+        if (error) {
+            console.log('Error updating session');
+            throw error;
+        }
+    }
 }
 
 module.exports = SessionDataService;

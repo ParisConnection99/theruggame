@@ -4,6 +4,7 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
+import EncryptionService from '@/lib/EncryptionService';
 //import { serviceRepo } from '@/services/ServiceRepository';
 global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
@@ -328,17 +329,50 @@ class PhantomConnect {
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
 
         // Save shared secret
-
-
         // Convert the Uint8Array to a plain object so it can be stored in localStorage
+
         const sharedSecretObject = Array.from(sharedSecret);
+
+        const encryptedSession = EncryptionService.encrypt(decryptedData.session);
+        const encryptedSharedSecret = EncryptionService.encrypt(JSON.stringify(sharedSecretObject));
+        
+
+        const newSession = {
+            ...session,
+            session: encryptedSession,
+            shared_secret: encryptedSharedSecret,
+            wallet_ca: decryptedData.public_key
+        }
+
+        logInfo('Saving the new session', {
+            newSession: JSON.stringify(newSession)
+        });
+
+        const updateResponse = await fetch('/api/session', {
+            method: 'PATCH',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: session.id,
+                session: newSession
+            })
+        });
+
+        if (!updateResponse.ok) {
+            const errorData = await response.json();
+            logInfo('Updating session data error', {
+                component: 'Phantom connect',
+                errorData: errorData
+            });
+
+            throw new Error('Error updating session data.');
+        }
 
         // Save to database
 
         // Store for later use
-        window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));
-        window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
-        window.localStorage.setItem('phantomSession', decryptedData.session);
+        // window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));
+        // window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
+        // window.localStorage.setItem('phantomSession', decryptedData.session);
 
         return { session: decryptedData.session, publicKey: decryptedData.public_key };
     }
