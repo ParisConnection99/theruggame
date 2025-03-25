@@ -45,6 +45,8 @@ class SessionDataService {
             .eq('wallet_ca', key)
             .maybeSingle();
 
+        console.log(`Query result: ${data}`);
+
         if (error) {
             console.error(`Error in session data service: ${error}`);
 
