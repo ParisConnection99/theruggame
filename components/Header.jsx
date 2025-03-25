@@ -304,6 +304,10 @@ export default function Header() {
     const connectToPhantom = async () => {
         try {
             const response = await handlePhantomConnect();
+            logInfo('Connecting to phantom', {
+                component: 'Header',
+                response: response
+            });
             return response;
         } catch (error) {
             console.error('Error connecting to phantom: ',error);

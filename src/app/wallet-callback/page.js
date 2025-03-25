@@ -33,7 +33,9 @@ function WalletCallbackContent() {
                 }
 
                 const sessionId = localStorage.getItem('session_id');
-
+                if (!sessionId) {
+                    throw new Error('Session ID is missing');
+                }
                 // Handle the connection response
                 const { session, publicKey } = await handleConnectResponse(
                     data,
