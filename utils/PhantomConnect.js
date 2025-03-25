@@ -150,6 +150,9 @@ class PhantomConnect {
                 });
             }
 
+            logInfo('Id - save keypair', {
+                id: id,
+            });
             return id;
         } catch (error) {
             console.log(`Error saving session data.`);
