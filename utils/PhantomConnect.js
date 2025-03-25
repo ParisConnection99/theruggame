@@ -322,7 +322,7 @@ class PhantomConnect {
 
         const sharedSecret = nacl.box.before(
             bs58.decode(phantomEncryptionPublicKey),
-            session.dapp_private
+            bs58.decode(session.dapp_private)
         );
 
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
