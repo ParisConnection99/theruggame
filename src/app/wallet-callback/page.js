@@ -44,6 +44,12 @@ function WalletCallbackContent() {
                     sessionId
                 );
 
+                logInfo('Connection response', {
+                    component: 'Wallet callback',
+                    session: session,
+                    publicKey: publicKey
+                });
+
                 // // Dispatch event to notify header
                 window.dispatchEvent(new CustomEvent('wallet-callback-event', {
                     detail: { publicKey: publicKey, session: session }

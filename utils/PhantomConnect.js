@@ -366,7 +366,7 @@ class PhantomConnect {
         });
 
         if (!updateResponse.ok) {
-            const errorData = await response.json();
+            const errorData = await updateResponse.json();
             logInfo('Updating session data error', {
                 component: 'Phantom connect',
                 errorData: errorData
