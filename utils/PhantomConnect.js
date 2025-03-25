@@ -160,6 +160,10 @@ class PhantomConnect {
     connect() {
         const id = this.saveKeyPair();
 
+        logInfo('Id', {
+            id: id,
+        });
+
         // Everytime i call connect I need to generate a new key
         // pass an id 
 
