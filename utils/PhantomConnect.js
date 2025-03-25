@@ -295,6 +295,7 @@ class PhantomConnect {
     };
 
     async handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
+        console.log('Session id: ', sessionId);
         const response = await fetch(`/api/session?id=${sessionId}`, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
