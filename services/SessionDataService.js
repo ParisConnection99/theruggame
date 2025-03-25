@@ -8,7 +8,7 @@ class SessionDataService {
         const { data, error } = await this.supabase
             .from(this.tableName)
             .insert([{
-                id: id,
+                id: sessionData.id,
                 dapp_private: sessionData.dapp_private,
                 dapp_public: sessionData.dapp_public,
                 shared_secret: sessionData.shared_secret,
