@@ -333,8 +333,10 @@ class PhantomConnect {
 
         const sharedSecretObject = Array.from(sharedSecret);
 
-        const encryptedSession = EncryptionService.encrypt(decryptedData.session);
-        const encryptedSharedSecret = EncryptionService.encrypt(JSON.stringify(sharedSecretObject));
+        const encryptionService = new EncryptionService();
+
+        const encryptedSession = encryptionService.encrypt(decryptedData.session);
+        const encryptedSharedSecret = encryptionService.encrypt(JSON.stringify(sharedSecretObject));
         
 
         const newSession = {
