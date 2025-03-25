@@ -1,11 +1,11 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 
-export async function GET(request, { params }) {
+export async function GET(request) {
     try {
-        params = await params;
-        const sessionId = params.id;
+        const url = new URL(request.url);
+        const sessionId = url.searchParams.get('id'); // Extract 'id' from query params
 
-        console.log(`Session id: ${sessionId}`)
+        console.log(`Session id: ${sessionId}`);
 
         if (!sessionId) {
             return new Response(JSON.stringify({ error: 'Session ID is required' }), {
