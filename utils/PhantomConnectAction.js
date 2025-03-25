@@ -1,9 +1,9 @@
 "use server";
 
-import phantomConnect from '@/utils/PhantomConnect';
+import PhantomConnect from '@/utils/PhantomConnect';
 
 export async function handlePhantomConnect() {
-    //const phantom = new PhantomConnect();
+    const phantomConnect = new PhantomConnect();
 
     try {
         const result = await phantomConnect.connect();
