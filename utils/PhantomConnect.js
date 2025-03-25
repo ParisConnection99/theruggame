@@ -139,6 +139,8 @@ class PhantomConnect {
         }
 
         try {
+
+            console.log('Created session now saving. ',sessionData);
             
             const response = await fetch('/api/session', {
                 method: 'POST',

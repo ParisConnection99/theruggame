@@ -5,6 +5,8 @@ import PhantomConnect from '@/utils/PhantomConnect';
 export async function handlePhantomConnect() {
     const phantomConnect = new PhantomConnect();
 
+     console.log('INitialised phantom connect ready to connect.');
+
     try {
         const result = await phantomConnect.connect();
         return result;
