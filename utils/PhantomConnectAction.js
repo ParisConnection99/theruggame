@@ -14,14 +14,14 @@ export async function handlePhantomConnect() {
     }
 }
 
-export async function handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
-    const phantom = new PhantomConnect()
+// export async function handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
+//     const phantom = new PhantomConnect()
 
-    try {
-        const result = await phantom.handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId);
-        return result;
-    } catch (error) {
-        console.error('Error in PhantomConnect:', error);
-        throw new Error('Failed to handle Phantom Connect');
-    }
-}
+//     try {
+//         const result = await phantom.handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId);
+//         return result;
+//     } catch (error) {
+//         console.error('Error in PhantomConnect:', error);
+//         throw new Error('Failed to handle Phantom Connect');
+//     }
+// }
