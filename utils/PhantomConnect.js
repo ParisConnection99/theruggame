@@ -8,6 +8,14 @@ const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 
+/*
+- id == users id
+- Shared Secret
+- dapp Encryption Key Pair
+- session
+- timestamp
+*/
+
 // Utility functions for encryption/decryption
 const decryptPayload = (data, nonce, sharedSecret) => {
     if (!sharedSecret) throw new Error("missing shared secret");
@@ -56,39 +64,44 @@ const buildUrl = (path, params) =>
 
 class PhantomConnect {
     constructor() {
-        // Check if we're in a browser environment
-        if (typeof window === 'undefined') {
-            return;
-        }
+        // // Check if we're in a browser environment
+        // if (typeof window === 'undefined') {
+        //     return;
+        // }
 
-        // Initialize with stored keypair or create new one
-        const storedPrivateKey = window.localStorage.getItem('dappEncryptionPrivateKey');
-        const storedPublicKey = window.localStorage.getItem('dappEncryptionPublicKey');
+        // // First check the database to see if 
 
-        if (storedPrivateKey && storedPublicKey) {
-            try {
-                // Use existing keypair
-                const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-                this.dappKeyPair = existingKeypair;
+        // // check first
+        // // Initialize with stored keypair or create new one
+        // const storedPrivateKey = window.localStorage.getItem('dappEncryptionPrivateKey');
+        // const storedPublicKey = window.localStorage.getItem('dappEncryptionPublicKey');
 
-                logInfo('Using existing keypair', {
-                    component: 'PhantomConnect',
-                    publicKey: storedPublicKey
-                });
-            } catch (error) {
-                logError(error, {
-                    component: 'PhantomConnect',
-                    action: 'loading existing keypair'
-                });
-                // If there's an error with stored keys, remove them and generate new ones
-                window.localStorage.removeItem('dappEncryptionPrivateKey');
-                window.localStorage.removeItem('dappEncryptionPublicKey');
-                this.generateNewKeypair();
-            }
-        } else {
-            // No existing keypair, generate new one
-            this.generateNewKeypair();
-        }
+        // // make a call to see if user is connected
+
+        // if (storedPrivateKey && storedPublicKey) {
+        //     try {
+        //         // Use existing keypair
+        //         const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
+        //         this.dappKeyPair = existingKeypair;
+
+        //         logInfo('Using existing keypair', {
+        //             component: 'PhantomConnect',
+        //             publicKey: storedPublicKey
+        //         });
+        //     } catch (error) {
+        //         logError(error, {
+        //             component: 'PhantomConnect',
+        //             action: 'loading existing keypair'
+        //         });
+        //         // If there's an error with stored keys, remove them and generate new ones
+        //         window.localStorage.removeItem('dappEncryptionPrivateKey');
+        //         window.localStorage.removeItem('dappEncryptionPublicKey');
+        //         this.generateNewKeypair();
+        //     }
+        // } else {
+        //     // No existing keypair, generate new one
+        //     this.generateNewKeypair();
+        // }
     }
 
     generateNewKeypair() {
@@ -112,6 +125,9 @@ class PhantomConnect {
             publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
         });
 
+        // Everytime i call connect I need to generate a new key
+        // Generate new key and save http only cookie
+
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             cluster: "mainnet-beta",
@@ -128,19 +144,10 @@ class PhantomConnect {
         });
 
         return url;
-
-        // try {
-        //     window.location.href = url;
-        // } catch (error) {
-        //     logError(error, {
-        //         component: 'PhantomConnect',
-        //         action: 'connect navigation'
-        //     });
-        //     throw error;
-        // }
     }
 
     disconnect() {
+        // pass in the public key and use that to fetch the data
         const session = window.localStorage.getItem('phantomSession');
         const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
 
@@ -171,16 +178,6 @@ class PhantomConnect {
         const url = buildUrl("disconnect", params);
 
         return url;
-
-        // try {
-        //     window.location.href = url;
-        // } catch (error) {
-        //     logError(error, {
-        //         component: 'PhantomConnect',
-        //         action: 'disconnect navigation'
-        //     });
-        //     throw error;
-        // }
     }
 
     async signAndSendTransaction(betAmount, publicKey) {
@@ -265,6 +262,8 @@ class PhantomConnect {
 
         // Convert the Uint8Array to a plain object so it can be stored in localStorage
         const sharedSecretObject = Array.from(sharedSecret);
+
+        // Save to database
 
         // Store for later use
         window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));

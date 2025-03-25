@@ -14,7 +14,8 @@ const OddsService = require('./OddsService');
 const TokenService = require('./TokenService');
 const MarketCreationService = require('./MarketCreationService');
 const UserService = require('./UserService');
-const CashoutService = require('./CashoutService')
+const CashoutService = require('./CashoutService');
+const SessionDataService = require('./SessionDataService');
 const dbConfig = require('@/utils/db-config');
 
 
@@ -33,6 +34,7 @@ class ServiceRepository {
     this.register('db', new PostgresDatabase(this.get('pool')));
 
     // Independent services (services with minimal dependencies)
+    this.register('sessionDataService', new SessionDataService(this.get('supabase')));
     this.register('userService', new UserService(this.get('supabase')));
     this.register('oddsService', new OddsService(this.get('supabase')));
     this.register('statusUpdateService', new StatusUpdateService(this.get('db')));

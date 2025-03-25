@@ -117,7 +117,6 @@ export default function Header() {
         }
     };
 
-    // Handle wallet connection when connected
     useEffect(() => {
         const handleAsyncEffect = async () => {
             try {
@@ -231,7 +230,7 @@ export default function Header() {
             }
 
             const url = await phantomConnect.disconnect();
-            
+
             try {
                 window.location.href = url;
             } catch (error) {
