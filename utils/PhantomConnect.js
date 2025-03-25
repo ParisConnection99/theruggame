@@ -232,7 +232,7 @@ class PhantomConnect {
             decryptedSession
         };
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, decryptedSharedSecret);
+        const [nonce, encryptedPayload] = this.encryptPayload(payload, decryptedSharedSecret);
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: session.dapp_public,
