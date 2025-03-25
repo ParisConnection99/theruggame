@@ -142,7 +142,7 @@ class PhantomConnect {
 
             console.log('Created session now saving. ',sessionData);
             
-            const response = await fetch('/api/session', {
+            const response = await fetch('https://theruggame.fun/api/session', {
                 method: 'POST',
                 headers: { "Content-Type": "application/json"},
                 body: JSON.stringify(sessionData)
