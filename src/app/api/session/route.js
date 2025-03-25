@@ -5,6 +5,8 @@ export async function GET(request, { params }) {
         params = await params;
         const sessionId = params.id;
 
+        console.log(`Session id: ${sessionId}`)
+
         if (!sessionId) {
             return new Response(JSON.stringify({ error: 'Session ID is required' }), {
                 status: 400,
