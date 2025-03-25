@@ -9,7 +9,8 @@ import { useAuth } from './FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import { phantomConnect } from '@/utils/PhantomConnect';
+import { handlePhantomConnect } from '@/utils/PhantomConnectAction';
+//import { phantomConnect } from '@/utils/PhantomConnect';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -300,6 +301,15 @@ export default function Header() {
         return () => window.removeEventListener('wallet-disconnect-event', handleWalletDisconnect);
     }, [connected, disconnect]);
 
+    const connectToPhantom = async () => {
+        try {
+            const response = await handlePhantomConnect();
+            return response;
+        } catch (error) {
+            console.error('Error connecting to phantom: ',error);
+        }
+    };
+
     const handleMobileWalletConnection = async () => {
         if (!isMobile) return;
 
@@ -312,7 +322,8 @@ export default function Header() {
                 component: 'Header'
             });
 
-            const  { deepLink, id } = await phantomConnect.connect();
+            //const  { deepLink, id } = await phantomConnect.connect();
+            const { deepLink, id } = await connectToPhantom();
 
             localStorage.setItem('session_id', id);
 

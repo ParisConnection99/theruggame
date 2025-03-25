@@ -3,7 +3,7 @@
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
-import { phantomConnect } from '@/utils/PhantomConnect';
+//import { phantomConnect } from '@/utils/PhantomConnect';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 // Constants - Replace with your values in production
@@ -254,11 +254,11 @@ export async function placeBet(
       localStorage.setItem('pending_transaction_market_id', marketId);
 
       try {
-        if (!phantomConnect) {
-          throw new Error('PhantomConnect not initialized');
-        }
+        // if (!phantomConnect) {
+        //   throw new Error('PhantomConnect not initialized');
+        // }
 
-        await phantomConnect.signAndSendTransaction(amountToAdd, publicKeyToCheck);
+        // await phantomConnect.signAndSendTransaction(amountToAdd, publicKeyToCheck);
 
         logInfo('Bet was successfull on mobile', {
           component: 'Solana wallet'

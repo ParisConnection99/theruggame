@@ -1,3 +1,4 @@
+"use server";
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
@@ -107,20 +108,20 @@ class PhantomConnect {
         // }
     }
 
-    generateNewKeypair() {
-        if (typeof window === 'undefined') {
-            return;
-        }
+    // generateNewKeypair() {
+    //     if (typeof window === 'undefined') {
+    //         return;
+    //     }
 
-        this.dappKeyPair = nacl.box.keyPair();
-        //window.localStorage.setItem('dappEncryptionPublicKey', bs58.encode(this.dappKeyPair.publicKey));
-        //window.localStorage.setItem('dappEncryptionPrivateKey', bs58.encode(this.dappKeyPair.secretKey));
+    //     this.dappKeyPair = nacl.box.keyPair();
+    //     //window.localStorage.setItem('dappEncryptionPublicKey', bs58.encode(this.dappKeyPair.publicKey));
+    //     //window.localStorage.setItem('dappEncryptionPrivateKey', bs58.encode(this.dappKeyPair.secretKey));
 
-        logInfo('Generated new keypair', {
-            component: 'PhantomConnect',
-            publicKey: bs58.encode(this.dappKeyPair.publicKey)
-        });
-    }
+    //     logInfo('Generated new keypair', {
+    //         component: 'PhantomConnect',
+    //         publicKey: bs58.encode(this.dappKeyPair.publicKey)
+    //     });
+    // }
 
     async saveKeyPair() {
         this.dappKeyPair = nacl.box.keyPair();
@@ -191,87 +192,87 @@ class PhantomConnect {
 
     disconnect() {
         // pass in the public key and use that to fetch the data
-        const session = window.localStorage.getItem('phantomSession');
-        const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
+        // const session = window.localStorage.getItem('phantomSession');
+        // const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
 
-        if (!session || !sharedSecret) {
-            throw new Error("Missing session or shared secret");
-        }
+        // if (!session || !sharedSecret) {
+        //     throw new Error("Missing session or shared secret");
+        // }
 
-        const payload = {
-            session
-        };
+        // const payload = {
+        //     session
+        // };
 
-        const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
+        // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
+        // const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
 
-        logInfo('DisConnect public key', {
-            component: 'Phantom Connect',
-            publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
-        });
+        // logInfo('DisConnect public key', {
+        //     component: 'Phantom Connect',
+        //     publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
+        // });
 
-        const params = new URLSearchParams({
-            dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
-            nonce: bs58.encode(nonce),
-            redirect_link: 'https://theruggame.fun/disconnect-callback',
-            payload: bs58.encode(encryptedPayload),
-        });
+        // const params = new URLSearchParams({
+        //     dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
+        //     nonce: bs58.encode(nonce),
+        //     redirect_link: 'https://theruggame.fun/disconnect-callback',
+        //     payload: bs58.encode(encryptedPayload),
+        // });
 
-        const url = buildUrl("disconnect", params);
+        // const url = buildUrl("disconnect", params);
 
-        return url;
+        // return url;
     }
 
     async signAndSendTransaction(betAmount, publicKey) {
-        const transaction = await this.createTransferTransaction(betAmount, publicKey);
+        // const transaction = await this.createTransferTransaction(betAmount, publicKey);
 
-        logInfo('Created transaction:', {
-            component: 'Phantom connect',
-            transaction: transaction
-        });
+        // logInfo('Created transaction:', {
+        //     component: 'Phantom connect',
+        //     transaction: transaction
+        // });
 
-        const serializedTransaction = transaction.serialize({
-            requireAllSignatures: false,
-        });
+        // const serializedTransaction = transaction.serialize({
+        //     requireAllSignatures: false,
+        // });
 
-        const session = window.localStorage.getItem('phantomSession');
-        const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
+        // const session = window.localStorage.getItem('phantomSession');
+        // const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
 
-        const payload = {
-            session,
-            transaction: bs58.encode(serializedTransaction),
-        };
+        // const payload = {
+        //     session,
+        //     transaction: bs58.encode(serializedTransaction),
+        // };
 
-        logInfo('Created payload', {
-            component: 'phantom connect',
-            transaction: transaction
-        });
+        // logInfo('Created payload', {
+        //     component: 'phantom connect',
+        //     transaction: transaction
+        // });
 
-        const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
+        // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
+        // const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
 
-        const params = new URLSearchParams({
-            dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
-            nonce: bs58.encode(nonce),
-            redirect_link: 'https://theruggame.fun/market-callback',
-            payload: bs58.encode(encryptedPayload),
-        });
+        // const params = new URLSearchParams({
+        //     dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
+        //     nonce: bs58.encode(nonce),
+        //     redirect_link: 'https://theruggame.fun/market-callback',
+        //     payload: bs58.encode(encryptedPayload),
+        // });
 
-        logInfo('Sending transaction.....', {});
+        // logInfo('Sending transaction.....', {});
 
-        const url = buildUrl("signAndSendTransaction", params);
+        // const url = buildUrl("signAndSendTransaction", params);
 
-        try {
-            window.location.href = url;
-        } catch (error) {
-            logError(error, {
-                component: 'PhantomConnect',
-                action: 'signAndSend navigation'
-            });
-            throw error;
-        }
+        // try {
+        //     window.location.href = url;
+        // } catch (error) {
+        //     logError(error, {
+        //         component: 'PhantomConnect',
+        //         action: 'signAndSend navigation'
+        //     });
+        //     throw error;
+        // }
     }
 
     createTransferTransaction = async (amount, publicKey) => {

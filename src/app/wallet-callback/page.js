@@ -3,13 +3,22 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { phantomConnect } from '@/utils/PhantomConnect';
+import { handlePhantomConnectionResponse } from '@/utils/PhantomConnectAction';
 import { logError, logInfo } from '@/utils/logger';
 import { useRouter } from 'next/navigation';
 
 function WalletCallbackContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
+
+    const handleConnectResponse = async (data, nonce, phantomEncryptionPublicKey, sessionId) => {
+        try {
+            const response = await handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId);
+            return response;
+        } catch (error) {
+            console.error('Error handling connect response: ',error);
+        }
+    };
     
     useEffect(() => {
         const handleWalletConnection = async () => {
@@ -26,14 +35,14 @@ function WalletCallbackContent() {
                 const sessionId = localStorage.getItem('session_id');
 
                 // Handle the connection response
-                const { session, publicKey } = await phantomConnect.handleConnectResponse(
+                const { session, publicKey } = await handleConnectResponse(
                     data,
                     nonce,
                     phantomEncryptionPublicKey,
                     sessionId
                 );
 
-                // Dispatch event to notify header
+                // // Dispatch event to notify header
                 window.dispatchEvent(new CustomEvent('wallet-callback-event', {
                     detail: { publicKey: publicKey, session: session }
                 }));
