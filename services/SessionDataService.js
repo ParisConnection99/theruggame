@@ -8,6 +8,7 @@ class SessionDataService {
         const { data, error } = await this.supabase
             .from(this.tableName)
             .insert([{
+                id: id,
                 dapp_private: sessionData.dapp_private,
                 dapp_public: sessionData.dapp_public,
                 shared_secret: sessionData.shared_secret,
@@ -16,6 +17,22 @@ class SessionDataService {
             }]).select();
 
         if (error) throw error;
+    }
+
+    async getById(id) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error(`Error in session data service: ${error}`);
+
+            throw error;
+        }
+
+        return data;
     }
 }
 

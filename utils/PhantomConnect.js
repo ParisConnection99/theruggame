@@ -3,6 +3,8 @@ import bs58 from 'bs58';
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
+const { v4: uuidv4 } = require('uuid');
+import { serviceRepo } from '@/services/ServiceRepository';
 global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
@@ -119,14 +121,39 @@ class PhantomConnect {
         });
     }
 
+    async saveKeyPair() {
+        this.dappKeyPair = nacl.box.keyPair();
+        const id = uuidv4();
+
+        const sessionData = {
+            id: id,
+            dapp_private: this.dappKeyPair.secretKey,
+            dapp_public: this.dappKeyPair.publicKey,
+            shared_secret: "",
+            session: "",
+            wallet_ca: ""
+        }
+
+        try {
+            await serviceRepo.sessionDataService.createSession(sessionData);
+
+            return id;
+        } catch (error) {
+            console.log(`Error saving session data.`);
+            throw error;
+        }
+    }
+
     connect() {
         logInfo('Connect public key', {
             component: 'Phantom Connect',
             publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
         });
 
+        const id = this.saveKeyPair();
+
         // Everytime i call connect I need to generate a new key
-        // Generate new key and save http only cookie
+        // pass an id 
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
@@ -143,7 +170,7 @@ class PhantomConnect {
             link: url
         });
 
-        return url;
+        return { deepLink: url, id: id };
     }
 
     disconnect() {

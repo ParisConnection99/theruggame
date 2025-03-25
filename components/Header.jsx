@@ -312,7 +312,9 @@ export default function Header() {
                 component: 'Header'
             });
 
-            const url = await phantomConnect.connect();
+            const  { url, id } = await phantomConnect.connect();
+
+            localStorage.setItem('session_id', id);
 
             try {
                 window.location.href = url;

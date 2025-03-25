@@ -139,6 +139,7 @@ class ServiceRepository {
   get cashoutService() { return this.get('cashoutService'); }
   get expiryService() { return this.get('expiryService'); }
   get database() { return this.get('db'); }
+  get sessionDataService() { return this.get('sessionDataService'); }
 }
 
 // Create and export a singleton instance
