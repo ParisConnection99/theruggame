@@ -17,7 +17,7 @@ export async function handlePhantomConnect() {
 }
 
 export async function handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
-    const phantom = new PhantomConnect()
+    const phantom = new PhantomConnect();
 
     try {
         const result = await phantom.handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId);

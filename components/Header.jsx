@@ -228,6 +228,11 @@ export default function Header() {
         try {
             await signOut(auth);
 
+            logInfo('UID',{
+                component: 'Header',
+                uid: uid
+            });
+
             const url = await disconnectFromPhantom(uid);
 
             try {
@@ -316,6 +321,10 @@ export default function Header() {
         if (!uid) {
             throw new Error('Key needed to disconnect.');
         }
+
+        logInfo('Disconnect from phantom.', {
+            component: 'Header'
+        });
 
         try {
             const response = await handlePhantomDisconnection(uid);

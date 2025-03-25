@@ -345,8 +345,6 @@ class PhantomConnect {
         return transaction;
     };
 
-
-
     async handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
         console.log('Session id: ', sessionId);
         const response = await fetch(`${APP_URL}/api/session?id=${sessionId}`, {
