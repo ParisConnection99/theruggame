@@ -316,6 +316,12 @@ export default function Header() {
 
             localStorage.setItem('session_id', id);
 
+            logInfo('Header mobile wallet connection', {
+                component: 'Header',
+                url: url,
+                id: id
+            });
+
             try {
                 window.location.href = url;
             } catch (error) {
