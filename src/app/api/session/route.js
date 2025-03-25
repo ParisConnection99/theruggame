@@ -5,7 +5,9 @@ export async function POST(request) {
     try {
         const body = await request.json();
 
-        await serviceRepo.sessionDataService.createSession(body.sessionData);
+        console.log(`body: ${body}`);
+
+        await serviceRepo.sessionDataService.createSession(body);
 
     } catch (error) {
         console.error('Error processing user request:', error);
