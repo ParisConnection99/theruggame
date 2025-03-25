@@ -5,6 +5,7 @@ class SessionDataService {
     }
 
     async createSession(sessionData) {
+        console.log('Session before being saved: ', sessionData);
         const { data, error } = await this.supabase
             .from(this.tableName)
             .insert([{
