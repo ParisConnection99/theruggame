@@ -127,15 +127,17 @@ class PhantomConnect {
             link: url
         });
 
-        try {
-            window.location.href = url;
-        } catch (error) {
-            logError(error, {
-                component: 'PhantomConnect',
-                action: 'connect navigation'
-            });
-            throw error;
-        }
+        return url;
+
+        // try {
+        //     window.location.href = url;
+        // } catch (error) {
+        //     logError(error, {
+        //         component: 'PhantomConnect',
+        //         action: 'connect navigation'
+        //     });
+        //     throw error;
+        // }
     }
 
     disconnect() {
@@ -168,15 +170,17 @@ class PhantomConnect {
 
         const url = buildUrl("disconnect", params);
 
-        try {
-            window.location.href = url;
-        } catch (error) {
-            logError(error, {
-                component: 'PhantomConnect',
-                action: 'disconnect navigation'
-            });
-            throw error;
-        }
+        return url;
+
+        // try {
+        //     window.location.href = url;
+        // } catch (error) {
+        //     logError(error, {
+        //         component: 'PhantomConnect',
+        //         action: 'disconnect navigation'
+        //     });
+        //     throw error;
+        // }
     }
 
     async signAndSendTransaction(betAmount, publicKey) {

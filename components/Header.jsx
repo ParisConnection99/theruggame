@@ -230,7 +230,17 @@ export default function Header() {
                 throw new Error('PhantomConnect not initialized');
             }
 
-            await phantomConnect.disconnect();
+            const url = await phantomConnect.disconnect();
+            
+            try {
+                window.location.href = url;
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'disconnect user from phantom'
+                });
+                throw error;
+            }
 
             setIsEffectivelyConnected(false);
 
@@ -303,7 +313,17 @@ export default function Header() {
                 component: 'Header'
             });
 
-            await phantomConnect.connect();
+            const url = await phantomConnect.connect();
+
+            try {
+                window.location.href = url;
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'connecting phantom wallet'
+                });
+                throw error;
+            }
 
         } catch (error) {
             logError(error, {
@@ -315,7 +335,7 @@ export default function Header() {
         }
     };
 
-    //Handle wallet callback
+    // Handle mobile wallet callback
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
             try {
