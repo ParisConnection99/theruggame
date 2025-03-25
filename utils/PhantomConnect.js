@@ -160,8 +160,8 @@ class PhantomConnect {
         }
     }
 
-    connect() {
-        const id = this.saveKeyPair();
+    async connect() {
+        const id = await this.saveKeyPair();
 
         logInfo('Id', {
             id: id,
@@ -294,13 +294,40 @@ class PhantomConnect {
         return transaction;
     };
 
-    handleConnectResponse(data, nonce, phantomEncryptionPublicKey) {
+    async handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
+        const response = await fetch(`/api/session?id=${sessionId}`, {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" }
+        });
+
+        let session;
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            logInfo('Fetching session data error', {
+                component: 'Phantom connect',
+                errorData: errorData
+            });
+
+            throw new Error('Error fetching session data.');
+        }
+
+        session = await response.json();
+
+        logInfo('Fetched session data', {
+            component: 'Phantom connect',
+            session: session
+        });
+
         const sharedSecret = nacl.box.before(
             bs58.decode(phantomEncryptionPublicKey),
-            this.dappKeyPair.secretKey
+            session.dapp_private
         );
 
         const decryptedData = decryptPayload(data, nonce, sharedSecret);
+
+        // Save shared secret
+
 
         // Convert the Uint8Array to a plain object so it can be stored in localStorage
         const sharedSecretObject = Array.from(sharedSecret);

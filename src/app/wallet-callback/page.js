@@ -23,11 +23,14 @@ function WalletCallbackContent() {
                     throw new Error('Missing required parameters');
                 }
 
+                const sessionId = localStorage.getItem('session_id');
+
                 // Handle the connection response
-                const { session, publicKey } = phantomConnect.handleConnectResponse(
+                const { session, publicKey } = await phantomConnect.handleConnectResponse(
                     data,
                     nonce,
-                    phantomEncryptionPublicKey
+                    phantomEncryptionPublicKey,
+                    sessionId
                 );
 
                 // Dispatch event to notify header
