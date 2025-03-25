@@ -4,7 +4,6 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, cl
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
-import { logInfo, logError } from '@/utils/logger';
 //import { serviceRepo } from '@/services/ServiceRepository';
 global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
