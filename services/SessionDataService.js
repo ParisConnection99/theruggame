@@ -38,6 +38,7 @@ class SessionDataService {
     }
 
     async getByWallet_ca(key) {
+        console.log('Publio key in service data service: ', error);
         const { data, error } = await this.supabase
             .from(this.tableName)
             .select('*')
