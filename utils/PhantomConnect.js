@@ -21,47 +21,7 @@ const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 */
 
 // Utility functions for encryption/decryption
-const decryptPayload = (data, nonce, sharedSecret) => {
-    if (!sharedSecret) throw new Error("missing shared secret");
 
-    const decryptedData = nacl.box.open.after(
-        bs58.decode(data),
-        bs58.decode(nonce),
-        sharedSecret
-    );
-    if (!decryptedData) {
-        throw new Error("Unable to decrypt data");
-    }
-    return JSON.parse(Buffer.from(decryptedData).toString("utf8"));
-};
-
-const encryptPayload = (payload, sharedSecret) => {
-    if (!sharedSecret) throw new Error("missing shared secret");
-
-    const nonce = nacl.randomBytes(24);
-    const encryptedPayload = nacl.box.after(
-        Buffer.from(JSON.stringify(payload)),
-        nonce,
-        sharedSecret
-    );
-
-    return [nonce, encryptedPayload];
-};
-
-const getUint8ArrayFromJsonString = (jsonString) => {
-    try {
-        // Parse the JSON string into an object (or an array of numbers)
-        const storedSecretArray = JSON.parse(jsonString);
-
-        // Convert the array of numbers into a Uint8Array
-        const uint8Array = new Uint8Array(storedSecretArray);
-
-        return uint8Array;
-    } catch (error) {
-        console.error('Error converting stored data to Uint8Array:', error.message);
-        return new Uint8Array();  // Return an empty Uint8Array in case of an error
-    }
-}
 
 const buildUrl = (path, params) =>
     `https://phantom.app/ul/v1/${path}?${params.toString()}`;
@@ -122,6 +82,48 @@ class PhantomConnect {
     //         publicKey: bs58.encode(this.dappKeyPair.publicKey)
     //     });
     // }
+
+    decryptPayload = (data, nonce, sharedSecret) => {
+        if (!sharedSecret) throw new Error("missing shared secret");
+    
+        const decryptedData = nacl.box.open.after(
+            bs58.decode(data),
+            bs58.decode(nonce),
+            sharedSecret
+        );
+        if (!decryptedData) {
+            throw new Error("Unable to decrypt data");
+        }
+        return JSON.parse(Buffer.from(decryptedData).toString("utf8"));
+    };
+    
+    encryptPayload = (payload, sharedSecret) => {
+        if (!sharedSecret) throw new Error("missing shared secret");
+    
+        const nonce = nacl.randomBytes(24);
+        const encryptedPayload = nacl.box.after(
+            Buffer.from(JSON.stringify(payload)),
+            nonce,
+            sharedSecret
+        );
+    
+        return [nonce, encryptedPayload];
+    };
+    
+    getUint8ArrayFromJsonString = (jsonString) => {
+        try {
+            // Parse the JSON string into an object (or an array of numbers)
+            const storedSecretArray = JSON.parse(jsonString);
+    
+            // Convert the array of numbers into a Uint8Array
+            const uint8Array = new Uint8Array(storedSecretArray);
+    
+            return uint8Array;
+        } catch (error) {
+            console.error('Error converting stored data to Uint8Array:', error.message);
+            return new Uint8Array();  // Return an empty Uint8Array in case of an error
+        }
+    }
 
     async saveKeyPair() {
         this.dappKeyPair = nacl.box.keyPair();
@@ -327,7 +329,7 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
-        const decryptedData = decryptPayload(data, nonce, sharedSecret);
+        const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
 
         // Save shared secret
         // Convert the Uint8Array to a plain object so it can be stored in localStorage
@@ -385,4 +387,4 @@ class PhantomConnect {
 //export const phantomConnect = typeof window !== 'undefined' ? new PhantomConnect() : null;
 const phantomConnect = new PhantomConnect();
 export default phantomConnect;
-export { buildUrl, decryptPayload, getUint8ArrayFromJsonString }; 
+//export { buildUrl, decryptPayload, getUint8ArrayFromJsonString }; 
