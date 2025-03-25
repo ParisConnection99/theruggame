@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-//import { handlePhantomConnectionResponse } from '@/utils/PhantomConnectAction';
+import { handlePhantomConnectionResponse } from '@/utils/PhantomConnectAction';
 import { logError, logInfo } from '@/utils/logger';
 import { useRouter } from 'next/navigation';
 
@@ -11,14 +11,14 @@ function WalletCallbackContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    // const handleConnectResponse = async (data, nonce, phantomEncryptionPublicKey, sessionId) => {
-    //     try {
-    //         const response = await handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId);
-    //         return response;
-    //     } catch (error) {
-    //         console.error('Error handling connect response: ',error);
-    //     }
-    // };
+    const handleConnectResponse = async (data, nonce, phantomEncryptionPublicKey, sessionId) => {
+        try {
+            const response = await handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId);
+            return response;
+        } catch (error) {
+            console.error('Error handling connect response: ',error);
+        }
+    };
     
     useEffect(() => {
         const handleWalletConnection = async () => {
@@ -37,19 +37,19 @@ function WalletCallbackContent() {
                     throw new Error('Session ID is missing');
                 }
                 // Handle the connection response
-                // const { session, publicKey } = await handleConnectResponse(
-                //     data,
-                //     nonce,
-                //     phantomEncryptionPublicKey,
-                //     sessionId
-                // );
+                const { session, publicKey } = await handleConnectResponse(
+                    data,
+                    nonce,
+                    phantomEncryptionPublicKey,
+                    sessionId
+                );
 
-                // // // Dispatch event to notify header
-                // window.dispatchEvent(new CustomEvent('wallet-callback-event', {
-                //     detail: { publicKey: publicKey, session: session }
-                // }));
+                // // Dispatch event to notify header
+                window.dispatchEvent(new CustomEvent('wallet-callback-event', {
+                    detail: { publicKey: publicKey, session: session }
+                }));
 
-                // await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
+                await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
 
 
                 // Redirect to home page after successful connection

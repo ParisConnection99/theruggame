@@ -11,6 +11,7 @@ global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
+const APP_URL = "https://theruggame.fun";
 
 /*
 - id == users id
@@ -180,7 +181,7 @@ class PhantomConnect {
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             cluster: "mainnet-beta",
             //cluster: 'devnet',
-            app_url: "https://theruggame.fun/",
+            app_url: APP_URL,
             redirect_link: "https://theruggame.fun/wallet-callback",
         });
 
@@ -302,7 +303,7 @@ class PhantomConnect {
 
     async handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
         console.log('Session id: ', sessionId);
-        const response = await fetch(`/api/session?id=${sessionId}`, {
+        const response = await fetch(`${APP_URL}/api/session?id=${sessionId}`, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
         });
@@ -355,7 +356,7 @@ class PhantomConnect {
             newSession: JSON.stringify(newSession)
         });
 
-        const updateResponse = await fetch('/api/session', {
+        const updateResponse = await fetch(`${APP_URL}/api/session`, {
             method: 'PATCH',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
