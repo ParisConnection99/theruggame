@@ -14,8 +14,6 @@ function DisconnectHandler() {
                 // Get encrypted data and nonce from URL params
                 const errorCode = searchParams.get('errorCode');
                 const errorMessage = searchParams.get('errorMessage');
-                // const encryptedData = searchParams.get('data');
-                // const nonce = searchParams.get('nonce');
 
                 logInfo('Disconnect callback - all params received:', {
                     component: 'DisconnectCallbackPage',
@@ -37,11 +35,13 @@ function DisconnectHandler() {
                 // Decrypt and verify the response
                 // ... (we can add decryption logic if Phantom sends encrypted response)
 
+                // remove session data
+
                 // If we get here, disconnect was successful
-                localStorage.removeItem('phantomPublicKey');
-                localStorage.removeItem('phantomSession');
-                localStorage.removeItem('wallet_connect_pending');
-                localStorage.removeItem('wallet_connect_timestamp');
+                // localStorage.removeItem('phantomPublicKey');
+                // localStorage.removeItem('phantomSession');
+                // localStorage.removeItem('wallet_connect_pending');
+                // localStorage.removeItem('wallet_connect_timestamp');
 
                // window.dispatchEvent(new Event('wallet-disconnect-event'));
 

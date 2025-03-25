@@ -9,7 +9,7 @@ import { useAuth } from './FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import { handlePhantomConnect } from '@/utils/PhantomConnectAction';
+import { handlePhantomConnect, handlePhantomDisconnection } from '@/utils/PhantomConnectAction';
 //import { phantomConnect } from '@/utils/PhantomConnect';
 
 export default function Header() {
@@ -223,34 +223,30 @@ export default function Header() {
     // < -- HANDLE MOBILE CONNECTIONS -- >
 
     const handleMobileDisconnect = async () => {
-        // try {
-        //     await signOut(auth);
+        try {
+            await signOut(auth);
 
-        //     if (!phantomConnect) {
-        //         throw new Error('PhantomConnect not initialized');
-        //     }
+            const url = await disconnectFromPhantom();
 
-        //     const url = await phantomConnect.disconnect();
+            try {
+                window.location.href = url;
+            } catch (error) {
+                logError(error, {
+                    component: 'Header',
+                    action: 'disconnect user from phantom'
+                });
+                throw error;
+            }
 
-        //     try {
-        //         window.location.href = url;
-        //     } catch (error) {
-        //         logError(error, {
-        //             component: 'Header',
-        //             action: 'disconnect user from phantom'
-        //         });
-        //         throw error;
-        //     }
+            setIsEffectivelyConnected(false);
 
-        //     setIsEffectivelyConnected(false);
-
-        // } catch (error) {
-        //     logError(error, {
-        //         component: 'Header',
-        //         action: 'mobile disconnect'
-        //     });
-        //     throw error;
-        // }
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'mobile disconnect'
+            });
+            throw error;
+        }
     };
 
     // Listen for wallet disconnect event
@@ -313,6 +309,19 @@ export default function Header() {
             console.error('Error connecting to phantom: ',error);
         }
     };
+
+    const disconnectFromPhantom = async () => {
+        if (!auth || !auth.currentUser) {
+            throw new Error('Key needed to disconnect.');
+        }
+
+        try {
+            const response = await handlePhantomDisconnection(auth.currentUser.uid);
+            return response;
+        } catch (error) {
+            console.error('Error disconnecting from phantom: ',error);
+        }
+    }
 
     const handleMobileWalletConnection = async () => {
         if (!isMobile) return;

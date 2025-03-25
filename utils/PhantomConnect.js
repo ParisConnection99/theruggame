@@ -195,7 +195,51 @@ class PhantomConnect {
         return { deepLink: url, id: id };
     }
 
-    disconnect() {
+    async disconnect(key) {
+        if (!key) {
+            throw new Error('Public Key needed.');
+        }
+
+        const response = await fetch(`${APP_URL}/api/session?key=${key}`, {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" }
+        });
+
+        let session;
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            logInfo('Fetching session data error', {
+                component: 'Phantom connect',
+                errorData: errorData
+            });
+
+            throw new Error('Error fetching session data.');
+        }
+
+        session = await response.json();
+
+        const encryptionService = new EncryptionService();
+        const decryptedSession = encryptionService.decrypt(session.session);
+        const decryptedSharedSecret = this.getUint8ArrayFromJsonString(encryptionService.decrypt(session.shared_secret));
+        
+        const payload = {
+            decryptedSession
+        };
+
+        const [nonce, encryptedPayload] = encryptPayload(payload, decryptedSharedSecret);
+
+        const params = new URLSearchParams({
+            dapp_encryption_public_key: session.dapp_public,
+            nonce: bs58.encode(nonce),
+            redirect_link: 'https://theruggame.fun/disconnect-callback',
+            payload: bs58.encode(encryptedPayload),
+        });
+
+        const url = buildUrl("disconnect", params);
+
+        return url;
+        
         // pass in the public key and use that to fetch the data
         // const session = window.localStorage.getItem('phantomSession');
         // const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
@@ -301,6 +345,8 @@ class PhantomConnect {
         return transaction;
     };
 
+
+
     async handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
         console.log('Session id: ', sessionId);
         const response = await fetch(`${APP_URL}/api/session?id=${sessionId}`, {
@@ -333,14 +379,8 @@ class PhantomConnect {
         );
 
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
-
-        // Save shared secret
-        // Convert the Uint8Array to a plain object so it can be stored in localStorage
-
         const sharedSecretObject = Array.from(sharedSecret);
-
         const encryptionService = new EncryptionService();
-
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
         const encryptedSharedSecret = encryptionService.encrypt(JSON.stringify(sharedSecretObject));
         
@@ -374,14 +414,6 @@ class PhantomConnect {
 
             throw new Error('Error updating session data.');
         }
-
-        // Save to database
-
-        // Store for later use
-        // window.localStorage.setItem('phantomSharedSecret', JSON.stringify(sharedSecretObject));
-        // window.localStorage.setItem('phantomPublicKey', decryptedData.public_key);
-        // window.localStorage.setItem('phantomSession', decryptedData.session);
-
         return { session: decryptedData.session, publicKey: decryptedData.public_key };
     }
 }

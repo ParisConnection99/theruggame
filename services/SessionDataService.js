@@ -37,6 +37,22 @@ class SessionDataService {
         return data;
     }
 
+    async getByWallet_ca(key) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .select('*')
+            .eq('wallet_ca', key)
+            .single();
+
+        if (error) {
+            console.error(`Error in session data service: ${error}`);
+
+            throw error;
+        }
+
+        return data;
+    }
+
     async updateSession(id, updateData) {
         const { data, error } = await this.supabase
             .from(this.tableName)

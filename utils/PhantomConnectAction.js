@@ -27,3 +27,14 @@ export async function handlePhantomConnectionResponse(data, nonce, phantomEncryp
         throw new Error('Failed to handle Phantom Connect');
     }
 }
+
+export async function handlePhantomDisconnection(key) {
+    const phantomConnect = new PhantomConnect();
+
+    try {
+        await phantomConnect.disconnect(key);
+    } catch (error) {
+        console.error('Error disconnecting phantom');
+        throw error;
+    }
+}
