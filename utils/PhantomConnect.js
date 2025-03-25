@@ -388,5 +388,5 @@ class PhantomConnect {
 // Export both the instance and the buildUrl function
 //export const phantomConnect = typeof window !== 'undefined' ? new PhantomConnect() : null;
 //const phantomConnect = new PhantomConnect();
-module.exports = PhantomConnect;
+export default PhantomConnect;
 //export { buildUrl, decryptPayload, getUint8ArrayFromJsonString }; 
