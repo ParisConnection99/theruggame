@@ -312,18 +312,12 @@ export default function Header() {
                 component: 'Header'
             });
 
-            const  { url, id } = await phantomConnect.connect();
+            const  { deepLink, id } = await phantomConnect.connect();
 
             localStorage.setItem('session_id', id);
 
-            logInfo('Header mobile wallet connection', {
-                component: 'Header',
-                url: url,
-                id: id
-            });
-
             try {
-                window.location.href = url;
+                window.location.href = deepLink;
             } catch (error) {
                 logError(error, {
                     component: 'Header',
