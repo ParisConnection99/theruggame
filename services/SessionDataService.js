@@ -21,6 +21,7 @@ class SessionDataService {
     }
 
     async getById(id) {
+        console.log(`Session id service: ${id}`);
         const { data, error } = await this.supabase
             .from(this.tableName)
             .select('*')
