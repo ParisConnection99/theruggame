@@ -43,7 +43,7 @@ class SessionDataService {
             .from(this.tableName)
             .select('*')
             .eq('wallet_ca', key)
-            .single();
+            .maybeSingle();
 
         if (error) {
             console.error(`Error in session data service: ${error}`);
