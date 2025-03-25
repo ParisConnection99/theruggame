@@ -223,10 +223,12 @@ export default function Header() {
     // < -- HANDLE MOBILE CONNECTIONS -- >
 
     const handleMobileDisconnect = async () => {
+        const uid = auth.currentUser.uid;
+
         try {
             await signOut(auth);
 
-            const url = await disconnectFromPhantom();
+            const url = await disconnectFromPhantom(uid);
 
             try {
                 window.location.href = url;
@@ -310,13 +312,13 @@ export default function Header() {
         }
     };
 
-    const disconnectFromPhantom = async () => {
-        if (!auth || !auth.currentUser) {
+    const disconnectFromPhantom = async (uid) => {
+        if (!uid) {
             throw new Error('Key needed to disconnect.');
         }
 
         try {
-            const response = await handlePhantomDisconnection(auth.currentUser.uid);
+            const response = await handlePhantomDisconnection(uid);
             return response;
         } catch (error) {
             console.error('Error disconnecting from phantom: ',error);
