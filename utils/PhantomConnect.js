@@ -127,8 +127,8 @@ class PhantomConnect {
 
         const sessionData = {
             id: id,
-            dapp_private: this.dappKeyPair.secretKey,
-            dapp_public: this.dappKeyPair.publicKey,
+            dapp_private: bs58.encode(this.dappKeyPair.secretKey),
+            dapp_public: bs58.encode(this.dappKeyPair.publicKey),
             shared_secret: "",
             session: "",
             wallet_ca: ""
@@ -144,8 +144,9 @@ class PhantomConnect {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                logError(error, {
-                    component: 'Phantom connect'
+                logError('Session save error',{
+                    component: 'Phantom connect',
+                    errorData: errorData
                 });
             }
 
@@ -157,11 +158,6 @@ class PhantomConnect {
     }
 
     connect() {
-        logInfo('Connect public key', {
-            component: 'Phantom Connect',
-            publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
-        });
-
         const id = this.saveKeyPair();
 
         // Everytime i call connect I need to generate a new key
