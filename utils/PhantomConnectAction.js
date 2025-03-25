@@ -1,12 +1,12 @@
 "use server";
 
-import PhantomConnect from '@/utils/PhantomConnect';
+import phantomConnect from '@/utils/PhantomConnect';
 
 export async function handlePhantomConnect() {
-    const phantom = new PhantomConnect();
+    //const phantom = new PhantomConnect();
 
     try {
-        const result = await phantom.connect();
+        const result = await phantomConnect.connect();
         return result;
     } catch (error) {
         console.error('Error in PhantomConnect:', error);
