@@ -179,7 +179,7 @@ class PhantomConnect {
 
         session_data = await response.json();
 
-        const session = session_data.session;
+        const session = encryptionService.decrypt(session_data.session);
         const payload = {
             session
         };
@@ -317,10 +317,12 @@ class PhantomConnect {
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
         
         const convertedSharedSecret = Array.from(sharedSecret);
+
+        const encryptedSession = encryptionService.encrypt(decryptedData.session);
        
         const newSession = {
             ...session_data,
-            session: decryptedData.session,
+            session: encryptedSession,
             shared_secret: JSON.stringify(convertedSharedSecret),
             wallet_ca: decryptedData.public_key
         }
