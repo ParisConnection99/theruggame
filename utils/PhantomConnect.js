@@ -435,14 +435,11 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
-        logInfo('Shared secret type', {
-            component: 'Phantom connect',
-            ss: sharedSecret
-        });
-
-        logInfo('Session type', {
-            ss: `${typeof sharedSecret}`
-        });
+        if (sharedSecret instanceof Uint8Array) {
+            logInfo('convertedSharedSecret is a Uint8Array', {});
+        } else {
+            logInfo('convertedSharedSecret is NOT a Uint8Array', {});
+        }
 
     
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
