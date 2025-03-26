@@ -275,13 +275,18 @@ class PhantomConnect {
         });
 
         const decryptedSharedSecret = encryptionService.decrypt(session.shared_secret);
-        const convertedSharedSecret = this.convertJsonStringToUint8Array(decryptedSharedSecret);
         
         const payload = {
             decryptedSession
         };
 
-        const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
+        if (decryptedSharedSecret instanceof Uint8array) {
+            logInfo('Shared secret is a uint8array', {});
+        } else {
+            logInfo('Shared secret is a uint8array', {});
+        }
+
+        const [nonce, encryptedPayload] = this.encryptPayload(payload, decryptedSharedSecret);
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: session.dapp_public,
@@ -435,19 +440,12 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
-        if (sharedSecret instanceof Uint8Array) {
-            logInfo('convertedSharedSecret is a Uint8Array', {});
-        } else {
-            logInfo('convertedSharedSecret is NOT a Uint8Array', {});
-        }
-
-    
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
 
         
         //const sharedSecretObject = Array.from(sharedSecret);
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
-        const encryptedSharedSecret = encryptionService.encrypt(JSON.stringify(sharedSecret));
+        const encryptedSharedSecret = encryptionService.encrypt(sharedSecret);
         
 
         const newSession = {
