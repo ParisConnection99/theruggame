@@ -147,7 +147,7 @@ class UserService {
             .from(this.tableName)
             .update({
                 username: username,
-                username_changed_at: Date().toISOString()
+                username_changed_at: new Date()
             })
             .eq('wallet_ca', uid)
             .select()
