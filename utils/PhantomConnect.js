@@ -13,6 +13,11 @@ const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 const APP_URL = "https://theruggame.fun";
 
+const key = '0123456789abcdef0123456789abcdef'; // 32 characters (256 bits)
+const iv = 'abcdef9876543210'; // 16 characters (128 bits)
+
+// Initialize the encryption service
+const encryptionService = new EncryptionService(key, iv);
 /*
 - id == users id
 - Shared Secret
@@ -229,8 +234,6 @@ class PhantomConnect {
             session: session
         });
 
-        
-        const encryptionService = new EncryptionService();
         const decryptedSession = encryptionService.decrypt(session.session);
 
         logInfo('Decrypted session', {
@@ -402,7 +405,6 @@ class PhantomConnect {
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
 
         const sharedSecretObject = Array.from(sharedSecret);
-        const encryptionService = new EncryptionService();
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
         const encryptedSharedSecret = encryptionService.encrypt(JSON.stringify(sharedSecretObject));
         
