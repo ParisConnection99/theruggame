@@ -97,6 +97,8 @@ class SessionDataService {
             console.error(`Error deleting session with wallet_ca ${wallet_ca}:`, error);
             throw error;
         }
+
+        console.log('Deleted data: ', data);
     
         console.log(`Deleted session with wallet_ca: ${wallet_ca}`);
         return data; // Return the deleted row(s) for confirmation

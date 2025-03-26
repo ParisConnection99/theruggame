@@ -44,8 +44,7 @@ export async function handleCleanup(key) {
     const phantomConnect = new PhantomConnect();
 
     try {
-        const result = await phantomConnect.removeSessionData(key);
-        return result;
+        await phantomConnect.removeSessionData(key);
      } catch (error) {
          console.error('Error disconnecting phantom');
          throw error;
