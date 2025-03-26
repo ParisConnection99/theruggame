@@ -233,7 +233,7 @@ class PhantomConnect {
             headers: { "Content-Type": "application/json" }
         });
 
-        let session;
+        let session_data;
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -245,22 +245,25 @@ class PhantomConnect {
             throw new Error('Error fetching session data.');
         }
 
-        session = await response.json();
+        session_data = await response.json();
 
-        logInfo('Fetched session', {
+        logInfo('Fetched session data', {
             component: 'Phantom connect',
-            session: session
+            session: session_data
         });
 
-        const decryptedSession = encryptionService.decrypt(session.session);
+        //const decryptedSession = encryptionService.decrypt(session.session);
+        const session = session_data.session;
         const payload = {
-            decryptedSession
+            session
         };
 
-        const [nonce, encryptedPayload] = this.encryptPayload(payload, session.sharedSecret);
+        const convertedSharedSecret = this.getUint8ArrayFromJsonString(session_data.session);
+
+        const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
-            dapp_encryption_public_key: session.dapp_public,
+            dapp_encryption_public_key: session_data.dapp_public,
             nonce: bs58.encode(nonce),
             redirect_link: 'https://theruggame.fun/disconnect-callback',
             payload: bs58.encode(encryptedPayload),
@@ -387,7 +390,7 @@ class PhantomConnect {
             headers: { "Content-Type": "application/json" }
         });
 
-        let session;
+        let session_data;
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -399,27 +402,28 @@ class PhantomConnect {
             throw new Error('Error fetching session data.');
         }
 
-        session = await response.json();
+        session_data = await response.json();
 
         logInfo('Fetched session data', {
             component: 'Phantom connect',
-            session: session
+            session: session_data
         });
 
         const sharedSecret = nacl.box.before(
             bs58.decode(phantomEncryptionPublicKey),
-            bs58.decode(session.dapp_private)
+            bs58.decode(session_data.dapp_private)
         );
 
-        const ss = new Uint8Array(sharedSecret);
-        const decryptedData = this.decryptPayload(data, nonce, ss);
-        const encryptedSession = encryptionService.encrypt(decryptedData.session);
+        const convertedSharedSecret = new Uint8Array(sharedSecret);
+        const decryptedData = this.decryptPayload(data, nonce, convertedSharedSecret);
+       // const encryptedSession = encryptionService.encrypt(decryptedData.session);
         
 
+       
         const newSession = {
-            ...session,
-            session: encryptedSession,
-            shared_secret: ss,
+            ...session_data,
+            session: decryptedData.session,
+            shared_secret: JSON.stringify(convertedSharedSecret),
             wallet_ca: decryptedData.public_key
         }
 
@@ -431,7 +435,7 @@ class PhantomConnect {
             method: 'PATCH',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                id: session.id,
+                id: session_data.id,
                 session: newSession
             })
         });
