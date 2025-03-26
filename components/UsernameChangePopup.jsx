@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
+import { logInfo, logError } from '@/utils/logger';
 
 // This component can be added to your ProfilePage component
 export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUsername = "" }) {
@@ -21,8 +22,11 @@ export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUs
 
     try {
       setLoading(true);
-      await onSave(username);
-      onClose();
+      const result = await onSave(username);
+      logInfo('Save result', {
+        isChangeSuccessful: `${result}`
+      });
+      //onClose();
     } catch (error) {
       setError(error.message || "Failed to update username");
       logEvent(analytics, 'username_change_modal_error', {
