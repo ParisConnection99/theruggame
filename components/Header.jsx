@@ -235,6 +235,11 @@ export default function Header() {
 
             const url = await disconnectFromPhantom(uid);
 
+            logInfo('Fetched disconnect url', {
+                component: 'Header',
+                url: url
+            });
+
             try {
                 window.location.href = url;
             } catch (error) {
