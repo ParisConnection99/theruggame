@@ -349,10 +349,6 @@ export default function Header() {
     const connectToPhantom = async () => {
         try {
             const response = await handlePhantomConnect();
-            logInfo('Connecting to phantom', {
-                component: 'Header',
-                response: response
-            });
             return response;
         } catch (error) {
             console.error('Error connecting to phantom: ',error);
@@ -404,15 +400,13 @@ export default function Header() {
 
                 logInfo('Recieved wallet-callback event', {
                     component: 'Header',
-                    publicKey: event.detail.publicKey,
-                    session: event.detail.session
+                    publicKey: event.detail.publicKey
                 });
 
                 // Process the connection with the received data
-                if (event.detail.publicKey && event.detail.session) {
+                if (event.detail.publicKey) {
                     await handleWalletCallbackConnection({
-                        publicKey: event.detail.publicKey,
-                        session: event.detail.session
+                        publicKey: event.detail.publicKey
                     });
 
                     setConnectionStatus('success');
@@ -421,7 +415,6 @@ export default function Header() {
 
 
             } catch (error) {
-                console.error('Error during wallet callback:', error);
                 setConnectionStatus('error');
                 showConnectionError('Connection failed, please try again');
                 logError(error, {

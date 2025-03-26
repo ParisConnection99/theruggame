@@ -37,7 +37,7 @@ function WalletCallbackContent() {
                     throw new Error('Session ID is missing');
                 }
                 // Handle the connection response
-                const { session, publicKey } = await handleConnectResponse(
+                const { publicKey } = await handleConnectResponse(
                     data,
                     nonce,
                     phantomEncryptionPublicKey,
@@ -46,7 +46,6 @@ function WalletCallbackContent() {
 
                 logInfo('Connection response', {
                     component: 'Wallet callback',
-                    session: session,
                     publicKey: publicKey
                 });
 

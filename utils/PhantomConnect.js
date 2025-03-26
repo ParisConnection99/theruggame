@@ -343,7 +343,7 @@ class PhantomConnect {
 
             throw new Error('Error updating session data.');
         }
-        return { session: decryptedData.session, publicKey: decryptedData.public_key };
+        return { publicKey: decryptedData.public_key };
     }
 }
 
