@@ -116,53 +116,20 @@ class PhantomConnect {
         return [nonce, encryptedPayload];
     };
 
-    // convertJsonStringToUint8Array(jsonString) {
-    //     try {
-    //         // Step 1: Check if the input is a string
-    //         if (typeof jsonString !== 'string') {
-    //             throw new Error('Input is not a valid string.');
-    //         }
+    getUint8ArrayFromJsonString = (jsonString) => {
+        try {
+            // Parse the JSON string into an object (or an array of numbers)
+            const storedSecretArray = JSON.parse(jsonString);
     
-    //         // Step 2: Parse the JSON string into an object
-    //         const parsedObject = JSON.parse(jsonString);
+            // Convert the array of numbers into a Uint8Array
+            const uint8Array = new Uint8Array(storedSecretArray);
     
-    //         // Step 3: Validate that the parsed object is an object with numeric values
-    //         if (typeof parsedObject !== 'object' || parsedObject === null) {
-    //             throw new Error('Parsed JSON is not a valid object.');
-    //         }
-    
-    //         const values = Object.values(parsedObject);
-    
-    //         // Ensure all values are numbers
-    //         if (!values.every(value => typeof value === 'number')) {
-    //             throw new Error('Parsed object contains non-numeric values.');
-    //         }
-    
-    //         // Step 4: Convert the values into a Uint8Array
-    //         const uint8Array = new Uint8Array(values);
-    
-    //         console.log('Successfully converted to Uint8Array:', uint8Array);
-    //         return uint8Array;
-    //     } catch (error) {
-    //         console.error('Error converting JSON string to Uint8Array:', error.message);
-    //         return new Uint8Array(); // Return an empty Uint8Array in case of an error
-    //     }
-    // }
-    
-    // getUint8ArrayFromJsonString = (jsonString) => {
-    //     try {
-    //         // Parse the JSON string into an object (or an array of numbers)
-    //         const storedSecretArray = JSON.parse(jsonString);
-    
-    //         // Convert the array of numbers into a Uint8Array
-    //         const uint8Array = new Uint8Array(storedSecretArray);
-    
-    //         return uint8Array;
-    //     } catch (error) {
-    //         console.error('Error converting stored data to Uint8Array:', error.message);
-    //         return new Uint8Array();  // Return an empty Uint8Array in case of an error
-    //     }
-    // }
+            return uint8Array;
+        } catch (error) {
+            console.error('Error converting stored data to Uint8Array:', error.message);
+            return new Uint8Array();  // Return an empty Uint8Array in case of an error
+        }
+    }
 
     convertStringToUint8Array(normalString) {
         try {
@@ -290,12 +257,12 @@ class PhantomConnect {
             decryptedSession
         };
 
-        const sharedSecret = new Uint8Array(session.shared_secret);
+        const sharedSecret = this.getUint8ArrayFromJsonString(session.shared_secret);
 
         logInfo('Shared secret', {
             ss: sharedSecret
         });
-        
+
         const [nonce, encryptedPayload] = this.encryptPayload(payload, sharedSecret);
 
         const params = new URLSearchParams({
@@ -460,14 +427,14 @@ class PhantomConnect {
             });
         }
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
-        const buffer = Buffer.from(sharedSecret);
+        const convertedSharedSecret = JSON.stringify(sharedSecret);
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
         
 
         const newSession = {
             ...session,
             session: encryptedSession,
-            shared_secret: buffer,
+            shared_secret: convertedSharedSecret,
             wallet_ca: decryptedData.public_key
         }
 
