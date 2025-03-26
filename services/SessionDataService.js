@@ -65,16 +65,58 @@ class SessionDataService {
     }
 
     async updateSession(id, updateData) {
+        // First, check if a row exists with the wallet_ca
+        const { data: existingData, error: checkError } = await this.supabase
+            .from(this.tableName)
+            .select('id')
+            .eq('wallet_ca', updateData.wallet_ca)
+            .single();
+    
+        if (checkError && checkError.code !== 'PGRST116') {
+            // Handle any unexpected errors during the check
+            console.log('Error checking existing session:', checkError);
+            throw checkError;
+        }
+    
+        // If an existing row with this wallet_ca is found, delete it
+        if (existingData) {
+            const { error: deleteError } = await this.supabase
+                .from(this.tableName)
+                .delete()
+                .eq('wallet_ca', updateData.wallet_ca);
+    
+            if (deleteError) {
+                console.log('Error deleting existing session:', deleteError);
+                throw deleteError;
+            }
+        }
+    
+        // Proceed with updating the session
         const { data, error } = await this.supabase
             .from(this.tableName)
             .update(updateData)
-            .eq('id', id)
-
+            .eq('id', id);
+    
         if (error) {
             console.log('Error updating session');
             throw error;
         }
+    
+        return { data, existingRowDeleted: !!existingData };
     }
+
+    // async updateSession(id, updateData) {
+    //     const wallet_ca = updateData.wallet_ca;
+    //     const { data, error } = await this.supabase
+    //         .from(this.tableName)
+    //         .update(updateData)
+    //         .eq('id', id)
+
+    //     if (error) {
+    //         console.log('Error updating session');
+    //         throw error;
+    //     }
+    // }
 
     async deleteByWallet_ca(wallet_ca) {
         console.log(`Deleting session with wallet_ca: ${wallet_ca}`);
