@@ -18,6 +18,8 @@ const iv = process.env.ENCRYPTION_IV; // 16 characters (128 bits)
 
 // Initialize the encryption service
 const encryptionService = new EncryptionService(key, iv);
+console.log('ENCRYPTION_KEY:', process.env.ENCRYPTION_KEY);
+console.log('ENCRYPTION_IV:', process.env.ENCRYPTION_IV);
 /*
 - id == users id
 - Shared Secret
