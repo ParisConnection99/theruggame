@@ -137,13 +137,6 @@ class PhantomConnect {
     async connect() {
         const id = await this.saveKeyPair();
 
-        logInfo('Id', {
-            id: id,
-        });
-
-        // Everytime i call connect I need to generate a new key
-        // pass an id 
-
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
             cluster: "mainnet-beta",
@@ -153,11 +146,6 @@ class PhantomConnect {
         });
 
         const url = buildUrl("connect", params);
-
-        logInfo('connect deeplink', {
-            component: 'Phantom connect',
-            link: url
-        });
 
         return { deepLink: url, id: id };
     }
@@ -191,12 +179,6 @@ class PhantomConnect {
 
         session_data = await response.json();
 
-        logInfo('Fetched session data', {
-            component: 'Phantom connect',
-            session: session_data
-        });
-
-        //const decryptedSession = encryptionService.decrypt(session.session);
         const session = session_data.session;
         const payload = {
             session
@@ -214,12 +196,25 @@ class PhantomConnect {
 
         const url = buildUrl("disconnect", params);
 
-        logInfo('URL', {
-            component: 'Phantom connect',
-            url: url
+        return url;
+    }
+
+    async removeSessionData(key) {
+        if (!key) {
+            throw new Error('Public key needed to remove data.');
+        }
+
+        const deleteResponse = await fetch(`${APP_URL}/api/session?wallet_ca=${key}`, {
+            method: 'DELETE',
+            headers: { "Content-Type": "application/json" }
         });
 
-        return url;
+        if (!deleteResponse.ok) {
+            const errorData = await deleteResponse.json();
+            throw new Error(`Error delete session data: ${errorData}`);
+        }
+
+        logInfo('Session data successfully deleted.', {});
     }
 
     async signAndSendTransaction(betAmount, publicKey) {
@@ -295,7 +290,6 @@ class PhantomConnect {
     };
 
     async handleConnectResponse(data, nonce, phantomEncryptionPublicKey, sessionId) {
-        console.log('Session id: ', sessionId);
         const response = await fetch(`${APP_URL}/api/session?id=${sessionId}`, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
@@ -315,11 +309,6 @@ class PhantomConnect {
 
         session_data = await response.json();
 
-        logInfo('Fetched session data', {
-            component: 'Phantom connect',
-            session: session_data
-        });
-
         const sharedSecret = nacl.box.before(
             bs58.decode(phantomEncryptionPublicKey),
             bs58.decode(session_data.dapp_private)
@@ -335,10 +324,6 @@ class PhantomConnect {
             shared_secret: JSON.stringify(convertedSharedSecret),
             wallet_ca: decryptedData.public_key
         }
-
-        logInfo('Saving the new session', {
-            newSession: JSON.stringify(newSession)
-        });
 
         const updateResponse = await fetch(`${APP_URL}/api/session`, {
             method: 'PATCH',

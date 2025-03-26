@@ -9,7 +9,7 @@ import { useAuth } from './FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import { handlePhantomConnect, handlePhantomDisconnection } from '@/utils/PhantomConnectAction';
+import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 //import { phantomConnect } from '@/utils/PhantomConnect';
 
 export default function Header() {
@@ -252,6 +252,9 @@ export default function Header() {
 
             setIsEffectivelyConnected(false);
 
+            // Remove data
+            await cleanup(uid);
+
         } catch (error) {
             logError(error, {
                 component: 'Header',
@@ -260,6 +263,40 @@ export default function Header() {
             throw error;
         }
     };
+
+    const disconnectFromPhantom = async (uid) => {
+        if (!uid) {
+            throw new Error('Key needed to disconnect.');
+        }
+
+        logInfo('Disconnect from phantom.', {
+            component: 'Header'
+        });
+
+        try {
+            const response = await handlePhantomDisconnection(uid);
+            return response;
+        } catch (error) {
+            console.error('Error disconnecting from phantom: ',error);
+        }
+    }
+
+    const cleanup = async (uid) => {
+        if (!uid) {
+            throw new Error('Key needed to cleanup.');
+        }
+
+        logInfo('Cleaning session data,', {});
+
+        try {
+            await handleCleanup(uid);
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'Cleaning data'
+            });
+        }
+    }
 
     // Listen for wallet disconnect event
     useEffect(() => {
@@ -321,28 +358,6 @@ export default function Header() {
             console.error('Error connecting to phantom: ',error);
         }
     };
-
-    const disconnectFromPhantom = async (uid) => {
-        if (!uid) {
-            throw new Error('Key needed to disconnect.');
-        }
-
-        logInfo('Disconnect from phantom.', {
-            component: 'Header'
-        });
-
-        try {
-            const response = await handlePhantomDisconnection(uid);
-
-            logInfo('DIsconnect response', {
-                component: 'Header',
-                url: response
-            });
-            return response;
-        } catch (error) {
-            console.error('Error disconnecting from phantom: ',error);
-        }
-    }
 
     const handleMobileWalletConnection = async () => {
         if (!isMobile) return;

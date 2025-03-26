@@ -39,3 +39,15 @@ export async function handlePhantomDisconnection(key) {
         throw error;
     }
 }
+
+export async function handleCleanup(key) {
+    const phantomConnect = new PhantomConnect();
+
+    try {
+        const result = await phantomConnect.removeSessionData(key);
+        return result;
+     } catch (error) {
+         console.error('Error disconnecting phantom');
+         throw error;
+     }
+}
