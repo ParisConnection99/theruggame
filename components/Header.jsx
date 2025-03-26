@@ -10,21 +10,18 @@ import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
-//import { phantomConnect } from '@/utils/PhantomConnect';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
     const { auth } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
-    const [userProfile, setUserProfile] = useState(null);
     const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error, disconnected
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorToast, setShowErrorToast] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    const [dappEncryptionPublicKey, setDappEncryptionPublicKey] = useState('');
     //const keypairRef = useRef(null);
 
     // Detect if user is on mobile device
@@ -501,81 +498,6 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
-
-            // if (!publicKey || !auth) {
-            //     const errorMessage = !publicKey
-            //         ? "Wallet not connected properly"
-            //         : "Authentication service unavailable";
-
-            //     setConnectionStatus("error");
-            //     showConnectionError(errorMessage);
-            //     return;
-            // }
-
-            // // Fetch Firebase custom token
-            // const response = await fetch("/api/auth", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({ publicKey: publicKey.toString() }),
-            // });
-
-            // const data = await response.json();
-
-            // if (data.error) {
-            //     logInfo("Error fetching Firebase custom token", {
-            //         component: "Header",
-            //         error: data.error,
-            //     });
-
-            //     setConnectionStatus("error");
-            //     showConnectionError(`Authentication error: ${data.error}`);
-            //     throw new Error(data.error);
-            // }
-
-            // // Sign in with the custom token
-            // const userCredential = await signInWithCustomToken(auth, data.token);
-            // logInfo("Firebase sign-in successful", {
-            //     component: "Header",
-            //     user: userCredential.user,
-            // });
-
-            // // Instead of fetching the user we want to check if the user exists
-            // const userResponse = await fetch(`/api/users`, {
-            //     method: "GET",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //         Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
-            //     },
-            // });
-
-            // let user = null;
-
-            // if (userResponse.status === 404) {
-            //     const createUserResponse = await fetch("/api/users", {
-            //         method: "POST",
-            //         headers: { "Content-Type": "application/json" },
-            //         body: JSON.stringify({
-            //             wallet_ca: publicKey.toString(),
-            //             username: getDefaultUsername(),
-            //         }),
-            //     });
-
-            //     if (!createUserResponse.ok) {
-            //         const errorData = await createUserResponse.json();
-            //         throw new Error(errorData.error || "Failed to create user");
-            //     }
-
-            //     user = await createUserResponse.json();
-            // } else if (!userResponse.ok) {
-            //     const errorData = await userResponse.json();
-            //     throw new Error(errorData.error || "Failed to fetch user");
-            // } else {
-            //     user = await userResponse.json();
-            // }
-
-            // // Set the user profile
-            // setUserProfile(user);
-            // setConnectionStatus("success");
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
