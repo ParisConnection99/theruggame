@@ -276,20 +276,7 @@ class PhantomConnect {
 
         const decryptedSharedSecret = encryptionService.decrypt(session.shared_secret);
         const convertedSharedSecret = this.convertJsonStringToUint8Array(decryptedSharedSecret);
-        if (convertedSharedSecret instanceof Uint8Array) {
-            logInfo('SharedSecret is a valid Uint8Array', {
-                ss: convertedSharedSecret
-            });
-        } else {
-            logInfo('SharedSecret is NOT a Uint8Array', {
-                ss: convertedSharedSecret
-            });
-        }
         
-        logInfo('SharedSecret', {
-            ss: convertedSharedSecret
-        });
-
         const payload = {
             decryptedSession
         };
@@ -447,6 +434,15 @@ class PhantomConnect {
             bs58.decode(phantomEncryptionPublicKey),
             bs58.decode(session.dapp_private)
         );
+
+        logInfo('Shared secret type', {
+            component: 'Phantom connect',
+            ss: sharedSecret
+        });
+
+        logInfo('Session type', {
+            ss: `${typeof sharedSecret}`
+        });
 
     
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
