@@ -116,38 +116,38 @@ class PhantomConnect {
         return [nonce, encryptedPayload];
     };
 
-    convertJsonStringToUint8Array(jsonString) {
-        try {
-            // Step 1: Check if the input is a string
-            if (typeof jsonString !== 'string') {
-                throw new Error('Input is not a valid string.');
-            }
+    // convertJsonStringToUint8Array(jsonString) {
+    //     try {
+    //         // Step 1: Check if the input is a string
+    //         if (typeof jsonString !== 'string') {
+    //             throw new Error('Input is not a valid string.');
+    //         }
     
-            // Step 2: Parse the JSON string into an object
-            const parsedObject = JSON.parse(jsonString);
+    //         // Step 2: Parse the JSON string into an object
+    //         const parsedObject = JSON.parse(jsonString);
     
-            // Step 3: Validate that the parsed object is an object with numeric values
-            if (typeof parsedObject !== 'object' || parsedObject === null) {
-                throw new Error('Parsed JSON is not a valid object.');
-            }
+    //         // Step 3: Validate that the parsed object is an object with numeric values
+    //         if (typeof parsedObject !== 'object' || parsedObject === null) {
+    //             throw new Error('Parsed JSON is not a valid object.');
+    //         }
     
-            const values = Object.values(parsedObject);
+    //         const values = Object.values(parsedObject);
     
-            // Ensure all values are numbers
-            if (!values.every(value => typeof value === 'number')) {
-                throw new Error('Parsed object contains non-numeric values.');
-            }
+    //         // Ensure all values are numbers
+    //         if (!values.every(value => typeof value === 'number')) {
+    //             throw new Error('Parsed object contains non-numeric values.');
+    //         }
     
-            // Step 4: Convert the values into a Uint8Array
-            const uint8Array = new Uint8Array(values);
+    //         // Step 4: Convert the values into a Uint8Array
+    //         const uint8Array = new Uint8Array(values);
     
-            console.log('Successfully converted to Uint8Array:', uint8Array);
-            return uint8Array;
-        } catch (error) {
-            console.error('Error converting JSON string to Uint8Array:', error.message);
-            return new Uint8Array(); // Return an empty Uint8Array in case of an error
-        }
-    }
+    //         console.log('Successfully converted to Uint8Array:', uint8Array);
+    //         return uint8Array;
+    //     } catch (error) {
+    //         console.error('Error converting JSON string to Uint8Array:', error.message);
+    //         return new Uint8Array(); // Return an empty Uint8Array in case of an error
+    //     }
+    // }
     
     // getUint8ArrayFromJsonString = (jsonString) => {
     //     try {
@@ -163,6 +163,24 @@ class PhantomConnect {
     //         return new Uint8Array();  // Return an empty Uint8Array in case of an error
     //     }
     // }
+
+    convertStringToUint8Array(normalString) {
+        try {
+            // Step 1: Check if the input is a string
+            if (typeof normalString !== 'string') {
+                throw new Error('Input is not a valid string.');
+            }
+    
+            // Step 2: Convert the string to a Uint8Array using TextEncoder
+            const uint8Array = new TextEncoder().encode(normalString);
+    
+            console.log('Successfully converted string to Uint8Array:', uint8Array);
+            return uint8Array;
+        } catch (error) {
+            console.error('Error converting string to Uint8Array:', error.message);
+            return new Uint8Array(); // Return an empty Uint8Array in case of an error
+        }
+    }
 
     async saveKeyPair() {
         this.dappKeyPair = nacl.box.keyPair();
@@ -269,15 +287,16 @@ class PhantomConnect {
 
         const decryptedSession = encryptionService.decrypt(session.session);
 
+
        // const decryptedSharedSecret = encryptionService.decrypt(session.shared_secret);
         
         const payload = {
             decryptedSession
         };
 
-        //const convertedSharedSecret = this.convertJsonStringToUint8Array(session.sharedSecret);
+        const convertedSharedSecret = this.convertStringToUint8Array(session.shared_secret);
 
-        const [nonce, encryptedPayload] = this.encryptPayload(payload, session.sharedSecret);
+        const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: session.dapp_public,
