@@ -54,8 +54,12 @@ export async function POST(request) {
 
         const username = body.username;
 
+        console.log(`Username: ${username}`);
+
         // Check if the username is available
         const isUsernameAvailable = await serviceRepo.userService.isUsernameAvailable(username);
+
+        console.log(`Is username available: ${isUsernameAvailable}`);
 
         if (!isUsernameAvailable) {
             // Username already exists
