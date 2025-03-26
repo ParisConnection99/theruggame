@@ -33,62 +33,6 @@ const buildUrl = (path, params) =>
     `https://phantom.app/ul/v1/${path}?${params.toString()}`;
 
 class PhantomConnect {
-    constructor() {
-        // // Check if we're in a browser environment
-        // if (typeof window === 'undefined') {
-        //     return;
-        // }
-
-        // // First check the database to see if 
-
-        // // check first
-        // // Initialize with stored keypair or create new one
-        // const storedPrivateKey = window.localStorage.getItem('dappEncryptionPrivateKey');
-        // const storedPublicKey = window.localStorage.getItem('dappEncryptionPublicKey');
-
-        // // make a call to see if user is connected
-
-        // if (storedPrivateKey && storedPublicKey) {
-        //     try {
-        //         // Use existing keypair
-        //         const existingKeypair = nacl.box.keyPair.fromSecretKey(bs58.decode(storedPrivateKey));
-        //         this.dappKeyPair = existingKeypair;
-
-        //         logInfo('Using existing keypair', {
-        //             component: 'PhantomConnect',
-        //             publicKey: storedPublicKey
-        //         });
-        //     } catch (error) {
-        //         logError(error, {
-        //             component: 'PhantomConnect',
-        //             action: 'loading existing keypair'
-        //         });
-        //         // If there's an error with stored keys, remove them and generate new ones
-        //         window.localStorage.removeItem('dappEncryptionPrivateKey');
-        //         window.localStorage.removeItem('dappEncryptionPublicKey');
-        //         this.generateNewKeypair();
-        //     }
-        // } else {
-        //     // No existing keypair, generate new one
-        //     this.generateNewKeypair();
-        // }
-    }
-
-    // generateNewKeypair() {
-    //     if (typeof window === 'undefined') {
-    //         return;
-    //     }
-
-    //     this.dappKeyPair = nacl.box.keyPair();
-    //     //window.localStorage.setItem('dappEncryptionPublicKey', bs58.encode(this.dappKeyPair.publicKey));
-    //     //window.localStorage.setItem('dappEncryptionPrivateKey', bs58.encode(this.dappKeyPair.secretKey));
-
-    //     logInfo('Generated new keypair', {
-    //         component: 'PhantomConnect',
-    //         publicKey: bs58.encode(this.dappKeyPair.publicKey)
-    //     });
-    // }
-
     decryptPayload = (data, nonce, sharedSecret) => {
         if (!sharedSecret) throw new Error("missing shared secret");
     
@@ -259,17 +203,6 @@ class PhantomConnect {
         };
 
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(session_data.shared_secret);
-
-        logInfo('Json string to uint8array', {
-            ss: convertedSharedSecret
-        });
-
-        if (convertedSharedSecret instanceof Uint8Array) {
-            logInfo('Converted shared secret is uint8 arrrya', {});
-        } else {
-            logInfo('Converted shared secret is NOT uint8 arrrya', {});
-        }
-
         const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
@@ -287,38 +220,6 @@ class PhantomConnect {
         });
 
         return url;
-        
-        // pass in the public key and use that to fetch the data
-        // const session = window.localStorage.getItem('phantomSession');
-        // const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
-
-        // if (!session || !sharedSecret) {
-        //     throw new Error("Missing session or shared secret");
-        // }
-
-        // const payload = {
-        //     session
-        // };
-
-        // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
-
-        // const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
-
-        // logInfo('DisConnect public key', {
-        //     component: 'Phantom Connect',
-        //     publicKey: `${bs58.encode(this.dappKeyPair.publicKey)}`
-        // });
-
-        // const params = new URLSearchParams({
-        //     dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
-        //     nonce: bs58.encode(nonce),
-        //     redirect_link: 'https://theruggame.fun/disconnect-callback',
-        //     payload: bs58.encode(encryptedPayload),
-        // });
-
-        // const url = buildUrl("disconnect", params);
-
-        // return url;
     }
 
     async signAndSendTransaction(betAmount, publicKey) {
@@ -424,9 +325,7 @@ class PhantomConnect {
             bs58.decode(session_data.dapp_private)
         );
 
-        //const convertedSharedSecret = new Uint8Array(sharedSecret);
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
-       // const encryptedSession = encryptionService.encrypt(decryptedData.session);
         
         const convertedSharedSecret = Array.from(sharedSecret);
        
@@ -463,8 +362,4 @@ class PhantomConnect {
     }
 }
 
-// Export both the instance and the buildUrl function
-//export const phantomConnect = typeof window !== 'undefined' ? new PhantomConnect() : null;
-//const phantomConnect = new PhantomConnect();
 export default PhantomConnect;
-//export { buildUrl, decryptPayload, getUint8ArrayFromJsonString }; 
