@@ -243,6 +243,16 @@ class PhantomConnect {
 
         const decryptedSharedSecret = encryptionService.decrypt(session.shared_secret);
 
+        if (decryptedSharedSecret instanceof Uint8Array) {
+            logInfo('SharedSecret is a valid Uint8Array', {
+                ss: convertedSharedSecret
+            });
+        } else {
+            logInfo('SharedSecret is NOT a Uint8Array', {
+                ss: convertedSharedSecret
+            });
+        }
+
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(decryptedSharedSecret);
         
         logInfo('SharedSecret', {
