@@ -23,10 +23,13 @@ export default function UsernameChangePopup({ isOpen, onClose, onSave, currentUs
     try {
       setLoading(true);
       const result = await onSave(username);
-      logInfo('Save result', {
-        isChangeSuccessful: `${result}`
-      });
-      //onClose();
+
+      if (result) {
+        alert('Username has been successfully changed.');
+        onClose();
+      } else {
+        setError('Error updating username, it may already exist.');
+      }
     } catch (error) {
       setError(error.message || "Failed to update username");
       logEvent(analytics, 'username_change_modal_error', {
