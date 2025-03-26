@@ -32,7 +32,8 @@ export async function handlePhantomDisconnection(key) {
     const phantomConnect = new PhantomConnect();
 
     try {
-        await phantomConnect.disconnect(key);
+       const result = await phantomConnect.disconnect(key);
+       return result;
     } catch (error) {
         console.error('Error disconnecting phantom');
         throw error;

@@ -333,6 +333,11 @@ export default function Header() {
 
         try {
             const response = await handlePhantomDisconnection(uid);
+
+            logInfo('DIsconnect response', {
+                component: 'Header',
+                url: response
+            });
             return response;
         } catch (error) {
             console.error('Error disconnecting from phantom: ',error);
