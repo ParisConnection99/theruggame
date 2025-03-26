@@ -310,7 +310,7 @@ export default function ProfilePage() {
             if (!response.ok) {
                 if (response.status === 409) {
                     // Show an alert if the username already exists
-                    alert('The username already exists. Please choose a different one.');
+                    //alert('The username already exists. Please choose a different one.');
                     return false; // Return false to indicate failure
                 }
     
