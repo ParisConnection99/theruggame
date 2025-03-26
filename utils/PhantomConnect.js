@@ -258,7 +258,7 @@ class PhantomConnect {
             session
         };
 
-        const convertedSharedSecret = this.getUint8ArrayFromJsonString(session_data.session);
+        const convertedSharedSecret = this.getUint8ArrayFromJsonString(session_data.shared_secret);
 
         logInfo('Json string to uint8array', {
             ss: convertedSharedSecret
@@ -424,11 +424,11 @@ class PhantomConnect {
             bs58.decode(session_data.dapp_private)
         );
 
-        const convertedSharedSecret = new Uint8Array(sharedSecret);
-        const decryptedData = this.decryptPayload(data, nonce, convertedSharedSecret);
+        //const convertedSharedSecret = new Uint8Array(sharedSecret);
+        const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
        // const encryptedSession = encryptionService.encrypt(decryptedData.session);
         
-
+        const convertedSharedSecret = Array.from(sharedSecret);
        
         const newSession = {
             ...session_data,
