@@ -298,7 +298,7 @@ export default function ProfilePage() {
     
             const token = await authUser.getIdToken();
     
-            const response = await fetch('/api/users/username', {
+            const response = await fetch('/api/users/username_check', {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
