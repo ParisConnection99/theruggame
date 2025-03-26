@@ -392,6 +392,18 @@ export default function Header() {
         }
     };
 
+    // Function to handle wallet connection from callback data
+    const handleWalletCallbackConnection = async (walletData) => {
+        try {
+            await connectMobileUser(walletData.publicKey);
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'Connecting user'
+            })
+        }
+    };
+
     // Handle mobile wallet callback
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
@@ -405,12 +417,15 @@ export default function Header() {
 
                 // Process the connection with the received data
                 if (event.detail.publicKey) {
+                    logInfo('Handle wallet callback connection', {});
                     await handleWalletCallbackConnection({
                         publicKey: event.detail.publicKey
                     });
 
                     setConnectionStatus('success');
                     setIsEffectivelyConnected(true);
+                } else {
+                    logInfo('Public Key is null', { component: 'Header' });
                 }
 
 
@@ -428,18 +443,8 @@ export default function Header() {
         return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
     
-    // Function to handle wallet connection from callback data
-    const handleWalletCallbackConnection = async (walletData) => {
-        try {
-            await connectMobileUser(walletData.publicKey);
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'Connecting user'
-            })
-        }
-    };
     
+
     const connectMobileUser = async (publicKey) => {
         try {
             setConnectionStatus("connecting");
