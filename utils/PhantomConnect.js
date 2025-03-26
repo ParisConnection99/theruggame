@@ -408,9 +408,10 @@ class PhantomConnect {
         );
 
         if (sharedSecret instanceof Uint8Array) {
-            console.log('convertedSharedSecret is a Uint8Array');
+            logInfo('convertedSharedSecret is a Uint8Array', {});
         } else {
-            console.error('convertedSharedSecret is NOT a Uint8Array');
+            logInfo('convertedSharedSecret is not Uint8Array', {});
+            //console.error('convertedSharedSecret is NOT a Uint8Array');
         }
 
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(JSON.stringify(sharedSecret));
