@@ -85,17 +85,6 @@ export async function GET(request) {
   const url = new URL(request.url);
 
   try {
-    // Check if the request is for username availability
-    if (url.searchParams.has('username_check')) {
-      const username = url.searchParams.get('username_check');
-      const isAvailable = await serviceRepo.userService.isUsernameAvailable(username);
-
-      return new Response(JSON.stringify({ available: isAvailable }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
     // Otherwise, fetch user data by UID (requires Authorization header)
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) {
@@ -120,19 +109,33 @@ export async function GET(request) {
     //const decodedToken = await verifyAuthToken(token);
     const uid = decodedToken.uid;
 
-    // Fetch user data securely
-    const user = await serviceRepo.userService.getUserByWallet(uid);
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'User not found' }), {
-        status: 404,
+
+    // Check if the request is for username availability
+    if (url.searchParams.has('username_check')) {
+      const username = url.searchParams.get('username_check');
+      const isAvailable = await serviceRepo.userService.isUsernameAvailable(username);
+
+      return new Response(JSON.stringify({ available: isAvailable }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } else {
+      // Fetch user data securely
+      const user = await serviceRepo.userService.getUserByWallet(uid);
+      if (!user) {
+        return new Response(JSON.stringify({ error: 'User not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify(user), {
+        status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(user), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+
   } catch (error) {
     console.error('Error in GET /api/users:', error);
     return new Response(JSON.stringify({ error: error.message }), {

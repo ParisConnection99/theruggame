@@ -142,6 +142,19 @@ class UserService {
         return data.length === 0;
     }
 
+    async updateUsername(username, uid) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .update({
+                username: username,
+                username_changed_at: Date().toISOString()
+            })
+            .eq('wallet_ca', uid)
+            .select()
+
+        if (error) throw error;
+    }
+
     /**
      * Search users by username
      * @param {string} searchTerm - Search term

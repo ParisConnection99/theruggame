@@ -283,42 +283,49 @@ export default function ProfilePage() {
         if (!userData || !userData.user_id || !authUser) {
             throw new Error("User data not available");
         }
-
+    
         try {
             // Update username in your database
             const updatedData = {
                 username: newUsername,
                 username_changed_at: new Date().toISOString(),
             };
-
+    
             logInfo('Saving updated username', {
                 component: 'Profile Page',
                 updatedData: JSON.stringify(updatedData, null, 2)
             });
-
+    
             const token = await authUser.getIdToken();
-
-            await fetch('/api/users', {
-                method: 'PATCH',
+    
+            const response = await fetch('/api/users/username', {
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    userId: userData.user_id,
-                    ...updatedData
-                }),
+                body: JSON.stringify({ username: newUsername }),
             });
-
-
+    
+            if (!response.ok) {
+                if (response.status === 409) {
+                    // Show an alert if the username already exists
+                    alert('The username already exists. Please choose a different one.');
+                    return false; // Return false to indicate failure
+                }
+    
+                const errorData = await response.json();
+                throw new Error(`Error updating username: ${errorData.error || 'Unknown error'}`);
+            }
+    
             // Update local state
             setUserData({
                 ...userData,
                 username: newUsername,
                 username_changed_at: new Date().toISOString()
             });
-
-            return true;
+    
+            return true; // Return true to indicate success
         } catch (error) {
             console.error("Error updating username:", error);
             logEvent(analytics, 'profile_page_error', {
@@ -328,6 +335,58 @@ export default function ProfilePage() {
             throw new Error("Failed to update username");
         }
     };
+
+    // const handleSaveUsername = async (newUsername) => {
+    //     if (!userData || !userData.user_id || !authUser) {
+    //         throw new Error("User data not available");
+    //     }
+
+    //     try {
+    //         // Update username in your database
+    //         const updatedData = {
+    //             username: newUsername,
+    //             username_changed_at: new Date().toISOString(),
+    //         };
+
+    //         logInfo('Saving updated username', {
+    //             component: 'Profile Page',
+    //             updatedData: JSON.stringify(updatedData, null, 2)
+    //         });
+
+    //         const token = await authUser.getIdToken();
+
+    //        const response =  await fetch('/api/users/username', {
+    //             method: 'POST',
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`,
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({ username: newUsername}),
+    //         });
+
+    //         if (!response.ok) {
+    //             const errorData = await response.json();
+    //             throw new Error(`Error updating username: ${errorData}`);
+    //         }
+
+
+    //         // Update local state
+    //         setUserData({
+    //             ...userData,
+    //             username: newUsername,
+    //             username_changed_at: new Date().toISOString()
+    //         });
+
+    //         return true;
+    //     } catch (error) {
+    //         console.error("Error updating username:", error);
+    //         logEvent(analytics, 'profile_page_error', {
+    //             error_message: error.message,
+    //             error_code: error.code || 'unknown'
+    //         });
+    //         throw new Error("Failed to update username");
+    //     }
+    // };
 
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
         if (!authUser) {
