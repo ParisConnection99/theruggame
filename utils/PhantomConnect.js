@@ -77,24 +77,6 @@ class PhantomConnect {
         }
     }
 
-    convertStringToUint8Array(normalString) {
-        try {
-            // Step 1: Check if the input is a string
-            if (typeof normalString !== 'string') {
-                throw new Error('Input is not a valid string.');
-            }
-    
-            // Step 2: Convert the string to a Uint8Array using TextEncoder
-            const uint8Array = new TextEncoder().encode(normalString);
-    
-            console.log('Successfully converted string to Uint8Array:', uint8Array);
-            return uint8Array;
-        } catch (error) {
-            console.error('Error converting string to Uint8Array:', error.message);
-            return new Uint8Array(); // Return an empty Uint8Array in case of an error
-        }
-    }
-
     async saveKeyPair() {
         this.dappKeyPair = nacl.box.keyPair();
         const id = uuidv4();
