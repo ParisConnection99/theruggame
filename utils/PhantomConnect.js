@@ -245,11 +245,11 @@ class PhantomConnect {
 
         if (decryptedSharedSecret instanceof Uint8Array) {
             logInfo('SharedSecret is a valid Uint8Array', {
-                ss: convertedSharedSecret
+                ss: decryptedSharedSecret
             });
         } else {
             logInfo('SharedSecret is NOT a Uint8Array', {
-                ss: convertedSharedSecret
+                ss: decryptedSharedSecret
             });
         }
 
