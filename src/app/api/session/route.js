@@ -95,7 +95,7 @@ export async function DELETE(request) {
             });
         }
 
-        return new Response(JSON.stringify({ message: 'Session deleted successfully', deletedData }), {
+        return new Response(JSON.stringify({ message: 'Session deleted successfully' }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
