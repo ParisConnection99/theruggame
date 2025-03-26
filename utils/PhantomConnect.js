@@ -291,6 +291,11 @@ class PhantomConnect {
         };
 
         const sharedSecret = new Uint8Array(session.shared_secret);
+
+        logInfo('Shared secret', {
+            ss: sharedSecret
+        });
+        
         const [nonce, encryptedPayload] = this.encryptPayload(payload, sharedSecret);
 
         const params = new URLSearchParams({
