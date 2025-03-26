@@ -475,7 +475,7 @@ export default function Header() {
                 });
 
                 setConnectionStatus("error");
-                showConnectionError(`Authentication error: ${data.error}`);
+                showConnectionError("Error authenticating user.");
                 throw new Error(data.error);
             }
 
@@ -487,42 +487,95 @@ export default function Header() {
             });
 
             // Instead of fetching the user we want to check if the user exists
-            const userResponse = await fetch(`/api/users`, {
-                method: "GET",
+            const userResponse = await fetch(`/api/users/check`, {
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
                 },
             });
 
-            let user = null;
-
-            if (userResponse.status === 404) {
-                const createUserResponse = await fetch("/api/users", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        wallet_ca: publicKey.toString(),
-                        username: getDefaultUsername(),
-                    }),
-                });
-
-                if (!createUserResponse.ok) {
-                    const errorData = await createUserResponse.json();
-                    throw new Error(errorData.error || "Failed to create user");
-                }
-
-                user = await createUserResponse.json();
-            } else if (!userResponse.ok) {
+            if (!userResponse.ok) {
                 const errorData = await userResponse.json();
-                throw new Error(errorData.error || "Failed to fetch user");
-            } else {
-                user = await userResponse.json();
+                throw new Error(errorData.error || "Failed to check if user exists.");
             }
 
-            // Set the user profile
-            setUserProfile(user);
             setConnectionStatus("success");
+
+            // if (!publicKey || !auth) {
+            //     const errorMessage = !publicKey
+            //         ? "Wallet not connected properly"
+            //         : "Authentication service unavailable";
+
+            //     setConnectionStatus("error");
+            //     showConnectionError(errorMessage);
+            //     return;
+            // }
+
+            // // Fetch Firebase custom token
+            // const response = await fetch("/api/auth", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({ publicKey: publicKey.toString() }),
+            // });
+
+            // const data = await response.json();
+
+            // if (data.error) {
+            //     logInfo("Error fetching Firebase custom token", {
+            //         component: "Header",
+            //         error: data.error,
+            //     });
+
+            //     setConnectionStatus("error");
+            //     showConnectionError(`Authentication error: ${data.error}`);
+            //     throw new Error(data.error);
+            // }
+
+            // // Sign in with the custom token
+            // const userCredential = await signInWithCustomToken(auth, data.token);
+            // logInfo("Firebase sign-in successful", {
+            //     component: "Header",
+            //     user: userCredential.user,
+            // });
+
+            // // Instead of fetching the user we want to check if the user exists
+            // const userResponse = await fetch(`/api/users`, {
+            //     method: "GET",
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //         Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+            //     },
+            // });
+
+            // let user = null;
+
+            // if (userResponse.status === 404) {
+            //     const createUserResponse = await fetch("/api/users", {
+            //         method: "POST",
+            //         headers: { "Content-Type": "application/json" },
+            //         body: JSON.stringify({
+            //             wallet_ca: publicKey.toString(),
+            //             username: getDefaultUsername(),
+            //         }),
+            //     });
+
+            //     if (!createUserResponse.ok) {
+            //         const errorData = await createUserResponse.json();
+            //         throw new Error(errorData.error || "Failed to create user");
+            //     }
+
+            //     user = await createUserResponse.json();
+            // } else if (!userResponse.ok) {
+            //     const errorData = await userResponse.json();
+            //     throw new Error(errorData.error || "Failed to fetch user");
+            // } else {
+            //     user = await userResponse.json();
+            // }
+
+            // // Set the user profile
+            // setUserProfile(user);
+            // setConnectionStatus("success");
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
