@@ -269,18 +269,15 @@ class PhantomConnect {
 
         const decryptedSession = encryptionService.decrypt(session.session);
 
-        logInfo('Decrypted session', {
-            component: 'pHANTOM CONNECT',
-            session: decryptedSession
-        });
-
        // const decryptedSharedSecret = encryptionService.decrypt(session.shared_secret);
         
         const payload = {
             decryptedSession
         };
 
-        const [nonce, encryptedPayload] = this.encryptPayload(payload, sharedSecret);
+        const convertedSharedSecret = this.convertJsonStringToUint8Array(session.sharedSecret);
+
+        const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: session.dapp_public,
