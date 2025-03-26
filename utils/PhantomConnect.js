@@ -411,14 +411,15 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
-        const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
+        const ss = new Uint8Array(sharedSecret);
+        const decryptedData = this.decryptPayload(data, nonce, ss);
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
         
 
         const newSession = {
             ...session,
             session: encryptedSession,
-            shared_secret: sharedSecret,
+            shared_secret: ss,
             wallet_ca: decryptedData.public_key
         }
 
