@@ -407,6 +407,12 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
+        if (sharedSecret instanceof Uint8Array) {
+            console.log('convertedSharedSecret is a Uint8Array');
+        } else {
+            console.error('convertedSharedSecret is NOT a Uint8Array');
+        }
+
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(JSON.stringify(sharedSecret));
 
         const decryptedData = this.decryptPayload(data, nonce, convertedSharedSecret);
@@ -415,12 +421,6 @@ class PhantomConnect {
             component: 'Phantom connect',
             converted: convertedSharedSecret
         });
-
-        if (convertedSharedSecret instanceof Uint8Array) {
-            console.log('convertedSharedSecret is a Uint8Array');
-        } else {
-            console.error('convertedSharedSecret is NOT a Uint8Array');
-        }
 
         //const sharedSecretObject = Array.from(sharedSecret);
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
