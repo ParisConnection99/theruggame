@@ -260,6 +260,16 @@ class PhantomConnect {
 
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(session_data.session);
 
+        logInfo('Json string to uint8array', {
+            ss: convertedSharedSecret
+        });
+
+        if (convertedSharedSecret instanceof Uint8Array) {
+            logInfo('Converted shared secret is uint8 arrrya', {});
+        } else {
+            logInfo('Converted shared secret is NOT uint8 arrrya', {});
+        }
+
         const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
