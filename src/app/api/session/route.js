@@ -86,14 +86,14 @@ export async function DELETE(request) {
         console.log(`Deleting session with wallet_ca: ${wallet_ca}`);
 
         // Call the deleteByWallet_ca function from the service
-        const deletedData = await serviceRepo.sessionDataService.deleteByWallet_ca(wallet_ca);
+        await serviceRepo.sessionDataService.deleteByWallet_ca(wallet_ca);
 
-        if (!deletedData || deletedData.length === 0) {
-            return new Response(JSON.stringify({ message: 'No session found for the given wallet_ca' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
+        // if (!deletedData || deletedData.length === 0) {
+        //     return new Response(JSON.stringify({ message: 'No session found for the given wallet_ca' }), {
+        //         status: 404,
+        //         headers: { 'Content-Type': 'application/json' }
+        //     });
+        // }
 
         return new Response(JSON.stringify({ message: 'Session deleted successfully' }), {
             status: 200,

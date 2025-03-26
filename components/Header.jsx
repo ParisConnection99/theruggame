@@ -427,8 +427,20 @@ export default function Header() {
         window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
         return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
-
-    const connectUser = async (publicKey) => {
+    
+    // Function to handle wallet connection from callback data
+    const handleWalletCallbackConnection = async (walletData) => {
+        try {
+            await connectMobileUser(walletData.publicKey);
+        } catch (error) {
+            logError(error, {
+                component: 'Header',
+                action: 'Connecting user'
+            })
+        }
+    };
+    
+    const connectMobileUser = async (publicKey) => {
         try {
             setConnectionStatus("connecting");
 
@@ -519,18 +531,6 @@ export default function Header() {
             }
         }
     }
-
-    // Function to handle wallet connection from callback data
-    const handleWalletCallbackConnection = async (walletData) => {
-        try {
-            await connectUser(walletData.publicKey);
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'Connecting user'
-            })
-        }
-    };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);

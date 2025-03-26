@@ -88,7 +88,7 @@ class SessionDataService {
     async deleteByWallet_ca(wallet_ca) {
         console.log(`Deleting session with wallet_ca: ${wallet_ca}`);
     
-        const { data, error } = await this.supabase
+        const { error } = await this.supabase
             .from(this.tableName)
             .delete()
             .eq('wallet_ca', wallet_ca);
@@ -98,10 +98,8 @@ class SessionDataService {
             throw error;
         }
 
-        console.log('Deleted data: ', data);
-    
         console.log(`Deleted session with wallet_ca: ${wallet_ca}`);
-        return data; // Return the deleted row(s) for confirmation
+         // Return the deleted row(s) for confirmation
     }
 }
 
