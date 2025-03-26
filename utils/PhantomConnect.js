@@ -407,7 +407,7 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
-        const convertedSharedSecret = this.getUint8ArrayFromJsonString(sharedSecret);
+        const convertedSharedSecret = this.getUint8ArrayFromJsonString(JSON.stringify(sharedSecret));
 
         const decryptedData = this.decryptPayload(data, nonce, convertedSharedSecret);
 
