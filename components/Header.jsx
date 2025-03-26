@@ -22,7 +22,6 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    //const keypairRef = useRef(null);
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -86,7 +85,7 @@ export default function Header() {
         } catch (error) {
             console.error('Connection error:', error);
             setConnectionStatus('error');
-            showConnectionError(error.message || 'Connection failed, please try again');
+            showConnectionError('Connection failed, please try again');
         }
     };
 
@@ -183,11 +182,7 @@ export default function Header() {
 
             // Sign in with the custom token
             const userCredential = await signInWithCustomToken(auth, data.token);
-            logInfo("Firebase sign-in successful", {
-                component: "Header",
-                user: userCredential.user,
-            });
-
+            
             // Instead of fetching the user we want to check if the user exists
             const userResponse = await fetch(`/api/users/check`, {
                 method: "POST",
@@ -385,7 +380,7 @@ export default function Header() {
                 action: 'Error during mobile wallet connection'
             });
             setConnectionStatus('error');
-            showConnectionError(error.message || 'Connection failed, please try again');
+            showConnectionError('Connection failed, please try again');
         }
     };
 
@@ -440,8 +435,6 @@ export default function Header() {
         return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
     
-    
-
     const connectMobileUser = async (publicKey) => {
         try {
             setConnectionStatus("connecting");
