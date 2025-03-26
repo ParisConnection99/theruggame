@@ -450,6 +450,15 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
+        if (sharedSecret instanceof Uint8Array)  {
+            logInfo('Shared secret is an uint array', {
+                data: sharedSecret
+            });
+        } else {
+            logInfo('Shared secret is not a uint array', {
+                data: sharedSecret
+            });
+        }
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
 
         
