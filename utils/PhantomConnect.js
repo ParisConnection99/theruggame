@@ -13,8 +13,8 @@ const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 const APP_URL = "https://theruggame.fun";
 
-const key = '0123456789abcdef0123456789abcdef'; // 32 characters (256 bits)
-const iv = 'abcdef9876543210'; // 16 characters (128 bits)
+const key = process.env.ENCRYPTION_KEY; // 32 characters (256 bits)
+const iv = process.env.ENCRYPTION_IV; // 16 characters (128 bits)
 
 // Initialize the encryption service
 const encryptionService = new EncryptionService(key, iv);
