@@ -168,7 +168,8 @@ class PhantomConnect {
             session
         };
 
-        const convertedSharedSecret = this.getUint8ArrayFromJsonString(session_data.shared_secret);
+        const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
+        const convertedSharedSecret = this.getUint8ArrayFromJsonString(decryptedSharedSecret);
         const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
@@ -299,15 +300,16 @@ class PhantomConnect {
         );
 
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
-        
         const convertedSharedSecret = Array.from(sharedSecret);
-
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
+
+        const sharedSecretJsonString = JSON.stringify(convertedSharedSecret);
+        const encryptedSharedSecret = encryptionService.encrypt(sharedSecretJsonString);
        
         const newSession = {
             ...session_data,
             session: encryptedSession,
-            shared_secret: JSON.stringify(convertedSharedSecret),
+            shared_secret: encryptedSharedSecret,
             wallet_ca: decryptedData.public_key
         }
 
