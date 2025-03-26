@@ -229,9 +229,17 @@ class PhantomConnect {
             session: session
         });
 
+        
         const encryptionService = new EncryptionService();
         const decryptedSession = encryptionService.decrypt(session.session);
+
+        logInfo('Decrypted session', {
+            component: 'pHANTOM CONNECT',
+            session: decryptedSession
+        });
+
         const decryptedSharedSecret = encryptionService.decrypt(session.shared_secret);
+
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(decryptedSharedSecret);
         
         logInfo('SharedSecret', {
@@ -392,6 +400,7 @@ class PhantomConnect {
         );
 
         const decryptedData = this.decryptPayload(data, nonce, sharedSecret);
+
         const sharedSecretObject = Array.from(sharedSecret);
         const encryptionService = new EncryptionService();
         const encryptedSession = encryptionService.encrypt(decryptedData.session);
