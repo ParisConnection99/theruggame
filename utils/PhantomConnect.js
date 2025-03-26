@@ -440,7 +440,7 @@ class PhantomConnect {
             bs58.decode(session.dapp_private)
         );
 
-        if (sharedSecret instanceof Uint8array) {
+        if (sharedSecret instanceof Uint8Array) {
             logInfo('Shared secret is type uint8 aray', {});
         } else {
             logInfo('Shared secret is NOT type uint8 aray', {});
