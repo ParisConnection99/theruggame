@@ -84,6 +84,23 @@ class SessionDataService {
             throw error;
         }
     }
+
+    async deleteByWallet_ca(wallet_ca) {
+        console.log(`Deleting session with wallet_ca: ${wallet_ca}`);
+    
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .delete()
+            .eq('wallet_ca', wallet_ca);
+    
+        if (error) {
+            console.error(`Error deleting session with wallet_ca ${wallet_ca}:`, error);
+            throw error;
+        }
+    
+        console.log(`Deleted session with wallet_ca: ${wallet_ca}`);
+        return data; // Return the deleted row(s) for confirmation
+    }
 }
 
 module.exports = SessionDataService;

@@ -264,6 +264,11 @@ class PhantomConnect {
 
         const url = buildUrl("disconnect", params);
 
+        logInfo('URL', {
+            component: 'Phantom connect',
+            url: url
+        });
+
         return url;
         
         // pass in the public key and use that to fetch the data
