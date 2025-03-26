@@ -5,19 +5,36 @@ class SessionDataService {
     }
 
     async createSession(sessionData) {
-        console.log('Session before being saved: ', sessionData);
         const { data, error } = await this.supabase
-            .from(this.tableName)
-            .insert([{
-                id: sessionData.id,
-                dapp_private: sessionData.dapp_private,
-                dapp_public: sessionData.dapp_public,
-                shared_secret: sessionData.shared_secret,
-                session: sessionData.session,
-                wallet_ca: sessionData.wallet_ca
-            }]).select();
+        .from(this.tableName)
+        .upsert({
+            id: sessionData.id,
+            dapp_private: sessionData.dapp_private,
+            dapp_public: sessionData.dapp_public,
+            shared_secret: sessionData.shared_secret,
+            session: sessionData.session,
+            wallet_ca: sessionData.wallet_ca // Update the timestamp
+        }, { onConflict: 'wallet_ca' }); // Specify the unique column for conflict resolution
 
-        if (error) throw error;
+    if (error) {
+        console.error('Error upserting session data:', error);
+        throw error;
+    }
+
+    return data;
+        // console.log('Session before being saved: ', sessionData);
+        // const { data, error } = await this.supabase
+        //     .from(this.tableName)
+        //     .insert([{
+        //         id: sessionData.id,
+        //         dapp_private: sessionData.dapp_private,
+        //         dapp_public: sessionData.dapp_public,
+        //         shared_secret: sessionData.shared_secret,
+        //         session: sessionData.session,
+        //         wallet_ca: sessionData.wallet_ca
+        //     }]).select();
+
+        // if (error) throw error;
     }
 
     async getById(id) {
