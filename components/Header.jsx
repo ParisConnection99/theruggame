@@ -15,7 +15,7 @@ import { UAParser } from 'ua-parser-js';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
-    const { auth } = useAuth();
+    const { authUser, auth } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error, disconnected
