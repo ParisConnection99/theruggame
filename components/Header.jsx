@@ -10,7 +10,6 @@ import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
-import { handleAddingActivityLog } from '@/utils/ActivityLogAction';
 import { UAParser } from 'ua-parser-js';
 
 export default function Header() {
@@ -41,10 +40,6 @@ export default function Header() {
     // Monitor connection states
     useEffect(() => {
         if (connected) {
-            logInfo('Wallet connected successfully', {
-                component: 'Header',
-                publicKey: publicKey?.toString()
-            });
             setConnectionStatus('success');
         }
     }, [connected, publicKey]);
@@ -565,10 +560,6 @@ export default function Header() {
         setIsMenuOpen(false);
     };
 
-    const getDefaultUsername = () => {
-        return publicKey ? publicKey.toBase58().slice(0, 6) : '';
-    };
-
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
@@ -578,36 +569,6 @@ export default function Header() {
         setTimeout(() => {
             setShowErrorToast(false);
         }, 5000);
-    };
-
-    const logActivity = async (type, additional_meta = "Nothing to add rn.") => {
-        if (!auth || !auth.currentUser) {
-            logInfo("Unable to log activity User data not available", {});
-        }
-
-        try {
-            const deviceInfo = {
-                browser: parser.getBrowser(),
-                device: parser.getDevice(),
-                os: parser.getOS()
-            };
-
-            const token = await auth.currentUser?.getIdToken();
-            logInfo('Token', {
-                component: 'Header',
-                token: token
-            });
-
-            const logData = {
-                action_type: type,
-                device_info: deviceInfo,
-                additional_metadata: additional_meta
-            };
-
-            await handleAddingActivityLog(logData, token);
-        } catch(error) {
-           console.error(error);
-        }
     };
 
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
