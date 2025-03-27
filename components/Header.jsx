@@ -220,7 +220,6 @@ export default function Header() {
     }
 
     // < -- HANDLE MOBILE CONNECTIONS -- >
-
     const handleMobileDisconnect = async () => {
         const uid = auth.currentUser.uid;
 
@@ -553,6 +552,10 @@ export default function Header() {
             };
 
             const token = await auth.currentUser.getIdToken();
+            logInfo('Token', {
+                component: 'Header',
+                token: token
+            });
 
             const logData = {
                 action_type: type,
