@@ -11,6 +11,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { UAParser } from 'ua-parser-js';
+import LogActivity from '@/components/LogActivity';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -197,7 +198,8 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            await handleLogActivity('user_login');
+            //await handleLogActivity('user_login');
+            await LogActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
@@ -358,8 +360,8 @@ export default function Header() {
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
 
-                await handleLogActivity('user_logout');
-
+                //await handleLogActivity('user_logout');
+                await LogActivity('user_logout');
 
                 if (isMobileDevice) {
                     await handleMobileDisconnect();
@@ -537,7 +539,8 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            await handleLogActivity('user_login');
+            //await handleLogActivity('user_login');
+            await LogActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
