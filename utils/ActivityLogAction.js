@@ -8,14 +8,10 @@ export async function handleAddingActivityLog(logData, token) {
         throw new Error('Invalid log data. Must be an object.');
     }
 
-    const { action_type, actionDetails, device_info, additional_metadata } = logData;
+    const { action_type, device_info, additional_metadata } = logData;
 
     if (!action_type || typeof action_type !== 'string') {
         throw new Error('Invalid or missing action_type.');
-    }
-
-    if (!actionDetails || typeof actionDetails !== 'object') {
-        throw new Error('Invalid or missing actionDetails.');
     }
 
     if (!device_info || typeof device_info !== 'object') {

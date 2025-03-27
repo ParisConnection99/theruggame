@@ -10,6 +10,8 @@ import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
+import { handleAddingActivityLog } from '@/utils/ActivityLogAction';
+import { UAParser } from 'ua-parser-js';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -22,6 +24,7 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
+    const parser = new UAParser();
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -91,6 +94,8 @@ export default function Header() {
 
     const handleDesktopDisconnect = async () => {
         try {
+            await logActivity('user_logout');
+            
             await signOut(auth);
 
             if (connected) {
@@ -181,7 +186,7 @@ export default function Header() {
             }
 
             // Sign in with the custom token
-            const userCredential = await signInWithCustomToken(auth, data.token);
+            await signInWithCustomToken(auth, data.token);
             
             // Instead of fetching the user we want to check if the user exists
             const userResponse = await fetch(`/api/users/check`, {
@@ -198,6 +203,8 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
+
+            await logActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
@@ -218,6 +225,9 @@ export default function Header() {
         const uid = auth.currentUser.uid;
 
         try {
+
+            await logActivity('user_logout');
+
             await signOut(auth);
 
             logInfo('UID',{
@@ -491,6 +501,8 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
+
+            await logActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
@@ -526,6 +538,32 @@ export default function Header() {
         setTimeout(() => {
             setShowErrorToast(false);
         }, 5000);
+    };
+
+    const logActivity = async (type, additional_meta = "Nothing to add rn.") => {
+        if (!authUser) {
+            throw new Error("User data not available");
+        }
+
+        try {
+            const deviceInfo = {
+                browser: parser.getBrowser(),
+                device: parser.getDevice(),
+                os: parser.getOS()
+            };
+
+            const token = await authUser.getIdToken();
+
+            const logData = {
+                action_type: type,
+                device_info: deviceInfo,
+                additional_metadata: additional_meta
+            };
+
+            await handleAddingActivityLog(logData, token);
+        } catch(error) {
+           console.error(error);
+        }
     };
 
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {

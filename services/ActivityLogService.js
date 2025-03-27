@@ -10,7 +10,7 @@ class ActivityLogService {
             .insert([{
                 user_id: activityData.user_id,
                 action_type: activityData.action_type,
-                action_details: activityData.action_details,
+                device_info: activityData.device_info,
                 ip_address: activityData.ip,
                 additional_metadata: activityData.additional_metadata
             }])

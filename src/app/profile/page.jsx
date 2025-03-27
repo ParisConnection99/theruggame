@@ -339,13 +339,13 @@ export default function ProfilePage() {
             throw new Error("User data not available");
         }
 
-        const deviceInfo = {
-            browser: parser.getBrowser(),
-            device: parser.getDevice(),
-            os: parser.getOS()
-        };
-
         try {
+            const deviceInfo = {
+                browser: parser.getBrowser(),
+                device: parser.getDevice(),
+                os: parser.getOS()
+            };
+
             const token = await authUser.getIdToken();
 
             const response = await fetch('/api/cashouts', {

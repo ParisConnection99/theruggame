@@ -54,17 +54,10 @@ export async function POST(request) {
         const uid = decodedToken.uid;
         const body = await request.json();
 
-        const { action_type, actionDetails, device_info, additional_metadata } = body;
+        const { action_type, device_info, additional_metadata } = body;
 
         if (!action_type || typeof action_type !== 'string') {
             return new Response(JSON.stringify({ error: 'Invalid or missing action_type.' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        if (!actionDetails || typeof actionDetails !== 'object') {
-            return new Response(JSON.stringify({ error: 'Invalid or missing actionDetails.' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -106,9 +99,8 @@ export async function POST(request) {
             user_id: user.user_id,
             action_type,
             ip,
-            action_details: actionDetails,
-            additional_metadata,
             device_info: enhanced_device_info,
+            additional_metadata,
         };
 
         try {
