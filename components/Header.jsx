@@ -221,8 +221,6 @@ export default function Header() {
         }
     }
 
-    
-
     const handleLogActivity = async (type, additional_meta = "Nothing much rn.") => {
         if (!auth || !auth.currentUser) {
             logInfo("Unable to log activity User data not available", {});

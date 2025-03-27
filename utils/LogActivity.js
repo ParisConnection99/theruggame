@@ -1,7 +1,18 @@
 import { logInfo, logError } from '@/utils/logger';
+import { UAParser } from 'ua-parser-js';
+const parser = new UAParser();
 
 export async function LogActivity(type, device_info, auth) {
-    logInfo("Logging activity...", {});
+
+    const deviceInfo = {
+        browser: parser.getBrowser(),
+        device: parser.getDevice(),
+        os: parser.getOS()
+    }
+
+    logInfo("Logging activity...", {
+        deviceINfo: deviceInfo
+    });
 
     if (!auth || !auth.currentUser || !device_info || !type) {
         logInfo("Unable to log activity User data not available", {});
