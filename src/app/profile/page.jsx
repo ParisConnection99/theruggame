@@ -37,8 +37,6 @@ export default function ProfilePage() {
     // Popup state
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-    //logInfo(`Profile Page re-render is user connected: ${connected}`);
-
     logInfo('Auth user', {
         user: authUser,
         component: 'Profile page'
@@ -336,58 +334,6 @@ export default function ProfilePage() {
         }
     };
 
-    // const handleSaveUsername = async (newUsername) => {
-    //     if (!userData || !userData.user_id || !authUser) {
-    //         throw new Error("User data not available");
-    //     }
-
-    //     try {
-    //         // Update username in your database
-    //         const updatedData = {
-    //             username: newUsername,
-    //             username_changed_at: new Date().toISOString(),
-    //         };
-
-    //         logInfo('Saving updated username', {
-    //             component: 'Profile Page',
-    //             updatedData: JSON.stringify(updatedData, null, 2)
-    //         });
-
-    //         const token = await authUser.getIdToken();
-
-    //        const response =  await fetch('/api/users/username', {
-    //             method: 'POST',
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`,
-    //                 'Content-Type': 'application/json',
-    //             },
-    //             body: JSON.stringify({ username: newUsername}),
-    //         });
-
-    //         if (!response.ok) {
-    //             const errorData = await response.json();
-    //             throw new Error(`Error updating username: ${errorData}`);
-    //         }
-
-
-    //         // Update local state
-    //         setUserData({
-    //             ...userData,
-    //             username: newUsername,
-    //             username_changed_at: new Date().toISOString()
-    //         });
-
-    //         return true;
-    //     } catch (error) {
-    //         console.error("Error updating username:", error);
-    //         logEvent(analytics, 'profile_page_error', {
-    //             error_message: error.message,
-    //             error_code: error.code || 'unknown'
-    //         });
-    //         throw new Error("Failed to update username");
-    //     }
-    // };
-
     const handleCashoutSubmit = async ({ walletAddress, amount }) => {
         if (!authUser) {
             throw new Error("User data not available");
@@ -409,10 +355,9 @@ export default function ProfilePage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: userData.user_id,
                     amount: amount,
-                    wallet_ca: walletAddress,
-                    device_info: deviceInfo
+                    device_info: deviceInfo,
+                    wallet_address: walletAddress
                 }),
             });
 

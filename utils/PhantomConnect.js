@@ -6,7 +6,6 @@ import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
 import EncryptionService from '@/lib/EncryptionService';
-//import { serviceRepo } from '@/services/ServiceRepository';
 global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
@@ -18,17 +17,6 @@ const iv = process.env.ENCRYPTION_IV; // 16 characters (128 bits)
 
 // Initialize the encryption service
 const encryptionService = new EncryptionService(key, iv);
-console.log('ENCRYPTION_KEY:', process.env.ENCRYPTION_KEY);
-console.log('ENCRYPTION_IV:', process.env.ENCRYPTION_IV);
-/*
-- id == users id
-- Shared Secret
-- dapp Encryption Key Pair
-- session
-- timestamp
-*/
-
-// Utility functions for encryption/decryption
 
 
 const buildUrl = (path, params) =>
