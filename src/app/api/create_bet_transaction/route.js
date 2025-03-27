@@ -47,7 +47,10 @@ export async function POST(request) {
 
 
         if (!marketId || !betType || !tokenName || !amount || !amountToAdd) {
-            return res.status(400).json({ error: 'Missing parameters' });
+            return new Response(JSON.stringify({ error: 'Missing parameters' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' },
+            });
         }
 
         // Fetch the user and check their balance
