@@ -1,6 +1,7 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import admin from 'firebase-admin';
 import { createDesktopTransaction } from '@/utils/SolanaTransactions';
+import nacl from 'tweetnacl';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
