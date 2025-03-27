@@ -197,11 +197,7 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
-
-            logInfo('Logging activity', {});
-
-            //await handleLogActivity('user_login');
-            await LogActivity('user_login');
+            await handleLogActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
@@ -362,8 +358,7 @@ export default function Header() {
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
 
-                //await handleLogActivity('user_logout');
-                await LogActivity('user_logout');
+                await handleLogActivity('user_logout');
 
                 if (isMobileDevice) {
                     await handleMobileDisconnect();
@@ -541,8 +536,7 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            //await handleLogActivity('user_login');
-            await LogActivity('user_login');
+            await handleLogActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
