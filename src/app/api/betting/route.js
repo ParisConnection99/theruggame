@@ -40,6 +40,7 @@ export async function POST(request) {
       });
     }
 
+    // Fetch the user + check the balance
     const body = await request.json();
     const { marketId, userId, amount, betType, token_name } = body;
 
@@ -50,7 +51,21 @@ export async function POST(request) {
       });
     }
 
-    console.log(`Before the betting service call.`);
+    const user = serviceRepo.userService.getUserById(userId);
+
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'User not found.' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (user.balance < amount) {
+      return new Response(JSON.stringify({ error: 'Insufficient balance.' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const bet = await serviceRepo.bettingService.placeBet(marketId, {
       userId,
