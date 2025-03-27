@@ -25,6 +25,8 @@ export async function handleAddingActivityLog(logData, token) {
         throw new Error('Action type not allowed.');
     }
 
+    console.log(`Token: ${token}`);
+
     // Call the activity log API
     const response = await fetch(`${APP_URL}/api/activity_log`, {
         method: 'POST',
