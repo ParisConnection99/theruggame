@@ -15,7 +15,7 @@ import { UAParser } from 'ua-parser-js';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
-    const { authUser, auth } = useAuth();
+    const { auth } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error, disconnected
@@ -541,7 +541,7 @@ export default function Header() {
     };
 
     const logActivity = async (type, additional_meta = "Nothing to add rn.") => {
-        if (!authUser) {
+        if (!auth || !auth.currentUser) {
             logInfo("Unable to log activity User data not available", {});
         }
 
@@ -552,7 +552,7 @@ export default function Header() {
                 os: parser.getOS()
             };
 
-            const token = await authUser.getIdToken();
+            const token = await auth.currentUser.getIdToken();
 
             const logData = {
                 action_type: type,
