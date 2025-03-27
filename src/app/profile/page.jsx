@@ -10,6 +10,7 @@ import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { UAParser } from 'ua-parser-js';
 import { logInfo, logError } from '@/utils/logger';
+import { logActivity } from '@/utils/LogActivity';
 
 export default function ProfilePage() {
     const { user: authUser, auth } = useAuth();
@@ -315,6 +316,8 @@ export default function ProfilePage() {
                 const errorData = await response.json();
                 throw new Error(`Error updating username: ${errorData.error || 'Unknown error'}`);
             }
+
+            await logActivity('username_changed', auth);
     
             // Update local state
             setUserData({
@@ -376,6 +379,8 @@ export default function ProfilePage() {
                 ...userData,
                 balance: updatedBalance
             });
+
+            await logActivity('cash_out_submitted', auth);
 
             // Add the new cashout to the cashouts list
             setCashouts([newCashout, ...cashouts]);

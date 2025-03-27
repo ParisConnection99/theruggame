@@ -144,7 +144,7 @@ function isAllowedActionType(action_type) {
         case 'user_logout':
         case 'bet_placed':
         case 'username_changed':
-        case 'cash_out_selected':
+        case 'cash_out_submitted':
         case 'market_selected':
         case 'feature_market_selected':
         case 'support_selected':
