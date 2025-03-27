@@ -21,18 +21,3 @@ class ActivityLogService {
 }
 
 module.exports = ActivityLogService;
-
-
-/*
-< --- Types --- >
-
-user_login
-user_logout
-bet_placed
-username_changed
-cash_out_selected
-market_selected
-feature_market_selected
-support_selected
-how_it_works_selected
-*/

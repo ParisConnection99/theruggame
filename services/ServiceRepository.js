@@ -142,6 +142,7 @@ class ServiceRepository {
   get expiryService() { return this.get('expiryService'); }
   get database() { return this.get('db'); }
   get sessionDataService() { return this.get('sessionDataService'); }
+  get activityLogService() { return this.get('activityLogService'); }
 }
 
 // Create and export a singleton instance
