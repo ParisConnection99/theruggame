@@ -198,6 +198,8 @@ export default function Header() {
 
             setConnectionStatus("success");
 
+            logInfo('Logging activity', {});
+
             //await handleLogActivity('user_login');
             await LogActivity('user_login');
         } catch (error) {
