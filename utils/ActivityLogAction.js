@@ -29,8 +29,8 @@ export async function handleAddingActivityLog(logData, token) {
     const response = await fetch(`${APP_URL}/api/activity_log`, {
         method: 'POST',
         headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
             action_type,

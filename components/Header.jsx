@@ -548,7 +548,7 @@ export default function Header() {
                 os: parser.getOS()
             };
 
-            const token = await auth.currentUser.getIdToken();
+            const token = await auth.currentUser?.getIdToken();
             logInfo('Token', {
                 component: 'Header',
                 token: token
