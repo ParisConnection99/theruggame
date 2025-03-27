@@ -1,6 +1,6 @@
 import { logInfo, logError } from '@/utils/logger';
 import { UAParser } from 'ua-parser-js';
-import { useAuth } from './FirebaseProvider';
+import { useAuth } from '@/components/FirebaseProvider';
 const parser = new UAParser();
 
 export async function LogActivity(type, auth) {
