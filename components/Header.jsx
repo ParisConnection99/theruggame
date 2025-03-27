@@ -514,6 +514,10 @@ export default function Header() {
         setIsMenuOpen(false);
     };
 
+    const menuClicked = async (type) => {
+        await logActivity(type, auth);
+    };
+
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
@@ -639,7 +643,10 @@ export default function Header() {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-6">
-                    <Link href="/how-it-works" className="text-white text-md hover:scale-105 hover:underline">
+                    <Link href="/how-it-works"
+                    className="text-white text-md hover:scale-105 hover:underline"
+                    onClick={menuClicked('how_it_works_selected')}
+                     >
                         HOW IT WORKS
                     </Link>
                     <a
