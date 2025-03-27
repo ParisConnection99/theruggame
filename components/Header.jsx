@@ -11,7 +11,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { UAParser } from 'ua-parser-js';
-import LogActivity from '@/components/LogActivity';
+import { LogActivity } from '@/components/LogActivity';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();

@@ -1,7 +1,7 @@
 import { useAuth } from './FirebaseProvider';
 import { UAParser } from 'ua-parser-js';
 
-export default async function LogActivity(type) {
+export async function LogActivity(type) {
     const parser = new UAParser();
     const { auth } = useAuth();
 
