@@ -57,6 +57,11 @@ export async function POST(request) {
 
         const { action_type, device_info, additional_metadata } = body;
 
+        // Check if the action type is allowed
+        if (!isAllowedActionType(action_type)) {
+            throw new Error('Action type not allowed.');
+        }
+
         if (!action_type || typeof action_type !== 'string') {
             return new Response(JSON.stringify({ error: 'Invalid or missing action_type.' }), {
                 status: 400,
@@ -123,5 +128,23 @@ export async function POST(request) {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
+    }
+}
+
+function isAllowedActionType(action_type) {
+    switch (action_type) {
+        case 'user_login':
+        case 'user_logout':
+        case 'bet_placed':
+        case 'username_changed':
+        case 'cash_out_selected':
+        case 'market_selected':
+        case 'feature_market_selected':
+        case 'support_selected':
+        case 'how_it_works_selected':
+            return true;
+
+        default:
+            return false;
     }
 }

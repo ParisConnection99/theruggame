@@ -202,30 +202,7 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            const activityResponse = await fetch(`/api/activity_log`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`
-                },
-                body: JSON.stringify({
-                    " ": "",
-                    " ": "",
-                    "  ": "",
-                }),
-            });
-        
-            // Handle response
-            if (!activityResponse.ok) {
-                const errorData = await activityResponse.json();
-                logInfo('Activity Log Error', {
-                    error: errorData,
-                    timestamp: new Date(),
-                });
-                throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
-            }
-
-            //await logActivity('user_login');
+            await handleLogActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
@@ -238,6 +215,54 @@ export default function Header() {
                 showConnectionError("Connection failed, please try again");
             }
         }
+    }
+
+    const handleLogActivity = async (type) => {
+        if (!auth || !auth.currentUser) {
+            logInfo("Unable to log activity User data not available", {});
+        }
+
+        try {
+            const deviceInfo = {
+                browser: parser.getBrowser(),
+                device: parser.getDevice(),
+                os: parser.getOS()
+            };
+
+            const token = await auth.currentUser?.getIdToken();
+            logInfo('Token', {
+                component: 'Header',
+                token: token
+            });
+
+            const logData = {
+                action_type: type,
+                device_info: deviceInfo,
+                additional_metadata: additional_meta
+            };
+
+            const activityResponse = await fetch(`/api/activity_log`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`
+                },
+                body: JSON.stringify(logData),
+            });
+        
+            // Handle response
+            if (!activityResponse.ok) {
+                const errorData = await activityResponse.json();
+                logInfo('Activity Log Error', {
+                    error: errorData,
+                    timestamp: new Date(),
+                });
+                throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
+            }
+        } catch(error) {
+           console.error(error);
+        }
+        
     }
 
     // < -- HANDLE MOBILE CONNECTIONS -- >
