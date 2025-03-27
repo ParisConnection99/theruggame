@@ -28,7 +28,7 @@ export async function handleAddingActivityLog(logData, token) {
     console.log(`Token: ${token}`);
 
     // Call the activity log API
-    const response = await fetch(`${APP_URL}/api/activity_log`, {
+    const response = await fetch(`https://theruggame.fun/api/activity_log`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
