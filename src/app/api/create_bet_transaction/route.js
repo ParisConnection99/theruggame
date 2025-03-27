@@ -43,7 +43,9 @@ export async function POST(request) {
 
         const uid = decodedToken.uid;
 
-        const { marketId, betType, tokenName, amount, amountToAdd } = request.body;
+        const body = await request.json();
+
+        const { marketId, betType, tokenName, amount, amountToAdd } = body;
 
 
         if (!marketId || !betType || !tokenName || !amount || !amountToAdd) {
@@ -70,7 +72,11 @@ export async function POST(request) {
             });
         }
 
+        console.log('Fetched user:',user);
+
         const nonce = nacl.randomBytes(24);
+
+        console.log('Created nonce:',nonce);
 
         const betData = {
             user_id: user.user_id,
@@ -83,7 +89,11 @@ export async function POST(request) {
             status: 'pending'
         };
 
+        console.log('Creating pending bet:', betData);
+
         const pendingBet = await serviceRepo.pendingBetsService.createPendingBet(betData);
+
+        console.log('Pending bet:', pendingBet)
         const betId = pendingBet.id;
         const serializedTransaction = await createDesktopTransaction(uid, amount, nonce, betId);
 
