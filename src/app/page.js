@@ -7,6 +7,8 @@ import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useRouter } from 'next/navigation';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
+import { logActivity } from '@/utils/LogActivity';
+import { useAuth } from './FirebaseProvider';
 
 
 export default function Home() {
@@ -15,6 +17,8 @@ export default function Home() {
   const [featuredMarket, setFeaturedMarket] = useState(null);
   const router = useRouter();
   const analytics = useAnalytics();
+  const { auth } = useAuth();
+
 
   // Helper function defined outside of any useEffect
   const updateFeaturedMarket = (marketsList) => {
@@ -151,11 +155,12 @@ export default function Home() {
       });
     }
 
+    await logActivity('feature_market_selected', auth);
     router.push(`/market/${marketId}`);
   }
 
   // Function to handle featured market click
-  const handleFeaturedMarketClick = () => {
+  const handleFeaturedMarketClick = async () => {
     // Navigate to the market details page
     if (featuredMarket && featuredMarket.id) {
       if (analytics) {
@@ -166,6 +171,7 @@ export default function Home() {
         });
       }
 
+      await logActivity('market_selected', auth);
       router.push(`/market/${featuredMarket.id}`);
     }
   };

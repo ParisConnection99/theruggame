@@ -10,7 +10,6 @@ import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
-import { UAParser } from 'ua-parser-js';
 import { logActivity } from '@/utils/LogActivity';
 
 export default function Header() {
@@ -24,7 +23,6 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    const parser = new UAParser();
 
     // Detect if user is on mobile device
     useEffect(() => {
