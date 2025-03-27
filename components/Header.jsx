@@ -202,7 +202,30 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            await logActivity('user_login');
+            const activityResponse = await fetch(`/api/activity_log`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`
+                },
+                body: JSON.stringify({
+                    " ": "",
+                    " ": "",
+                    "  ": "",
+                }),
+            });
+        
+            // Handle response
+            if (!activityResponse.ok) {
+                const errorData = await activityResponse.json();
+                logInfo('Activity Log Error', {
+                    error: errorData,
+                    timestamp: new Date(),
+                });
+                throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
+            }
+
+            //await logActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
