@@ -65,12 +65,12 @@ export async function POST(request) {
             });
         }
 
-        if (user.balance < amount) {
-            return new Response(JSON.stringify({ error: 'Insufficient balance.' }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        // if (user.balance < amount) {
+        //     return new Response(JSON.stringify({ error: 'Insufficient balance.' }), {
+        //         status: 400,
+        //         headers: { 'Content-Type': 'application/json' },
+        //     });
+        // }
 
         console.log('Fetched user:',user);
 
