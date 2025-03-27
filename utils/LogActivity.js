@@ -1,18 +1,11 @@
 import { logInfo, logError } from '@/utils/logger';
 import { UAParser } from 'ua-parser-js';
-import { useAuth } from '@/components/FirebaseProvider';
 const parser = new UAParser();
 
-export async function LogActivity(type, auth) {
+export async function logActivity(type, auth) {
     if (!auth || !auth.currentUser || !type) {
         logInfo("Unable to log activity User data not available", {});
     }
-
-    const { authUser } = useAuth();
-
-    if (!authUser) {
-        logInfo('Auth not available', {});
-    } 
 
     try {
         const device_info = {

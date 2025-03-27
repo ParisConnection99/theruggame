@@ -11,7 +11,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { UAParser } from 'ua-parser-js';
-import { LogActivity } from '@/utils/LogActivity';
+import { logActivity } from '@/utils/LogActivity';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -197,9 +197,8 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
-           // await handleLogActivity('user_login');
 
-           await LogActivity('user_login', auth);
+           await logActivity('user_login', auth);
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
@@ -213,50 +212,6 @@ export default function Header() {
             }
         }
     }
-
-    const handleLogActivity = async (type, additional_meta = "Nothing much rn.") => {
-        if (!auth || !auth.currentUser) {
-            logInfo("Unable to log activity User data not available", {});
-        }
-
-        logInfo('Handling log activity', {});
-
-        try {
-            const deviceInfo = {
-                browser: parser.getBrowser(),
-                device: parser.getDevice(),
-                os: parser.getOS()
-            };
-
-            const token = await auth.currentUser?.getIdToken();
-
-            const activityResponse = await fetch(`/api/activity_log`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    action_type: type,
-                    device_info: deviceInfo,
-                    additional_metadata: additional_meta 
-                }),
-            });
-        
-            // Handle response
-            if (!activityResponse.ok) {
-                const errorData = await activityResponse.json();
-                logInfo('Activity Log Error', {
-                    error: errorData,
-                    timestamp: new Date(),
-                });
-                throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
-            }
-        } catch(error) {
-           console.error(error);
-        }
-        
-    };
 
     // < -- HANDLE MOBILE CONNECTIONS -- >
     const handleMobileDisconnect = async () => {
@@ -360,7 +315,7 @@ export default function Header() {
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
 
-                await handleLogActivity('user_logout');
+                await logActivity('user_logout', auth);
 
                 if (isMobileDevice) {
                     await handleMobileDisconnect();
@@ -538,7 +493,7 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            await handleLogActivity('user_login');
+            await logActivity('user_login', auth);
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
