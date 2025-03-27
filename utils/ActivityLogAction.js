@@ -37,7 +37,6 @@ export async function handleAddingActivityLog(logData, token) {
         },
         body: JSON.stringify({
             action_type,
-            actionDetails,
             device_info,
             additional_metadata,
         }),
