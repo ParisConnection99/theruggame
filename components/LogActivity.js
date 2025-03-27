@@ -5,6 +5,8 @@ export default async function LogActivity(type) {
     const parser = new UAParser();
     const { auth } = useAuth();
 
+    logInfo("Logging activity...", {});
+
     if (!auth || !auth.currentUser) {
         logInfo("Unable to log activity User data not available", {});
     }
