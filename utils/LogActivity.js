@@ -1,26 +1,15 @@
-import { useAuth } from './FirebaseProvider';
-import { UAParser } from 'ua-parser-js';
 import { logInfo, logError } from '@/utils/logger';
 
-export async function LogActivity(type) {
-    const parser = new UAParser();
-    const { auth } = useAuth();
-
+export async function LogActivity(type, device_info, auth) {
     logInfo("Logging activity...", {});
 
-    if (!auth || !auth.currentUser) {
+    if (!auth || !auth.currentUser || !device_info || !type) {
         logInfo("Unable to log activity User data not available", {});
     }
 
     logInfo('Handling log activity', {});
 
     try {
-        const deviceInfo = {
-            browser: parser.getBrowser(),
-            device: parser.getDevice(),
-            os: parser.getOS()
-        };
-
         const token = await auth.currentUser?.getIdToken();
 
         const activityResponse = await fetch(`/api/activity_log`, {
@@ -31,8 +20,8 @@ export async function LogActivity(type) {
             },
             body: JSON.stringify({
                 action_type: type,
-                device_info: deviceInfo,
-                additional_metadata: additional_meta
+                device_info: device_info,
+                additional_metadata: "Nothing rn."
             }),
         });
 
