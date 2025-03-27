@@ -20,11 +20,6 @@ export async function handleAddingActivityLog(logData, token) {
         throw new Error('Invalid or missing device_info.');
     }
 
-    // Validate token
-    if (!token || typeof token !== 'string') {
-        throw new Error('Invalid or missing token.');
-    }
-
     // Check if the action type is allowed
     if (!isAllowedActionType(action_type)) {
         throw new Error('Action type not allowed.');
