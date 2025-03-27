@@ -7,6 +7,8 @@ import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useRouter } from 'next/navigation';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
+import { UAParser } from 'ua-parser-js';
+import { useAuth } from './FirebaseProvider';
 
 
 export default function Home() {
@@ -15,6 +17,7 @@ export default function Home() {
   const [featuredMarket, setFeaturedMarket] = useState(null);
   const router = useRouter();
   const analytics = useAnalytics();
+  const { auth } = useAuth();
 
   // Helper function defined outside of any useEffect
   const updateFeaturedMarket = (marketsList) => {
@@ -151,11 +154,13 @@ export default function Home() {
       });
     }
 
+    await handleLogActivity('market_selected');
+
     router.push(`/market/${marketId}`);
   }
 
   // Function to handle featured market click
-  const handleFeaturedMarketClick = () => {
+  const handleFeaturedMarketClick = async () => {
     // Navigate to the market details page
     if (featuredMarket && featuredMarket.id) {
       if (analytics) {
@@ -166,9 +171,55 @@ export default function Home() {
         });
       }
 
+      await handleLogActivity('feature_market_selected');
+
       router.push(`/market/${featuredMarket.id}`);
     }
   };
+
+  const handleLogActivity = async (type, additional_meta = "Nothing much rn.") => {
+          if (!auth || !auth.currentUser) {
+              logInfo("Unable to log activity User data not available", {});
+          }
+  
+          logInfo('Handling log activity', {});
+  
+          try {
+              const deviceInfo = {
+                  browser: parser.getBrowser(),
+                  device: parser.getDevice(),
+                  os: parser.getOS()
+              };
+  
+              const token = await auth.currentUser?.getIdToken();
+  
+              const activityResponse = await fetch(`/api/activity_log`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${token}`
+                  },
+                  body: JSON.stringify({
+                      action_type: type,
+                      device_info: deviceInfo,
+                      additional_metadata: additional_meta 
+                  }),
+              });
+          
+              // Handle response
+              if (!activityResponse.ok) {
+                  const errorData = await activityResponse.json();
+                  logInfo('Activity Log Error', {
+                      error: errorData,
+                      timestamp: new Date(),
+                  });
+                  throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
+              }
+          } catch(error) {
+             console.error(error);
+          }
+          
+      };
 
   const [visibleMarkets, setVisibleMarkets] = useState(6); // Start with 6 markets
   const showMoreMarkets = () => {
