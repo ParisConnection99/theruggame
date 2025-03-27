@@ -2,7 +2,7 @@ import { logInfo, logError } from '@/utils/logger';
 import { UAParser } from 'ua-parser-js';
 const parser = new UAParser();
 
-export async function logActivity(type, auth) {
+export async function logActivity(type, auth, additional_meta = "Empty.") {
     if (!auth || !auth.currentUser || !type) {
         logInfo("Unable to log activity User data not available", {});
     }
@@ -25,7 +25,7 @@ export async function logActivity(type, auth) {
             body: JSON.stringify({
                 action_type: type,
                 device_info: device_info,
-                additional_metadata: "Nothing rn."
+                additional_metadata: additional_meta
             }),
         });
 

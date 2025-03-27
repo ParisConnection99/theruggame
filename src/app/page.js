@@ -155,7 +155,7 @@ export default function Home() {
       });
     }
 
-    await logActivity('market_selected', auth);
+    await logActivity('market_selected', auth, marketId);
     router.push(`/market/${marketId}`);
   }
 
@@ -171,7 +171,7 @@ export default function Home() {
         });
       }
 
-      await logActivity('feature_market_selected', auth);
+      await logActivity('feature_market_selected', auth, featuredMarket.id);
       router.push(`/market/${featuredMarket.id}`);
     }
   };
