@@ -17,6 +17,7 @@ const UserService = require('./UserService');
 const CashoutService = require('./CashoutService');
 const SessionDataService = require('./SessionDataService');
 const ActivityLogService = require('./ActivityLogService');
+const PendingBetsService = require('./PendingBetService');
 const dbConfig = require('@/utils/db-config');
 
 
@@ -37,6 +38,7 @@ class ServiceRepository {
     // Independent services (services with minimal dependencies)
     this.register('sessionDataService', new SessionDataService(this.get('supabase')));
     this.register('activityLogService', new ActivityLogService(this.get('supabase')));
+    this.register('pendingBetsService', new PendingBetsService(this.get('supabase')));
     this.register('userService', new UserService(this.get('supabase')));
     this.register('oddsService', new OddsService(this.get('supabase')));
     this.register('statusUpdateService', new StatusUpdateService(this.get('db')));
@@ -143,6 +145,7 @@ class ServiceRepository {
   get database() { return this.get('db'); }
   get sessionDataService() { return this.get('sessionDataService'); }
   get activityLogService() { return this.get('activityLogService'); }
+  get pendingBetsService() { return this.get('pendingBetsService'); }
 }
 
 // Create and export a singleton instance

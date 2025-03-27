@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet, checkSufficientBalanceForMobile } from '@/utils/SolanaWallet.js';
+import { checkSufficientBalance, placeBet, checkSufficientBalanceForMobile, handleTransaction } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
@@ -515,7 +515,9 @@ export default function MarketPage() {
           localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
 
           // For mobile, get the public key from localStorage
-          userPublicKey = localStorage.getItem('phantomPublicKey');
+          //userPublicKey = localStorage.getItem('phantomPublicKey');
+          userPublicKey = authUser?.uid;
+
           logInfo('User public key', {
             userPublicKey: userPublicKey
           });
@@ -535,11 +537,6 @@ export default function MarketPage() {
           }
           userPublicKey = publicKey;
         }
-
-        logInfo('User public key', {
-          userPublicKey: userPublicKey
-        });
-
         // Need to use wallet payment
         
         let solanaBalance;
@@ -576,79 +573,90 @@ export default function MarketPage() {
           component: 'Market Page'
         });
 
-        // if (isMobileDevice) {
-        //   logInfo('Encrypting data', {
-        //     component: 'Market Page'
-        //   });
 
-        //   const balanceData = {
-        //     userId: dbUser.user_id,
-        //     amount: betWithFees
-        //   }
+        if (!isMobileDevice) {
+          const createBetTransactionResponse = await fetch(`/api/create_bet_transaction`, {
+            methods: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              marketId: market.id,
+              betType: betType,
+              tokenName: market.name,
+              amount: betAmount,
+              amountToAdd: amountToAdd
+            }),
+          });
 
-        //   const betData = {
-        //     marketId: market.id,
-        //     userId: dbUser.user_id,
-        //     amount: betAmount,
-        //     betType: betType,
-        //     token_name: market.name,
-        //   };
+          if (!createBetTransactionResponse.ok) {
+            const errorData = await createBetTransactionResponse.json();
+            // May need to set the pending bet to error???
+            throw new Error(`Error creating bet transaction: ${errorData}`);
+          }
 
-        //   if (!encryptKey) {
-        //     throw new Error('Encryption key is missing or undefined.');
-        //   }
+          const data = await createBetTransactionResponse.json();
 
-        //   // Encrypt the data
-        //   const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
-        //   const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
+          try {
 
-
-        //   // Save the encrypted data to local storage
-        //   localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
-        //   localStorage.setItem('encryptedBetData', encryptedBetData);
-
-        //   logInfo('Encrypted data saved to local storage', {
-        //     component: 'Market Page'
-        //   });
-        // }
-        // Use placeBet with proper callbacks
-        await new Promise((resolve, reject) => {
-          placeBet(
-            userPublicKey,
-            sendTransaction,
-            betAmount,
-            // Success callback
-            async (transferResult) => {
-              try {
-                // Reset form
-                setBetAmount(0);
-                setHouseFee(0);
-                setPotentialReturn({ amount: 0, percentage: 0 });
-                if (inputRef.current) {
-                  inputRef.current.value = "";
-                }
-
-                alert('Your bet has been successfully placed.');
-                resolve();
-              } catch (error) {
-                reject(error);
+            await handleTransaction(data, sendTransaction, 
+              (result) => {
+                logInfo('Transaction was successful', {
+                  component: 'Header',
+                });
+              }, 
+              (errorMessage) => {
+                // Handle error
+                console.error(errorMessage);
               }
-            },
-            // Error callback
-            (errorMessage) => {
-              reject(new Error(errorMessage));
-            },
-            // Loading state (already handled by the outer function)
-            null,
-            isMobileDevice,
-            market.id,
-            dbUser.user_id,
-            amountToAdd,
-            betType,
-            market.name,
-            token
-          );
-        });
+            );
+            
+          } catch (error) {
+            logError(error, {
+              component: 'Market Page',
+              action: 'Handling bet transaction'
+            });
+            throw error;
+          }
+        }
+ 
+        // await new Promise((resolve, reject) => {
+        //   placeBet(
+        //     userPublicKey,
+        //     sendTransaction,
+        //     betAmount,
+        //     // Success callback
+        //     async (transferResult) => {
+        //       try {
+        //         // Reset form
+        //         setBetAmount(0);
+        //         setHouseFee(0);
+        //         setPotentialReturn({ amount: 0, percentage: 0 });
+        //         if (inputRef.current) {
+        //           inputRef.current.value = "";
+        //         }
+
+        //         alert('Your bet has been successfully placed.');
+        //         resolve();
+        //       } catch (error) {
+        //         reject(error);
+        //       }
+        //     },
+        //     // Error callback
+        //     (errorMessage) => {
+        //       reject(new Error(errorMessage));
+        //     },
+        //     // Loading state (already handled by the outer function)
+        //     null,
+        //     isMobileDevice,
+        //     market.id,
+        //     dbUser.user_id,
+        //     amountToAdd,
+        //     betType,
+        //     market.name,
+        //     token
+        //   );
+        // });
       }
     } catch (error) {
       console.error('Error placing bet: ', error);
@@ -981,3 +989,41 @@ export default function MarketPage() {
     </div>
   );
 }
+
+
+// if (isMobileDevice) {
+        //   logInfo('Encrypting data', {
+        //     component: 'Market Page'
+        //   });
+
+        //   const balanceData = {
+        //     userId: dbUser.user_id,
+        //     amount: betWithFees
+        //   }
+
+        //   const betData = {
+        //     marketId: market.id,
+        //     userId: dbUser.user_id,
+        //     amount: betAmount,
+        //     betType: betType,
+        //     token_name: market.name,
+        //   };
+
+        //   if (!encryptKey) {
+        //     throw new Error('Encryption key is missing or undefined.');
+        //   }
+
+        //   // Encrypt the data
+        //   const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
+        //   const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
+
+
+        //   // Save the encrypted data to local storage
+        //   localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
+        //   localStorage.setItem('encryptedBetData', encryptedBetData);
+
+        //   logInfo('Encrypted data saved to local storage', {
+        //     component: 'Market Page'
+        //   });
+        // }
+        // Use placeBet with proper callbacks

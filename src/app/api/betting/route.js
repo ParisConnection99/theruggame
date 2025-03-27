@@ -1,5 +1,7 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import admin from 'firebase-admin';
+import nacl from 'tweetnacl';
+import bs58 from 'bs58';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {

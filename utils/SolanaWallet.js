@@ -1,7 +1,7 @@
 // Solana Wallet Utilities
 // This file provides functions for Solana wallet interaction including balance checking and transfers
 
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl, Memo } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
 //import { phantomConnect } from '@/utils/PhantomConnect';
 import nacl from 'tweetnacl';
@@ -173,6 +173,40 @@ export async function transferSOL(
       success: false,
       error: errorMessage
     };
+  }
+}
+
+export async function handleTransaction(data, sendTransaction, onSuccess, onError) {
+  const connection = new Connection(endpoint, {
+    commitment: 'confirmed',
+    wsEndpoint: WS_ENDPOINT,
+    disableRetryOnRateLimit: false,
+    confirmTransactionInitialTimeout: 60000 // 60 seconds
+  });
+
+  try {
+    const serializedMessage = data.serializedTransaction;
+    const transaction = Transaction.from(Buffer.from(serializedMessage, 'base64'));
+    
+    // Send transaction (this triggers the wallet popup for user approval)
+    const signature = await sendTransaction(transaction, connection);
+
+    const result = {
+      success: true,
+      signature,
+      transactionUrl: `https://explorer.solana.com/tx/${signature}`
+    };
+
+    onSuccess(result);
+  } catch (error) {
+    console.error('Transaction failed:', error);
+
+    const result = {
+      success: false,
+      error: error.message
+    };
+
+    onError(error.message);
   }
 }
 

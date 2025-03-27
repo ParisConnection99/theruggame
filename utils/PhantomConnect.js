@@ -1,7 +1,7 @@
 "use server";
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl, Memo } from '@solana/web3.js';
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
