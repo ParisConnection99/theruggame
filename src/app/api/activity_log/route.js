@@ -1,6 +1,7 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import { geolocation } from '@vercel/edge';
 import admin from 'firebase-admin';
+import { logInfo, logError } from '@/utils/logger';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
