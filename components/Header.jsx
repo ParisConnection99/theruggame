@@ -230,24 +230,24 @@ export default function Header() {
             };
 
             const token = await auth.currentUser?.getIdToken();
-            logInfo('Token', {
-                component: 'Header',
-                token: token
-            });
 
-            const logData = {
-                action_type: type,
-                device_info: deviceInfo,
-                additional_metadata: additional_meta
-            };
+            // const logData = {
+            //     action_type: type,
+            //     device_info: deviceInfo,
+            //     additional_metadata: additional_meta
+            // };
 
             const activityResponse = await fetch(`/api/activity_log`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`
+                    Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify(logData),
+                body: JSON.stringify({
+                    action_type: type,
+                    device_info: deviceInfo,
+                    additional_metadata: additional_meta 
+                }),
             });
         
             // Handle response

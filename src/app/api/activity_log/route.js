@@ -25,7 +25,6 @@ export const config = {
 
 export async function POST(request) {
     try {
-        console.log('Authorization header:', request.headers.get('Authorization'));
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
             return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
