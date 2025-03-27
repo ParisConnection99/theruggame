@@ -94,8 +94,6 @@ export default function Header() {
 
     const handleDesktopDisconnect = async () => {
         try {
-            await logActivity('user_logout');
-            
             await signOut(auth);
 
             if (connected) {
@@ -224,9 +222,6 @@ export default function Header() {
         const uid = auth.currentUser.uid;
 
         try {
-
-            await logActivity('user_logout');
-
             await signOut(auth);
 
             logInfo('UID',{
@@ -323,6 +318,8 @@ export default function Header() {
                     isMobile: isMobileDevice,
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
+
+                await logActivity('user_logout');
 
 
                 if (isMobileDevice) {
