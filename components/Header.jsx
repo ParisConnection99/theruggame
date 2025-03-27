@@ -233,12 +233,6 @@ export default function Header() {
 
             const token = await auth.currentUser?.getIdToken();
 
-            // const logData = {
-            //     action_type: type,
-            //     device_info: deviceInfo,
-            //     additional_metadata: additional_meta
-            // };
-
             const activityResponse = await fetch(`/api/activity_log`, {
                 method: 'POST',
                 headers: {
@@ -369,7 +363,7 @@ export default function Header() {
                     hasSession: !!window.localStorage.getItem('phantomSession')
                 });
 
-                await logActivity('user_logout');
+                await handleLogActivity('user_logout');
 
 
                 if (isMobileDevice) {
@@ -548,7 +542,7 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-            await logActivity('user_login');
+            await handleLogActivity('user_login');
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
