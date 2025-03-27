@@ -542,7 +542,7 @@ export default function Header() {
 
     const logActivity = async (type, additional_meta = "Nothing to add rn.") => {
         if (!authUser) {
-            throw new Error("User data not available");
+            logInfo("Unable to log activity User data not available", {});
         }
 
         try {
