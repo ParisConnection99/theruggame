@@ -117,7 +117,7 @@ export async function POST(request) {
         };
 
         try {
-            await serviceRepo.activityLogService.createLog(logData);
+            await serviceRepo.activityLogService.logActivity(logData);
             return new Response(JSON.stringify({ success: true, message: 'Activity logged successfully.' }), {
                 status: 201,
                 headers: { 'Content-Type': 'application/json' },
