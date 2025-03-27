@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
-import { useAuth } from './FirebaseProvider';
+import { useAuth } from '@/components/FirebaseProvider';
 
 
 export default function Home() {
