@@ -199,14 +199,7 @@ export default function Header() {
             setConnectionStatus("success");
            // await handleLogActivity('user_login');
 
-           const deviceInfo = {
-            browser: parser.getBrowser(),
-            device: parser.getDevice(),
-            os: parser.getOS()
-        };
-
-
-           await LogActivity('user_login', deviceInfo, auth);
+           await LogActivity('user_login', auth);
         } catch (error) {
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
