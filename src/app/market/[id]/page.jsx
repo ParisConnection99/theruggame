@@ -575,11 +575,9 @@ export default function MarketPage() {
 
 
         if (!isMobileDevice) {
-          const createBetTransactionResponse = await fetch(`/api/create_bet_transaction`, {
-            methods: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+          const createBetTransactionResponse = await fetch("/api/create_bet_transaction", {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               marketId: market.id,
               betType: betType,
