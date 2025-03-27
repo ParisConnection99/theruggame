@@ -24,6 +24,7 @@ export const config = {
 };
 
 export async function POST(request) {
+    console.log('Starting activity log route.');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -54,7 +55,11 @@ export async function POST(request) {
         const uid = decodedToken.uid;
         const body = await request.json();
 
+        console.log('After auth check.');
+
         const { action_type, device_info, additional_metadata } = body;
+
+        console.log(`${action_type}, ${device_info}, ${additional_metadata}`);
 
         // Check if the action type is allowed
         if (!isAllowedActionType(action_type)) {
@@ -83,6 +88,8 @@ export async function POST(request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
+
+        logInfo('Handling log activity', {});
 
         const forwarded = request.headers.get('x-forwarded-for');
         const realIp = request.headers.get('x-real-ip');

@@ -222,6 +222,8 @@ export default function Header() {
             logInfo("Unable to log activity User data not available", {});
         }
 
+        logInfo('Handling log activity', {});
+
         try {
             const deviceInfo = {
                 browser: parser.getBrowser(),
