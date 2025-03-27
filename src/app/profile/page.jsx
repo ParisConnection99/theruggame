@@ -37,11 +37,6 @@ export default function ProfilePage() {
 
     // Popup state
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-    logInfo('Auth user', {
-        user: authUser,
-        component: 'Profile page'
-    });
     // Fetch user data when user auth changes
     useEffect(() => {
         const fetchUserData = async () => {
