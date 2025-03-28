@@ -1,5 +1,6 @@
 "use server";
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, createMemoInstruction, clusterApiUrl } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
+import { createMemoInstruction } from '@solana/spl-memo';
 import { logInfo, logError } from '@/utils/logger';
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
