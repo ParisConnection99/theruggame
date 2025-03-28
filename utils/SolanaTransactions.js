@@ -1,5 +1,5 @@
 "use server";
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl, Memo } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
@@ -93,9 +93,14 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
         });
 
         // Create Memo instruction
-        const memoText = `${nonce}:${betId}`; // Format the memo data
-        const memoInstruction = new Memo({ memo: memoText });
-        memoInstruction.key = usersWallet;
+        // const memoText = `${nonce}:${betId}`; // Format the memo data
+        // const memoInstruction = new Memo({ memo: memoText });
+        // memoInstruction.key = usersWallet;
+
+        const memoInstruction = SystemProgram.memo({
+            pubkey: usersWallet,
+            memo: `${nonce}:${betId}`
+        });
 
         // Create transfer instruction
         const transferInstruction = SystemProgram.transfer({

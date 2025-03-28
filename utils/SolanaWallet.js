@@ -1,7 +1,7 @@
 // Solana Wallet Utilities
 // This file provides functions for Solana wallet interaction including balance checking and transfers
 
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl, Memo } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
 //import { phantomConnect } from '@/utils/PhantomConnect';
 import nacl from 'tweetnacl';
