@@ -110,8 +110,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = usersWallet;
 
-        //const serializedMessage = transaction.serializeMessage().toString('base64');
-        const serializedMessage = Buffer.from(transaction.serialize()).toString('base64'); 
+        const serializedMessage = transaction.serializeMessage().toString('base64');
 
         return serializedMessage;
     } catch (error) {
