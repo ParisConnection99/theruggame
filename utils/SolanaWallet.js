@@ -132,9 +132,9 @@ export async function transferSOL(
       })
     );
 
-    transaction.add(
-      MemoProgram.memo({ memo: key })
-    );
+    // transaction.add(
+    //   MemoProgram.memo({ memo: key })
+    // );
 
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
