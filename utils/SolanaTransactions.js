@@ -92,9 +92,9 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
             confirmTransactionInitialTimeout: 60000 // 60 seconds
         });
 
-        const memoText = `${nonce}:${betId}`;
-        const memoInstruction = new Memo({ memo: memoText });
-        memoInstruction.key = usersWallet; // Important!
+        // const memoText = `${nonce}:${betId}`;
+        // const memoInstruction = new Memo({ memo: memoText });
+        // memoInstruction.key = usersWallet; // Important!
 
         // Create transfer instruction
         const transferInstruction = SystemProgram.transfer({
@@ -105,7 +105,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
 
         // Create transaction
         const transaction = new Transaction();
-        transaction.add(memoInstruction); // Add the Memo instruction FIRST
+        transaction.add(createMemoInstruction(`${nonce}:${betId}`, [usersWallet])); // Add the Memo instruction FIRST
         transaction.add(transferInstruction); // Then add the transfer instruction
 
         // Get blockhash
