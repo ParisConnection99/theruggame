@@ -189,15 +189,15 @@ export async function handleTransaction(data, sendTransaction) {
   });
 
   try {
-    const serializedMessage = data.serializedTransaction;
+    //const serializedMessage = data.serializedTransaction;
 
-    console.log(`Serialized message: ${serializedMessage}`);
+    //console.log(`Serialized message: ${serializedMessage}`);
     //const transaction = Transaction.from(Buffer.from(serializedMessage, 'base64'));
 
     //console.log('Transaction: ', transaction);
 
     // Send transaction (this triggers the wallet popup for user approval)
-    const signature = await sendTransaction(serializedMessage, connection);
+    const signature = await sendTransaction(data, connection);
 
     const result = {
       success: true,
