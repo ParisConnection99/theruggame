@@ -103,8 +103,7 @@ export async function transferSOL(
   sendTransaction,
   amount,
   destinationAddress = SITE_WALLET_ADDRESS,
-  betId,
-  nonce,
+  key,
   endpoint = RPC_ENDPOINT
 ) {
   if (!publicKey) {
@@ -131,13 +130,9 @@ export async function transferSOL(
       })
     );
 
-    const memoText = `${nonce}`;
-
-    //const memoString = bs58.encode(memoText);
-
-    transaction.add(
-      MemoProgram.memo({ memo: nonce })
-    );
+    // transaction.add(
+    //   MemoProgram.memo({ memo: key })
+    // );
 
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
@@ -236,8 +231,7 @@ export async function placeBet(
   betType,
   token_name,
   token,
-  betId,
-  nonce
+  key
 ) {
   if (setLoading) setLoading(true);
 
@@ -320,7 +314,7 @@ export async function placeBet(
       }
     } else {
       // Handle web transaction as before
-      const result = await transferSOL(publicKey, sendTransaction, amountToAdd, betId, nonce);
+      const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key);
 
       if (result.success) {
         // we can call the endpoint from here to check if successful

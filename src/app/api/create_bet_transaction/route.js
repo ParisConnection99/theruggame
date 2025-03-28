@@ -90,13 +90,9 @@ export async function POST(request) {
 
         console.log('Creating pending bet:', betData);
 
-        const pendingBet = await serviceRepo.pendingBetsService.createPendingBet(betData);
-        const betId = pendingBet.id;
-        const encryptedBetId = encryptionService.encrypt(betId);
-        
+        await serviceRepo.pendingBetsService.createPendingBet(betData);
 
         return new Response(JSON.stringify({
-            betId: encryptedBetId,
             key: encodedNonce
         }), {
             status: 201,

@@ -598,7 +598,7 @@ export default function MarketPage() {
           throw new Error(`Error creating bet transaction: ${errorData}`);
         }
 
-        const { betId, nonce } = await createBetTransactionResponse.json();
+        const { key } = await createBetTransactionResponse.json();
 
         await new Promise((resolve, reject) => {
           placeBet(
@@ -636,7 +636,7 @@ export default function MarketPage() {
             market.name,
             token,
             betId,
-            nonce
+            key
           );
         });
       }
