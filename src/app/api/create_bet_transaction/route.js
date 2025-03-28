@@ -91,8 +91,8 @@ export async function POST(request) {
 
         console.log('Pending bet:', pendingBet)
         const betId = pendingBet.id;
-        const convertedNonce = Array.from(nonce);
-        const stringVersionOfNonce = JSON.stringify(convertedNonce);
+        //const convertedNonce = Array.from(nonce);
+        const stringVersionOfNonce = String.fromCharCode.apply(null, nonce);
 
         console.log('Converted nonce: ',stringVersionOfNonce);
         const encryptedBetId = encryptionService.encrypt(betId);
