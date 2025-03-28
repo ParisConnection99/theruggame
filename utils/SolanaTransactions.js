@@ -110,9 +110,10 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = usersWallet;
 
-        const serializedMessage = transaction.serializeMessage().toString('base64');
+        //const serializedMessage = transaction.serializeMessage().toString('base64');
 
-        return serializedMessage;
+        //return serializedMessage;
+        return transaction;
     } catch (error) {
         console.log(`Error creating transaction: ${error}`);
     }
