@@ -186,6 +186,8 @@ export async function handleTransaction(data) {
 
   try {
     const serializedMessage = data.serializedTransaction;
+
+    console.log(`Serialized message: ${serializedMessage}`);
     const transaction = Transaction.from(Buffer.from(serializedMessage, 'base64'));
 
     console.log('Transaction: ', transaction);
