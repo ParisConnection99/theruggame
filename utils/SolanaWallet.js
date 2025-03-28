@@ -131,7 +131,7 @@ export async function transferSOL(
       })
     );
 
-    const memoText = `${nonce}:${betId}`;
+    const memoText = `${nonce}`;
 
     const memoString = bs58.encode(memoText);
 
