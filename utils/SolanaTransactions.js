@@ -83,9 +83,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
     }
 
     try {
-        const usersWallet = new PublicKey(usersAddress);
         const siteWallet = new PublicKey(SITE_WALLET_ADDRESS);
-
         const connection = new Connection(RPC_ENDPOINT, {
             commitment: 'confirmed',
             wsEndpoint: WS_ENDPOINT,
@@ -95,7 +93,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
 
         // Create transfer instruction
         const transferInstruction = SystemProgram.transfer({
-            fromPubkey: usersWallet,
+            fromPubkey: usersAddress,
             toPubkey: siteWallet,
             lamports: Math.round(amount * LAMPORTS_PER_SOL)
         });
@@ -108,7 +106,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
         // Get blockhash
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
-        transaction.feePayer = usersWallet;
+        transaction.feePayer = usersAddress;
 
         //const serializedMessage = transaction.serializeMessage().toString('base64');
 
