@@ -85,7 +85,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
         const usersWallet = new PublicKey(usersAddress);
         const siteWallet = new PublicKey(SITE_WALLET_ADDRESS);
 
-        const connection = new Connection(endpoint, {
+        const connection = new Connection(RPC_ENDPOINT, {
             commitment: 'confirmed',
             wsEndpoint: WS_ENDPOINT,
             disableRetryOnRateLimit: false,
