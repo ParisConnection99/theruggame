@@ -110,11 +110,7 @@ export async function transferSOL(
     return { success: false, error: 'Wallet not connected' };
   }
 
-  logInfo('PublicKey check:', publicKey.toBase58(), {
-    isType: `${publicKey instanceof PublicKey}`
-  });
-
-  const wallet = new PublicKey(publicKey.toBase58());
+  const wallet = new PublicKey(publicKey);
   const destinationWallet = new PublicKey('A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU');
 
   try {
@@ -126,8 +122,6 @@ export async function transferSOL(
       disableRetryOnRateLimit: false,
       confirmTransactionInitialTimeout: 60000 // 60 seconds
     });
-
-    //const destinationWallet = new PublicKey(destinationAddress);
 
     // Create transaction
     const transaction = new Transaction().add(
