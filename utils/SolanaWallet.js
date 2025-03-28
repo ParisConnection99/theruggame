@@ -133,8 +133,10 @@ export async function transferSOL(
 
     const memoText = `${nonce}:${betId}`;
 
+    const memoString = bs58.encode(memoText);
+
     transaction.add(
-      MemoProgram.memo({ memo: memoText })
+      MemoProgram.memo({ memo: memoString })
     );
 
     // Get blockhash only once
