@@ -110,6 +110,8 @@ export async function transferSOL(
     return { success: false, error: 'Wallet not connected' };
   }
 
+  logInfo('PublicKey check:', publicKey.toBase58(), publicKey instanceof PublicKey);
+
   try {
     // Use connectionless approach to avoid WebSocket issues
     // The sendTransaction function already has a connection from the wallet adapter
