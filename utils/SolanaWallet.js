@@ -3,7 +3,7 @@
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
-import { MemoProgram } from "@solana/spl-memo";
+import { createMemoInstruction } from '@solana/spl-memo';
 //import { phantomConnect } from '@/utils/PhantomConnect';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -133,7 +133,7 @@ export async function transferSOL(
     );
 
     transaction.add(
-      MemoProgram.memo({ memo: key })
+      createMemoInstruction(key, [wallet])
     );
 
     // Get blockhash only once
