@@ -539,6 +539,11 @@ export default function MarketPage() {
         }
         // Need to use wallet payment
         
+        logInfo('Public Key', {
+          component: 'Market Page',
+          pk: userPublicKey
+        });
+        
         let solanaBalance;
 
         try {
