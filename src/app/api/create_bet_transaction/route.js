@@ -73,7 +73,7 @@ export async function POST(request) {
             });
         }
 
-        const nonce = nacl.randomBytes(12);
+        const nonce = nacl.randomBytes(24);
 
         const encodedNonce = bs58.encode(nonce);
 
