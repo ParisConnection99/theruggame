@@ -605,7 +605,7 @@ export default function MarketPage() {
           try {
 
 
-            const result = await handleTransaction(data);
+            const result = await handleTransaction(data, sendTransaction);
 
             logInfo('Transaction result: ', {
               component: 'Market page',
