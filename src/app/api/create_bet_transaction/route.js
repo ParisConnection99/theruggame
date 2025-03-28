@@ -3,6 +3,7 @@ import admin from 'firebase-admin';
 import { createDesktopTransaction } from '@/utils/SolanaTransactions';
 import EncryptionService from '@/lib/EncryptionService';
 import nacl from 'tweetnacl';
+import bs58 from 'bs58';
 const key = process.env.ENCRYPTION_KEY; // 32 characters (256 bits)
 const iv = process.env.ENCRYPTION_IV; // 16 characters (128 bits)
 
@@ -72,7 +73,9 @@ export async function POST(request) {
             });
         }
 
-        const nonce = nacl.randomBytes(8);
+        const nonce = nacl.randomBytes(12);
+
+        const encodedNonce = bs58.encode(nonce);
 
         const betData = {
             user_id: user.user_id,
@@ -81,7 +84,7 @@ export async function POST(request) {
             token_name: tokenName,
             amount: amount,
             amount_to_add: amountToAdd,
-            nonce: nonce,
+            nonce: encodedNonce,
             status: 'pending'
         };
 
@@ -90,11 +93,11 @@ export async function POST(request) {
         const pendingBet = await serviceRepo.pendingBetsService.createPendingBet(betData);
         const betId = pendingBet.id;
         const encryptedBetId = encryptionService.encrypt(betId);
-        const encryptedNonce = encryptionService.encrypt(nonce);
+        
 
         return new Response(JSON.stringify({
             betId: encryptedBetId,
-            key: encryptedNonce
+            key: encodedNonce
         }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
