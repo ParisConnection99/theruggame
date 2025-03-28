@@ -133,7 +133,7 @@ export async function transferSOL(
     );
 
     transaction.add(
-      createMemoInstruction(key, [wallet.toBase58()])
+      createMemoInstruction(`${key}`, [wallet])
     );
 
     // Get blockhash only once
