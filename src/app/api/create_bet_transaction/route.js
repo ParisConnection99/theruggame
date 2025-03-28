@@ -72,7 +72,7 @@ export async function POST(request) {
             });
         }
 
-        const nonce = nacl.randomBytes(24);
+        const nonce = nacl.randomBytes(8);
 
         const betData = {
             user_id: user.user_id,
