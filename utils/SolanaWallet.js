@@ -184,6 +184,10 @@ export async function handleTransaction(data, sendTransaction) {
     confirmTransactionInitialTimeout: 60000 // 60 seconds
   });
 
+  logInfo('Handle Transaction', {
+    data: data
+  });
+
   try {
     const serializedMessage = data.serializedTransaction;
 
