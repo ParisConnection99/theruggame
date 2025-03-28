@@ -635,7 +635,6 @@ export default function MarketPage() {
             betType,
             market.name,
             token,
-            betId,
             key
           );
         });
