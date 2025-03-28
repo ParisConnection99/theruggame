@@ -1,7 +1,13 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import admin from 'firebase-admin';
 import { createDesktopTransaction } from '@/utils/SolanaTransactions';
+import EncryptionService from '@/lib/EncryptionService';
 import nacl from 'tweetnacl';
+const key = process.env.ENCRYPTION_KEY; // 32 characters (256 bits)
+const iv = process.env.ENCRYPTION_IV; // 16 characters (128 bits)
+
+// Initialize the encryption service
+const encryptionService = new EncryptionService(key, iv);
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
@@ -85,17 +91,30 @@ export async function POST(request) {
 
         console.log('Pending bet:', pendingBet)
         const betId = pendingBet.id;
-        const { transaction, connection } = await createDesktopTransaction(uid, amount, nonce, betId);
 
-        //console.log('Serialized transaction: ',serializedTransaction);
+        const encryptedBetId = encryptionService.encrypt(betId);
+        const encryptedNonce = encryptionService.encrypt(nonce);
 
         return new Response(JSON.stringify({
-            transaction: transaction,
-            connection: connection
+            betId: encryptedBetId,
+            key: encryptedNonce
         }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
         });
+
+        // BETiD & NONCE
+        // const { transaction, connection } = await createDesktopTransaction(uid, amount, nonce, betId);
+
+        // //console.log('Serialized transaction: ',serializedTransaction);
+
+        // return new Response(JSON.stringify({
+        //     transaction: transaction,
+        //     connection: connection
+        // }), {
+        //     status: 201,
+        //     headers: { 'Content-Type': 'application/json' },
+        // });
 
     } catch (error) {
         console.error('Error processing bet transaction request:', error);

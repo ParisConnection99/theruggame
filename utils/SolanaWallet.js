@@ -3,17 +3,14 @@
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
+import { MemoProgram } from "@solana/spl-memo";
 //import { phantomConnect } from '@/utils/PhantomConnect';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-// Constants - Replace with your values in production
-// Use a more reliable devnet RPC with proper WebSocket support
-// Using clusterApiUrl for more reliable connections
 const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 //const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
-//const SITE_WALLET_ADDRESS = process.env.SITE_WALLET_ADDRESS;
 
 /**
  * Checks if a user has sufficient SOL balance for a transaction
@@ -106,6 +103,8 @@ export async function transferSOL(
   sendTransaction,
   amount,
   destinationAddress = SITE_WALLET_ADDRESS,
+  betId,
+  nonce,
   endpoint = RPC_ENDPOINT
 ) {
   if (!publicKey) {
@@ -130,6 +129,12 @@ export async function transferSOL(
         toPubkey: destinationWallet,
         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
       })
+    );
+
+    const memoText = `${nonce}:${betId}`;
+
+    transaction.add(
+      MemoProgram.memo({ memo: memoText })
     );
 
     // Get blockhash only once
@@ -228,7 +233,9 @@ export async function placeBet(
   amountToAdd, // This is the amount needed to be fetched from wallet
   betType,
   token_name,
-  token
+  token,
+  betId,
+  nonce
 ) {
   if (setLoading) setLoading(true);
 
@@ -311,35 +318,10 @@ export async function placeBet(
       }
     } else {
       // Handle web transaction as before
-      const result = await transferSOL(publicKey, sendTransaction, amountToAdd);
+      const result = await transferSOL(publicKey, sendTransaction, amountToAdd, betId, nonce);
 
       if (result.success) {
-        // we can call the endpoint from here
-
-        const response = await fetch(`/api/betting/transfer`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            marketId: marketId,
-            userId: userId,
-            amountToAddToBalance: amountToAdd,
-            amount: betAmount,
-            betType: betType,
-            token_name: token_name
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          logInfo('Error placing bet', {
-            errorData: errorData,
-            component: 'Market Page'
-          });
-          throw new Error(errorData.message || errorData.error || 'Error saving bet details');
-        }
+        // we can call the endpoint from here to check if successful
         onSuccess(result);
       } else {
         throw new Error(result.error);
@@ -355,3 +337,28 @@ export async function placeBet(
     if (setLoading && !isMobile) setLoading(false);
   }
 }
+
+// const response = await fetch(`/api/betting/transfer`, {
+        //   method: 'POST',
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify({
+        //     marketId: marketId,
+        //     userId: userId,
+        //     amountToAddToBalance: amountToAdd,
+        //     amount: betAmount,
+        //     betType: betType,
+        //     token_name: token_name
+        //   })
+        // });
+
+        // if (!response.ok) {
+        //   const errorData = await response.json();
+        //   logInfo('Error placing bet', {
+        //     errorData: errorData,
+        //     component: 'Market Page'
+        //   });
+        //   throw new Error(errorData.message || errorData.error || 'Error saving bet details');
+        // }

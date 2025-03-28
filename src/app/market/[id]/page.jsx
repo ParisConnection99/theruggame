@@ -575,99 +575,70 @@ export default function MarketPage() {
 
         const token = await authUser.getIdToken();
 
+        // CREATE PENDING BET
 
-        if (!isMobileDevice) {
-          const createBetTransactionResponse = await fetch("/api/create_bet_transaction", {
-            method: 'POST',
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-          },
-            body: JSON.stringify({
-              marketId: market.id,
-              betType: betType,
-              tokenName: market.name,
-              amount: betAmount,
-              amountToAdd: amountToAdd
-            }),
-          });
+        const createBetTransactionResponse = await fetch("/api/create_bet_transaction", {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+          body: JSON.stringify({
+            marketId: market.id,
+            betType: betType,
+            tokenName: market.name,
+            amount: betAmount,
+            amountToAdd: amountToAdd
+          }),
+        });
 
-          if (!createBetTransactionResponse.ok) {
-            const errorData = await createBetTransactionResponse.json();
-            // May need to set the pending bet to error???
-            throw new Error(`Error creating bet transaction: ${errorData}`);
-          }
-
-          const { transaction, connection } = await createBetTransactionResponse.json();
-
-          logInfo('Transaction data: ',data);                                                                   
-
-          try {
-
-            const result = await handleTransaction(transaction, sendTransaction, connection);
-
-            logInfo('Transaction result: ', {
-              component: 'Market page',
-              result: result
-            });
-            // await handleTransaction(data, 
-            //   (result) => {
-            //     logInfo('Transaction was successful', {
-            //       component: 'Header',
-            //     });
-            //   }, 
-            //   (errorMessage) => {
-            //     // Handle error
-            //     console.error(errorMessage);
-            //   }
-            // );
-            
-          } catch (error) {
-            logError(error, {
-              component: 'Market Page',
-              action: 'Handling bet transaction'
-            });
-            throw error;
-          }
+        if (!createBetTransactionResponse.ok) {
+          const errorData = await createBetTransactionResponse.json();
+          // May need to set the pending bet to error???
+          throw new Error(`Error creating bet transaction: ${errorData}`);
         }
- 
-        // await new Promise((resolve, reject) => {
-        //   placeBet(
-        //     userPublicKey,
-        //     sendTransaction,
-        //     betAmount,
-        //     // Success callback
-        //     async (transferResult) => {
-        //       try {
-        //         // Reset form
-        //         setBetAmount(0);
-        //         setHouseFee(0);
-        //         setPotentialReturn({ amount: 0, percentage: 0 });
-        //         if (inputRef.current) {
-        //           inputRef.current.value = "";
-        //         }
 
-        //         alert('Your bet has been successfully placed.');
-        //         resolve();
-        //       } catch (error) {
-        //         reject(error);
-        //       }
-        //     },
-        //     // Error callback
-        //     (errorMessage) => {
-        //       reject(new Error(errorMessage));
-        //     },
-        //     // Loading state (already handled by the outer function)
-        //     null,
-        //     isMobileDevice,
-        //     market.id,
-        //     dbUser.user_id,
-        //     amountToAdd,
-        //     betType,
-        //     market.name,
-        //     token
-        //   );
-        // });
+        const { betId, nonce } = await createBetTransactionResponse.json();
+
+        await new Promise((resolve, reject) => {
+          placeBet(
+            userPublicKey,
+            sendTransaction,
+            betAmount,
+            // Success callback
+            async (transferResult) => {
+              try {
+                // Reset form
+                setBetAmount(0);
+                setHouseFee(0);
+                setPotentialReturn({ amount: 0, percentage: 0 });
+                if (inputRef.current) {
+                  inputRef.current.value = "";
+                }
+
+                alert('Your bet has been successfully placed.');
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            },
+            // Error callback
+            (errorMessage) => {
+              reject(new Error(errorMessage));
+            },
+            // Loading state (already handled by the outer function)
+            null,
+            isMobileDevice,
+            market.id,
+            dbUser.user_id,
+            amountToAdd,
+            betType,
+            market.name,
+            token,
+            betId,
+            nonce
+          );
+        });
       }
     } catch (error) {
       console.error('Error placing bet: ', error);
