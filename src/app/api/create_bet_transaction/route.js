@@ -72,7 +72,7 @@ export async function POST(request) {
             });
         }
 
-        const nonce = nacl.randomBytes(24);
+        const nonce = nacl.randomBytes(12);
 
         const betData = {
             user_id: user.user_id,
@@ -92,7 +92,7 @@ export async function POST(request) {
         console.log('Pending bet:', pendingBet)
         const betId = pendingBet.id;
         const convertedNonce = Array.from(nonce);
-        const stringVersionOfNonce = convertedNonce.toString();
+        const stringVersionOfNonce = JSON.stringify(convertedNonce);
 
         console.log('Converted nonce: ',stringVersionOfNonce);
         const encryptedBetId = encryptionService.encrypt(betId);
