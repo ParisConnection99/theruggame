@@ -119,25 +119,27 @@ export async function transferSOL(
       disableRetryOnRateLimit: false,
       confirmTransactionInitialTimeout: 60000 // 60 seconds
     });
+
+    const usersWallet = new PublicKey(publicKey);
     const destinationWallet = new PublicKey(destinationAddress);
 
     // Create transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: publicKey,
+        fromPubkey: usersWallet,
         toPubkey: destinationWallet,
         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
       })
     );
 
-    // transaction.add(
-    //   MemoProgram.memo({ memo: key })
-    // );
+    transaction.add(
+      MemoProgram.memo({ memo: key })
+    );
 
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
-    transaction.feePayer = publicKey;
+    transaction.feePayer = usersWallet;
 
     // Send transaction (this triggers the wallet popup for user approval)
     const signature = await sendTransaction(transaction, connection);
@@ -251,9 +253,7 @@ export async function placeBet(
     }
 
     // For mobile, get the public key from localStorage
-    const publicKeyToCheck = isMobile
-      ? localStorage.getItem('phantomPublicKey')
-      : publicKey;
+    const publicKeyToCheck = publicKey;
 
     if (!publicKeyToCheck) {
       throw new Error('Wallet public key not found');
