@@ -106,15 +106,15 @@ export async function transferSOL(
   key,
   endpoint = RPC_ENDPOINT
 ) {
-  // if (!publicKey) {
-  //   return { success: false, error: 'Wallet not connected' };
-  // }
+  if (!publicKey) {
+    return { success: false, error: 'Wallet not connected' };
+  }
 
-  // logInfo('PublicKey check:', publicKey.toBase58(), {
-  //   isType: `${publicKey instanceof PublicKey}`
-  // });
+  logInfo('PublicKey check:', publicKey.toBase58(), {
+    isType: `${publicKey instanceof PublicKey}`
+  });
 
-  const wallet = new PublicKey('D53UgJMQGU6T3SG1yYemKSQx7PSybAYLDLS7UvoFKe8G');
+  const wallet = new PublicKey(publicKey.toBase58());
   const destinationWallet = new PublicKey('A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU');
 
   try {
@@ -138,9 +138,9 @@ export async function transferSOL(
       })
     );
 
-    // transaction.add(
-    //   MemoProgram.memo({ memo: key })
-    // );
+    transaction.add(
+      MemoProgram.memo({ memo: key })
+    );
 
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
