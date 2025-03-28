@@ -604,7 +604,7 @@ export default function MarketPage() {
 
           try {
 
-            const result = await handleTransaction(data, sendTransaction);
+            const result = await handleTransaction(data.serializedTransaction, sendTransaction);
 
             logInfo('Transaction result: ', {
               component: 'Market page',
