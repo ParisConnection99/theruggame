@@ -83,7 +83,9 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
     }
 
     try {
+        const usersWallet = new PublicKey(usersAddress);
         const siteWallet = new PublicKey(SITE_WALLET_ADDRESS);
+
         const connection = new Connection(RPC_ENDPOINT, {
             commitment: 'confirmed',
             wsEndpoint: WS_ENDPOINT,
@@ -91,22 +93,30 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
             confirmTransactionInitialTimeout: 60000 // 60 seconds
         });
 
-        // Create transfer instruction
-        const transferInstruction = SystemProgram.transfer({
-            fromPubkey: usersAddress,
-            toPubkey: siteWallet,
-            lamports: Math.round(amount * LAMPORTS_PER_SOL)
-        });
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: usersWallet,
+                toPubkey: siteWallet,
+                lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
+            })
+        );
 
-        // Create transaction
-        const transaction = new Transaction();
-        //transaction.add(createMemoInstruction(`${nonce}:${betId}`, [usersWallet])); // Add the Memo instruction FIRST
-        transaction.add(transferInstruction); // Then add the transfer instruction
+        // // Create transfer instruction
+        // const transferInstruction = SystemProgram.transfer({
+        //     fromPubkey: usersWallet,
+        //     toPubkey: siteWallet,
+        //     lamports: Math.round(amount * LAMPORTS_PER_SOL)
+        // });
+
+        // // Create transaction
+        // const transaction = new Transaction();
+        // //transaction.add(createMemoInstruction(`${nonce}:${betId}`, [usersWallet])); // Add the Memo instruction FIRST
+        // transaction.add(transferInstruction); // Then add the transfer instruction
 
         // Get blockhash
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
-        transaction.feePayer = usersAddress;
+        transaction.feePayer = usersWallet;
 
         //const serializedMessage = transaction.serializeMessage().toString('base64');
 
