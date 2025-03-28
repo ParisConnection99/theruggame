@@ -98,6 +98,8 @@ export async function POST(request) {
         const betId = pendingBet.id;
         const serializedTransaction = await createDesktopTransaction(uid, amount, nonce, betId);
 
+        console.log('Serialized transaction: ',serializedTransaction);
+
         return new Response(JSON.stringify({
             serializedTransaction: serializedTransaction
         }), {
