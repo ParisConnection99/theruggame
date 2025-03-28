@@ -93,7 +93,7 @@ export async function POST(request) {
         const betId = pendingBet.id;
 
         const encryptedBetId = encryptionService.encrypt(betId);
-        const encryptedNonce = encryptionService.encrypt(nonce);
+        const encryptedNonce = encryptionService.encrypt(JSON.stringify(nonce));
 
         return new Response(JSON.stringify({
             betId: encryptedBetId,
