@@ -102,7 +102,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
 
         // Create transaction
         const transaction = new Transaction();
-        transaction.add(createMemoInstruction(`${nonce}:${betId}`, usersWallet)); // Add the Memo instruction FIRST
+        transaction.add(createMemoInstruction(`${nonce}:${betId}`, [usersWallet])); // Add the Memo instruction FIRST
         transaction.add(transferInstruction); // Then add the transfer instruction
 
         // Get blockhash
