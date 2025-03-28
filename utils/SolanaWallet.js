@@ -177,7 +177,7 @@ export async function transferSOL(
 }
 
 export async function handleTransaction(data, sendTransaction, onSuccess, onError) {
-  const connection = new Connection(endpoint, {
+  const connection = new Connection(RPC_ENDPOINT, {
     commitment: 'confirmed',
     wsEndpoint: WS_ENDPOINT,
     disableRetryOnRateLimit: false,
