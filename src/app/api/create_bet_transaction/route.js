@@ -88,17 +88,9 @@ export async function POST(request) {
         console.log('Creating pending bet:', betData);
 
         const pendingBet = await serviceRepo.pendingBetsService.createPendingBet(betData);
-
-        console.log('Pending bet:', pendingBet)
         const betId = pendingBet.id;
-        // const convertedNonce = Array.from(nonce);
-        // const stringVersionOfNonce = JSON.stringify(convertedNonce);
-
-        // console.log('Converted nonce: ',stringVersionOfNonce);
         const encryptedBetId = encryptionService.encrypt(betId);
         const encryptedNonce = encryptionService.encrypt(nonce);
-
-        console.log(`betID: ${encryptedBetId}, nonce: ${encryptedNonce}`);
 
         return new Response(JSON.stringify({
             betId: encryptedBetId,
@@ -107,20 +99,6 @@ export async function POST(request) {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
         });
-
-        // BETiD & NONCE
-        // const { transaction, connection } = await createDesktopTransaction(uid, amount, nonce, betId);
-
-        // //console.log('Serialized transaction: ',serializedTransaction);
-
-        // return new Response(JSON.stringify({
-        //     transaction: transaction,
-        //     connection: connection
-        // }), {
-        //     status: 201,
-        //     headers: { 'Content-Type': 'application/json' },
-        // });
-
     } catch (error) {
         console.error('Error processing bet transaction request:', error);
 

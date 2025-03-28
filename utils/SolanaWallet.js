@@ -131,7 +131,7 @@ export async function transferSOL(
       })
     );
 
-    const memoText = `${nonce}:${betId}`;
+    const memoText = `${nonce}`;
 
     transaction.add(
       MemoProgram.memo({ memo: memoText })
