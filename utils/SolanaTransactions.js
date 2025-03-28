@@ -121,7 +121,7 @@ export async function createDesktopTransaction(usersAddress, amount, nonce, betI
         //const serializedMessage = transaction.serializeMessage().toString('base64');
 
         //return serializedMessage;
-        return transaction;
+        return { transaction, connection };
     } catch (error) {
         console.log(`Error creating transaction: ${error}`);
     }

@@ -598,13 +598,13 @@ export default function MarketPage() {
             throw new Error(`Error creating bet transaction: ${errorData}`);
           }
 
-          const data = await createBetTransactionResponse.json();
+          const { transaction, connection } = await createBetTransactionResponse.json();
 
           logInfo('Transaction data: ',data);                                                                   
 
           try {
 
-            const result = await handleTransaction(data.serializedTransaction, sendTransaction);
+            const result = await handleTransaction(transaction, sendTransaction, connection);
 
             logInfo('Transaction result: ', {
               component: 'Market page',

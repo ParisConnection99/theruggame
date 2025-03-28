@@ -85,12 +85,13 @@ export async function POST(request) {
 
         console.log('Pending bet:', pendingBet)
         const betId = pendingBet.id;
-        const serializedTransaction = await createDesktopTransaction(uid, amount, nonce, betId);
+        const { transaction, connection } = await createDesktopTransaction(uid, amount, nonce, betId);
 
-        console.log('Serialized transaction: ',serializedTransaction);
+        //console.log('Serialized transaction: ',serializedTransaction);
 
         return new Response(JSON.stringify({
-            serializedTransaction: serializedTransaction
+            transaction: transaction,
+            connection: connection
         }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },

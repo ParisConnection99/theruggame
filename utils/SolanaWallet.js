@@ -176,17 +176,13 @@ export async function transferSOL(
   }
 }
 
-export async function handleTransaction(data, sendTransaction) {
-  const connection = new Connection(RPC_ENDPOINT, {
-    commitment: 'confirmed',
-    wsEndpoint: WS_ENDPOINT,
-    disableRetryOnRateLimit: false,
-    confirmTransactionInitialTimeout: 60000 // 60 seconds
-  });
-
-  logInfo('Handle Transaction', {
-    data: data
-  });
+export async function handleTransaction(transaction, sendTransaction, connection) {
+  // const connection = new Connection(RPC_ENDPOINT, {
+  //   commitment: 'confirmed',
+  //   wsEndpoint: WS_ENDPOINT,
+  //   disableRetryOnRateLimit: false,
+  //   confirmTransactionInitialTimeout: 60000 // 60 seconds
+  // });
 
   try {
     //const serializedMessage = data.serializedTransaction;
@@ -197,7 +193,7 @@ export async function handleTransaction(data, sendTransaction) {
     //console.log('Transaction: ', transaction);
 
     // Send transaction (this triggers the wallet popup for user approval)
-    const signature = await sendTransaction(data, connection);
+    const signature = await sendTransaction(transaction, connection);
 
     const result = {
       success: true,
