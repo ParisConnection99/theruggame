@@ -600,11 +600,11 @@ export default function MarketPage() {
 
           const data = await createBetTransactionResponse.json();
 
-          logInfo('Transaction data: ',data);
+          logInfo('Transaction data: ',data);                                                                   
 
           try {
 
-            await handleTransaction(data, sendTransaction, 
+            await handleTransaction(data, 
               (result) => {
                 logInfo('Transaction was successful', {
                   component: 'Header',
