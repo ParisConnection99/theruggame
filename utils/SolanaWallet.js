@@ -120,13 +120,12 @@ export async function transferSOL(
       confirmTransactionInitialTimeout: 60000 // 60 seconds
     });
 
-    const usersWallet = new PublicKey(publicKey);
     const destinationWallet = new PublicKey(destinationAddress);
 
     // Create transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
-        fromPubkey: usersWallet,
+        fromPubkey: publicKey,
         toPubkey: destinationWallet,
         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
       })
@@ -139,7 +138,7 @@ export async function transferSOL(
     // Get blockhash only once
     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockhash;
-    transaction.feePayer = usersWallet;
+    transaction.feePayer = publicKey;
 
     // Send transaction (this triggers the wallet popup for user approval)
     const signature = await sendTransaction(transaction, connection);
