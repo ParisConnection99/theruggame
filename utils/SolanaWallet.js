@@ -110,7 +110,9 @@ export async function transferSOL(
     return { success: false, error: 'Wallet not connected' };
   }
 
-  logInfo('PublicKey check:', publicKey.toBase58(), publicKey instanceof PublicKey);
+  logInfo('PublicKey check:', publicKey.toBase58(), {
+    isType: `${publicKey instanceof PublicKey}`
+  });
 
   try {
     // Use connectionless approach to avoid WebSocket issues
