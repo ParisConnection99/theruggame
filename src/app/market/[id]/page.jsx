@@ -604,17 +604,24 @@ export default function MarketPage() {
 
           try {
 
-            await handleTransaction(data, 
-              (result) => {
-                logInfo('Transaction was successful', {
-                  component: 'Header',
-                });
-              }, 
-              (errorMessage) => {
-                // Handle error
-                console.error(errorMessage);
-              }
-            );
+
+            const result = await handleTransaction(data);
+
+            logInfo('Transaction result: ', {
+              component: 'Market page',
+              result: result
+            });
+            // await handleTransaction(data, 
+            //   (result) => {
+            //     logInfo('Transaction was successful', {
+            //       component: 'Header',
+            //     });
+            //   }, 
+            //   (errorMessage) => {
+            //     // Handle error
+            //     console.error(errorMessage);
+            //   }
+            // );
             
           } catch (error) {
             logError(error, {

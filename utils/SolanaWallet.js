@@ -176,7 +176,7 @@ export async function transferSOL(
   }
 }
 
-export async function handleTransaction(data, onSuccess, onError) {
+export async function handleTransaction(data) {
   const connection = new Connection(RPC_ENDPOINT, {
     commitment: 'confirmed',
     wsEndpoint: WS_ENDPOINT,
@@ -199,7 +199,7 @@ export async function handleTransaction(data, onSuccess, onError) {
       transactionUrl: `https://explorer.solana.com/tx/${signature}`
     };
 
-    onSuccess(result);
+    return result;
   } catch (error) {
     console.error('Transaction failed:', error);
 
@@ -208,7 +208,7 @@ export async function handleTransaction(data, onSuccess, onError) {
       error: error.message
     };
 
-    onError(error.message);
+    return result;
   }
 }
 
