@@ -7,7 +7,7 @@ export async function verifyBetTransaction(signature) {
   
     try {
       // 1. Fetch Parsed Transaction
-      const tx = await connection.getParsedTransaction(signature, { commitment: "confirmed" });
+      const tx = await connection.getParsedTransaction(signature, { commitment: "finalized" });
   
       // 1a. Check Existence and Success
       if (!tx) {
@@ -69,17 +69,6 @@ export async function verifyBetTransaction(signature) {
           console.log("Source Wallet Verified.");
       }
   
-  
-    //   // All checks passed!
-    //   console.log("Transaction verified successfully for bet:", pendingBet.id);
-  
-    //   // --> IMPORTANT: Update bet status in DB now to prevent reuse of nonce!
-    //   await markBetAsPaid(pendingBet.id); // Implement this DB function
-  
-    //   return { success: true, betId: pendingBet.id, /* other details */ };
-
-    // Send the signature + update the status 
-
     const pendingBetData = {
         ...pendingBet,
         signature: signature,
