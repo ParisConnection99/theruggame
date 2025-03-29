@@ -60,7 +60,8 @@ export async function fetchSolBalanceForMobile(publicKey, endpoint = RPC_ENDPOIN
   });
 
   try {
-    const connection = new Connection(endpoint, 'confirmed');
+    //const connection = new Connection(endpoint, 'confirmed');
+    const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
     const publicKey = new PublicKey(publicKey);
 
     logInfo('Before checking balance', {
