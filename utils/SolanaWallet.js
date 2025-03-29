@@ -62,6 +62,12 @@ export async function fetchSolBalanceForMobile(publicKey, endpoint = RPC_ENDPOIN
   try {
     const connection = new Connection(endpoint, 'confirmed');
     const publicKey = new PublicKey(publicKey);
+
+    logInfo('Before checking balance', {
+      publicKey: publicKey,
+      component: 'Solana Wallet'
+    });
+
     const lamports = await connection.getBalance(publicKey);
     return lamports / LAMPORTS_PER_SOL;
   } catch (error) {
