@@ -90,6 +90,7 @@ export async function POST(request) {
         // If mobile handle call phantom connect and fetch the url
 
         if (!isMobile) {
+            console.log('It is not mobile');
             return new Response(JSON.stringify({
                 key: encodedNonce
             }), {

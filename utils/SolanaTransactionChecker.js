@@ -103,7 +103,6 @@ export async function verifyBetTransaction(signature) {
       console.log("Source Wallet Verified.");
     }
 
-
     const pendingBetData = {
       ...pendingBet,
       signature: signature,
