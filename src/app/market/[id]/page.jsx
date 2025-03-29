@@ -626,6 +626,11 @@ export default function MarketPage() {
 
           const { key } = await createBetTransactionResponse.json();
 
+          logInfo('KEY', {
+            key: key,
+            publicKey: userPublicKey
+          });
+
           await new Promise((resolve, reject) => {
             placeBet(
               userPublicKey,

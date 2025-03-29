@@ -22,6 +22,7 @@ if (!admin.apps.length) {
 }
 
 export async function POST(request) {
+    console.log('Creation pending bet transaction...');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -51,6 +52,7 @@ export async function POST(request) {
 
 
         if (!marketId || !betType || !tokenName || !amount || !amountToAdd || !isMobile) {
+            console.log('Parameters are missing.');
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -61,6 +63,7 @@ export async function POST(request) {
         const user = await serviceRepo.userService.getUserByWallet(uid);
 
         if (!user) {
+            console.log('User not found.');
             return new Response(JSON.stringify({ error: 'User not found.' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },

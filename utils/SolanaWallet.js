@@ -233,44 +233,6 @@ export async function transferSOL(
   }
 }
 
-export async function handleTransaction(transaction, sendTransaction, connection) {
-  // const connection = new Connection(RPC_ENDPOINT, {
-  //   commitment: 'confirmed',
-  //   wsEndpoint: WS_ENDPOINT,
-  //   disableRetryOnRateLimit: false,
-  //   confirmTransactionInitialTimeout: 60000 // 60 seconds
-  // });
-
-  try {
-    //const serializedMessage = data.serializedTransaction;
-
-    //console.log(`Serialized message: ${serializedMessage}`);
-    //const transaction = Transaction.from(Buffer.from(serializedMessage, 'base64'));
-
-    //console.log('Transaction: ', transaction);
-
-    // Send transaction (this triggers the wallet popup for user approval)
-    const signature = await sendTransaction(transaction, connection);
-
-    const result = {
-      success: true,
-      signature,
-      transactionUrl: `https://explorer.solana.com/tx/${signature}`
-    };
-
-    return result;
-  } catch (error) {
-    console.error('Transaction failed:', error);
-
-    const result = {
-      success: false,
-      error: error.message
-    };
-
-    return result;
-  }
-}
-
 // Update placeBet function to include marketId
 export async function placeBet(
   publicKey,
