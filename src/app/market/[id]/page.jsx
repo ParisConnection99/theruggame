@@ -550,7 +550,8 @@ export default function MarketPage() {
 
         try {
           if (isMobileDevice) {
-            solanaBalance = await fetchSolBalanceForMobile(userPublicKey);
+            solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
+            //solanaBalance = await fetchSolBalanceForMobile(userPublicKey);
           } else {
             solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
           }
