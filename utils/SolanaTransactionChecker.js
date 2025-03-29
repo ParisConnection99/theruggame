@@ -7,7 +7,7 @@ export async function verifyBetTransaction(signature) {
   
     try {
       // 1. Fetch Parsed Transaction
-      const tx = await connection.getParsedTransaction(signature, { commitment: "finalized" });
+      const tx = await connection.getParsedTransaction(signature, { commitment: "confirmed" });
   
       // 1a. Check Existence and Success
       if (!tx) {
@@ -69,6 +69,7 @@ export async function verifyBetTransaction(signature) {
           console.log("Source Wallet Verified.");
       }
   
+
     const pendingBetData = {
         ...pendingBet,
         signature: signature,
