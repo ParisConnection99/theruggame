@@ -72,7 +72,7 @@ export async function fetchSolBalanceForMobile(publicKey, endpoint = RPC_ENDPOIN
     return lamports / LAMPORTS_PER_SOL;
   } catch (error) {
     logInfo('Failed to fetch wallet balance', {
-      error: error
+      error: error.message
     });
     throw error;
   }
