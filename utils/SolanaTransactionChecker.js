@@ -2,8 +2,6 @@ import { Connection, clusterApiUrl, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { serviceRepo } from '@/services/ServiceRepository';
 const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
 
-
-
 export async function verifyBetTransaction(signature) {
     const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
   

@@ -543,7 +543,7 @@ export default function MarketPage() {
           component: 'Market Page',
           pk: userPublicKey
         });
-        
+
         let solanaBalance;
 
         try {
@@ -613,6 +613,8 @@ export default function MarketPage() {
             // Success callback
             async (transferResult) => {
               try {
+
+                setUserBalance(0);
                 // Reset form
                 setBetAmount(0);
                 setHouseFee(0);
