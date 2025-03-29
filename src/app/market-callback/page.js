@@ -16,7 +16,7 @@ function CallbackContent() {
   useEffect(() => {
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
-      const marketId = localStorage.getItem('pending_transaction_market_id');
+      // const marketId = localStorage.getItem('pending_transaction_market_id');
 
       try {
         // Log all parameters for debugging
@@ -48,33 +48,39 @@ function CallbackContent() {
           throw new Error('Missing transaction data parameters');
         }
 
-        const sharedSecret = localStorage.getItem('phantomSharedSecret');
-
-        const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
-
-        // Process the transaction callback
-        //const signature = await handleTransactionCallback(data, nonce);
-        const signature = decryptPayload(data, nonce, convertedSharedSecret);
-
-        // Get the stored transaction details
-        const amount = localStorage.getItem('pending_transaction_amount');
-
-        // Log successful transaction
-        logInfo('Transaction processed:', {
-          signature,
-          marketId,
-          amount
+        logInfo('Market callback success', {
+          component: 'Market callback page',
+          data: data, 
+          nonce: nonce
         });
 
-        await completeBetAndBalanceUpdate();
+        // const sharedSecret = localStorage.getItem('phantomSharedSecret');
 
-        // Clear stored transaction data
-        localStorage.removeItem('pending_transaction_amount');
-        localStorage.removeItem('pending_transaction_timestamp');
-        localStorage.removeItem('pending_transaction_market_id');
+        // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
-        // Redirect back to the market page with success parameter
-        router.push(`/market/${marketId}?txSignature=${signature}`);
+        // // Process the transaction callback
+        // //const signature = await handleTransactionCallback(data, nonce);
+        // const signature = decryptPayload(data, nonce, convertedSharedSecret);
+
+        // // Get the stored transaction details
+        // const amount = localStorage.getItem('pending_transaction_amount');
+
+        // // Log successful transaction
+        // logInfo('Transaction processed:', {
+        //   signature,
+        //   marketId,
+        //   amount
+        // });
+
+        // await completeBetAndBalanceUpdate();
+
+        // // Clear stored transaction data
+        // localStorage.removeItem('pending_transaction_amount');
+        // localStorage.removeItem('pending_transaction_timestamp');
+        // localStorage.removeItem('pending_transaction_market_id');
+
+        // // Redirect back to the market page with success parameter
+        // router.push(`/market/${marketId}?txSignature=${signature}`);
       } catch (error) {
         logError('Error in callback:', {
           marketId,
