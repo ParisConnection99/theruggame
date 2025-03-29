@@ -52,13 +52,6 @@ function CallbackContent() {
           nonce: nonce
         });
 
-        const token = await auth.currentUser?.getIdToken();
-
-        logInfo('Token', {
-          component: 'Market callback',
-          token: token
-        });
-
         const response = await fetch(`/api/confirm_mobile_transaction`, {
           method: 'POST',
           headers: {
