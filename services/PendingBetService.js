@@ -13,6 +13,7 @@ class PendingBetsService {
                bet_type: betData.bet_type,
                token_name: betData.token_name,
                amount: betData.amount,
+               wallet_ca: betData.wallet_ca,
                amount_to_add: betData.amount_to_add,
                nonce: betData.nonce,
                status: betData.status  

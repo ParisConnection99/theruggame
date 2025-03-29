@@ -77,6 +77,7 @@ export async function POST(request) {
             bet_type: betType,
             token_name: tokenName,
             amount: amount,
+            wallet_ca: uid,
             amount_to_add: amountToAdd,
             nonce: encodedNonce,
             status: 'pending'

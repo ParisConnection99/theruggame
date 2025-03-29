@@ -1,4 +1,4 @@
-import { Connection, clusterApiUrl } from "@solana/web3.js";
+import { Connection, clusterApiUrl, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
 import { serviceRepo } from '@/services/ServiceRepository';
@@ -100,22 +100,22 @@ export async function verifyBetTransaction(signature) {
       }
       console.log("Pending Bet Found:", pendingBet.id);
   
-    //   // 6. Verify Amount
-    //   const expectedLamports = pendingBet.amount_lamports; // Get expected amount from DB record
-    //   if (transferInstruction.lamports !== expectedLamports) {
-    //     throw new Error(`Incorrect amount transferred. Expected ${expectedLamports} lamports, got ${transferInstruction.lamports}`);
-    //   }
-    //   console.log("Amount Verified.");
+      // 6. Verify Amount
+      const expectedLamports = Math.round(pendingBet.amount_to_add * LAMPORTS_PER_SOL); // Get expected amount from DB record
+      if (transferInstruction.lamports !== expectedLamports) {
+        throw new Error(`Incorrect amount transferred. Expected ${expectedLamports} lamports, got ${transferInstruction.lamports}`);
+      }
+      console.log("Amount Verified.");
   
-    //   // 7. Verify Source (Recommended)
-    //   const expectedSource = pendingBet.user_wallet_address; // Get expected user wallet from DB record
-    //   if (transferInstruction.source !== expectedSource) {
-    //       // Decide how strict: log warning or throw error
-    //       console.warn(`Transaction source ${transferInstruction.source} does not match expected user ${expectedSource} for bet ${pendingBet.id}.`);
-    //       // Optionally: throw new Error("Transaction source does not match user.");
-    //   } else {
-    //       console.log("Source Wallet Verified.");
-    //   }
+      // 7. Verify Source (Recommended)
+      const expectedSource = pendingBet.wallet_ca; // Get expected user wallet from DB record
+      if (transferInstruction.source !== expectedSource) {
+          // Decide how strict: log warning or throw error
+          console.warn(`Transaction source ${transferInstruction.source} does not match expected user ${expectedSource} for bet ${pendingBet.id}.`);
+          // Optionally: throw new Error("Transaction source does not match user.");
+      } else {
+          console.log("Source Wallet Verified.");
+      }
   
   
     //   // All checks passed!
