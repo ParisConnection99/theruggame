@@ -542,7 +542,8 @@ export default function MarketPage() {
         
         logInfo('Public Key', {
           component: 'Market Page',
-          pk: userPublicKey
+          pk: userPublicKey,
+          isMobileDevice: isMobileDevice
         });
 
         let solanaBalance;
@@ -557,7 +558,7 @@ export default function MarketPage() {
           logError(error, {
             component: 'Market Page'
           });
-          alert("Failed to check wallet balance. Please try again.");
+          alert("Failed to check wallet balance.");
           setIsBetting(false);
           setLoading(false);
           return;
