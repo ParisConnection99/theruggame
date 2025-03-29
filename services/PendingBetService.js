@@ -24,7 +24,17 @@ class PendingBetsService {
         return data[0];
     }
 
-    async fetchPendingBet() {}
+    async fetchPendingBetByNonce(nonce) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .select('*')
+            .eq('nonce', nonce)
+            .single();
+
+        if (error) throw error;
+
+        return data;
+    }
 }
 
 module.exports = PendingBetsService;

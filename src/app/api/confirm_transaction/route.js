@@ -1,5 +1,5 @@
 import { serviceRepo } from '@/services/ServiceRepository';
-import { verifyTransaction } from '@/utils/SolanaTransactionChecker';
+import { verifyBetTransaction } from '@/utils/SolanaTransactionChecker';
 import admin from 'firebase-admin';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -60,7 +60,7 @@ export async function POST(request) {
 
         // Now we got to check the signature
         try {
-            await verifyTransaction(signature);
+            await verifyBetTransaction(signature);
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Error verifying transaction' }), {
                 status: 404,
