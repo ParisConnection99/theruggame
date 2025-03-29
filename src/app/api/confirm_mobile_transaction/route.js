@@ -68,7 +68,7 @@ export async function POST(request) {
         try {
             const session_data = await serviceRepo.sessionDataService.getByWallet_ca(key);
 
-            console.log(`Fetch session: ${session}`);
+            console.log(`Fetch session: ${session_data}`);
             
             const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
             const convertedSharedSecret = phantomConnect.getUint8ArrayFromJsonString(decryptedSharedSecret);
