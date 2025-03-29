@@ -601,7 +601,7 @@ export default function MarketPage() {
         if (isMobileDevice) {
           const { url } = await createBetTransactionResponse.json();
 
-          localStorage.setItem('key', userPublicKey);
+          localStorage.setItem('key_id', userPublicKey);
 
           logInfo('Fetched URL', {
             component: 'Market page',

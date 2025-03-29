@@ -14,7 +14,7 @@ function CallbackContent() {
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
       const marketId = localStorage.getItem('pending_transaction_market_id');
-      const key = localStorage.getItem('key');
+      const key = localStorage.getItem('key_id');
 
       try {
         // Log all parameters for debugging
@@ -50,6 +50,13 @@ function CallbackContent() {
           component: 'Market callback page',
           data: data,
           nonce: nonce
+        });
+
+        const token = await auth.currentUser?.getIdToken();
+
+        logInfo('Token', {
+          component: 'Market callback',
+          token: token
         });
 
         const response = await fetch(`/api/confirm_mobile_transaction`, {
@@ -130,7 +137,7 @@ function CallbackContent() {
       // Fallback redirect in case of critical error
       router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
-  }, [searchParams, router, auth]);
+  }, [searchParams, router]);
 
   return (
     <div className="text-center">
