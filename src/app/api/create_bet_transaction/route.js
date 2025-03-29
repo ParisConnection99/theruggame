@@ -1,5 +1,5 @@
 import { serviceRepo } from '@/services/ServiceRepository';
-import PhantomConnect  from '@/utils/PhantomConnect';
+import PhantomConnect from '@/utils/PhantomConnect';
 import admin from 'firebase-admin';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -51,17 +51,21 @@ export async function POST(request) {
         const { marketId, betType, tokenName, amount, amountToAdd, isMobile } = body;
 
 
-        if (!marketId || !betType || !tokenName) {
-            console.log('Parameters are missing.');
-            return new Response(JSON.stringify({ error: 'Missing parameters' }), {
-                status: 404,
+        if (marketId === undefined || marketId === null ||
+            betType === undefined || betType === null ||
+            tokenName === undefined || tokenName === null) {
+            console.log('Required string parameters are missing.');
+            return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
+                status: 400, // Using 400 Bad Request which is more appropriate than 404
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        if (amount < 0 && amountToAdd < 0) {
-            return new Response(JSON.stringify({ error: 'Incorrect parameters' }), {
-                status: 404,
+        // Check numerical parameters
+        if ((amount !== undefined && amount < 0) || (amountToAdd !== undefined && amountToAdd < 0)) {
+            console.log('Numerical parameters have invalid values.');
+            return new Response(JSON.stringify({ error: 'Invalid parameter values: amounts cannot be negative' }), {
+                status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
@@ -110,7 +114,7 @@ export async function POST(request) {
         } else {
             const phantomConnect = new PhantomConnect();
             try {
-                
+
                 const url = await phantomConnect.signAndSendTransaction(amountToAdd, uid, encodedNonce);
                 return new Response(JSON.stringify({ url: url }), {
                     status: 201,
