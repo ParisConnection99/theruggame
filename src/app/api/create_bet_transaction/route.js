@@ -1,9 +1,8 @@
 import { serviceRepo } from '@/services/ServiceRepository';
-import { phantomConnect } from '@/utils/PhantomConnect';
+import PhantomConnect  from '@/utils/PhantomConnect';
 import admin from 'firebase-admin';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
@@ -98,7 +97,9 @@ export async function POST(request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         } else {
+            const phantomConnect = new PhantomConnect();
             try {
+                
                 const url = await phantomConnect.signAndSendTransaction(amountToAdd, uid, encodedNonce);
                 return new Response(JSON.stringify({ url: url }), {
                     status: 201,
