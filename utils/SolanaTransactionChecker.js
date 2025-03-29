@@ -9,11 +9,12 @@ export async function verifyTransaction(signature) {
     const tx = await connection.getParsedTransaction(signature, { commitment: "confirmed" });
   
     if (!tx) throw new Error("Transaction not found");
+
+    console.log('Parsed transaction: ', tx);
   
     const sender = tx.transaction.message.accountKeys[0].pubkey.toString();
     const receiver = tx.transaction.message.instructions[0].parsed.info.destination;
     const amount = tx.transaction.message.instructions[0].parsed.info.lamports / 1_000_000_000;
-
 
     console.log(`Sender: ${sender}, Receiver: ${receiver}, Amount: ${amount} SOL`);
 
