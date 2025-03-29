@@ -113,8 +113,8 @@ class PhantomConnect {
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
-            cluster: "mainnet-beta",
-            //cluster: 'devnet',
+            //cluster: "mainnet-beta",
+            cluster: 'devnet',
             app_url: APP_URL,
             redirect_link: "https://theruggame.fun/wallet-callback",
         });

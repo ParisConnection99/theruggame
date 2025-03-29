@@ -12,6 +12,8 @@ import CryptoJS from 'crypto-js';
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const marketId = "1234";
   
   useEffect(() => {
     async function processCallback() {
