@@ -73,6 +73,13 @@ export async function POST(request) {
             const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
             const convertedSharedSecret = phantomConnect.getUint8ArrayFromJsonString(decryptedSharedSecret);
 
+            if (convertedSharedSecret instanceof Uint8Array) {
+                console.log('Converted shared secret is a uint array');
+            } else {
+                console.log('is not a uint array');
+            }
+
+            console.log(convertedSharedSecret);
             const signature = phantomConnect.decryptPayload(data, nonce, convertedSharedSecret);
 
             if (!signature) {
