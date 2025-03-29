@@ -14,12 +14,14 @@ function CallbackContent() {
   const marketId = "1234";
 
   useEffect(() => {
-    if (!auth) {
-      return;
-    }
+    
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
       const marketId = localStorage.getItem('pending_transaction_market_id');
+
+      if (!auth) {
+        return;
+      }
 
       try {
         // Log all parameters for debugging
