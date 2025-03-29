@@ -32,19 +32,6 @@ function DisconnectHandler() {
                     throw new Error(errorCode || 'Invalid disconnect response');
                 }
 
-                // Decrypt and verify the response
-                // ... (we can add decryption logic if Phantom sends encrypted response)
-
-                // remove session data
-
-                // If we get here, disconnect was successful
-                // localStorage.removeItem('phantomPublicKey');
-                // localStorage.removeItem('phantomSession');
-                // localStorage.removeItem('wallet_connect_pending');
-                // localStorage.removeItem('wallet_connect_timestamp');
-
-               // window.dispatchEvent(new Event('wallet-disconnect-event'));
-
                 logInfo('Disconnect successful', {
                     component: 'DisconnectCallbackPage'
                 });

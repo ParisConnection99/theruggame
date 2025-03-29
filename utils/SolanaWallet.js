@@ -60,7 +60,6 @@ export async function fetchSolBalanceForMobile(publicKey, endpoint = RPC_ENDPOIN
   });
 
   try {
-    //const connection = new Connection(endpoint, 'confirmed');
     const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
     const publicKey = new PublicKey(publicKey);
 
@@ -337,46 +336,49 @@ export async function placeBet(
       throw new Error("You don't have enough SOL to place this bet");
     }
 
-    if (isMobile) {
-      if (!marketId) {
-        throw new Error('Market ID is required for mobile transactions');
-      }
-      // Handle mobile transaction
+    const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
 
-      // Store pending transaction info
-      localStorage.setItem('pending_transaction_amount', betAmount.toString());
-      localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
-      localStorage.setItem('pending_transaction_market_id', marketId);
-
-      try {
-        // if (!phantomConnect) {
-        //   throw new Error('PhantomConnect not initialized');
-        // }
-
-        //  await phantomConnect.signAndSendTransaction(amountToAdd, publicKey, key);
-
-        logInfo('Bet was successfull on mobile', {
-          component: 'Solana wallet'
-        });
-
-      } catch (error) {
-        logError(error, {
-          component: 'Solana Wallet',
-          action: 'placing bet'
-        });
-        throw error;
-      }
+    if (result.success) {
+      // we can call the endpoint from here to check if successful
+      onSuccess(result);
     } else {
-      // Handle web transaction as before
-      const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
-
-      if (result.success) {
-        // we can call the endpoint from here to check if successful
-        onSuccess(result);
-      } else {
-        throw new Error(result.error);
-      }
+      throw new Error(result.error);
     }
+
+    // if (isMobile) {
+    //   if (!marketId) {
+    //     throw new Error('Market ID is required for mobile transactions');
+    //   }
+
+    //   try {
+    //     // if (!phantomConnect) {
+    //     //   throw new Error('PhantomConnect not initialized');
+    //     // }
+
+    //     //  await phantomConnect.signAndSendTransaction(amountToAdd, publicKey, key);
+
+    //     logInfo('Bet was successfull on mobile', {
+    //       component: 'Solana wallet'
+    //     });
+
+    //   } catch (error) {
+    //     logError(error, {
+    //       component: 'Solana Wallet',
+    //       action: 'placing bet'
+    //     });
+    //     throw error;
+    //   }
+    // } else {
+    //   // Handle web transaction as before
+    //   const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
+
+    //   if (result.success) {
+    //     // we can call the endpoint from here to check if successful
+    //     onSuccess(result);
+    //   } else {
+    //     throw new Error(result.error);
+    //   }
+    // }
   } catch (error) {
     logError(error, {
       component: 'Solana wallet',

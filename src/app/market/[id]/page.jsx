@@ -509,10 +509,7 @@ export default function MarketPage() {
         let userPublicKey;
 
         if (isMobileDevice) {
-          // localStorage.setItem('pending_bet_type', isPumpActive ? 'PUMP' : 'RUG');
-          // localStorage.setItem('pending_transaction_amount', betAmount.toString());
           localStorage.setItem('pending_transaction_market_id', market.id);
-          // localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
 
           userPublicKey = authUser?.uid;
 
@@ -604,6 +601,8 @@ export default function MarketPage() {
         if (isMobileDevice) {
           const { url } = await createBetTransactionResponse.json();
 
+          localStorage.setItem('key', userPublicKey);
+
           logInfo('Fetched URL', {
             component: 'Market page',
             url: url
@@ -667,9 +666,6 @@ export default function MarketPage() {
       }
     } catch (error) {
       console.error('Error placing bet: ', error);
-
-      localStorage.removeItem('encryptedBalanceData');
-      localStorage.removeItem('encryptedBetData');
 
       // delete saved data
       logEvent(analytics, 'market_page_error', {

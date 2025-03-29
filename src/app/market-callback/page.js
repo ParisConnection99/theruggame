@@ -3,25 +3,18 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { logInfo, logError } from '@/utils/logger';
-import { useAuth } from '@/components/FirebaseProvider';
-import CryptoJS from 'crypto-js';
 
 
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { auth } = useAuth();
-  const marketId = "1234";
 
   useEffect(() => {
     
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
       const marketId = localStorage.getItem('pending_transaction_market_id');
-
-      if (!auth) {
-        return;
-      }
+      const key = localStorage.getItem('key');
 
       try {
         // Log all parameters for debugging
@@ -59,22 +52,15 @@ function CallbackContent() {
           nonce: nonce
         });
 
-        const token = await auth.currentUser?.getIdToken();
-
-        logInfo('Token', {
-          component: 'Market callback',
-          token: token
-        });
-
         const response = await fetch(`/api/confirm_mobile_transaction`, {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             data: data,
-            nonce: nonce
+            nonce: nonce,
+            key: key
           })
         });
 

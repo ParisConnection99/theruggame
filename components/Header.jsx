@@ -351,9 +351,6 @@ export default function Header() {
 
         try {
             setConnectionStatus('connecting');
-            localStorage.setItem('wallet_connect_pending', 'true');
-            localStorage.setItem('wallet_connect_timestamp', Date.now().toString());
-
             logInfo('Connecting to phantom connect', {
                 component: 'Header'
             });
