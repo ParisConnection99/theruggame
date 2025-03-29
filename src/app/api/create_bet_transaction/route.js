@@ -50,12 +50,17 @@ export async function POST(request) {
 
         const { marketId, betType, tokenName, amount, amountToAdd, isMobile } = body;
 
-        console.log(`${marketId}, ${betType}, ${tokenName}, ${amount}, ${amountToAdd}, ${isMobile}`);
 
-
-        if (!marketId || !betType || !tokenName || !amount || !amountToAdd || !isMobile) {
+        if (!marketId || !betType || !tokenName) {
             console.log('Parameters are missing.');
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
+                status: 404,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        if (amount < 0 && amountToAdd < 0) {
+            return new Response(JSON.stringify({ error: 'Incorrect parameters' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
             });
