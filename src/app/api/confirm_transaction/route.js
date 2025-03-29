@@ -56,6 +56,8 @@ export async function POST(request) {
             });
         }
 
+        console.log(`Signature: ${signature} - Router`);
+
         // Now we got to check the signature
         try {
             await verifyTransaction(signature);
