@@ -82,7 +82,7 @@ export async function POST(request) {
                 });
             }
 
-            console.log(`Signature: Confirm mobile transaction: ${signature}`);
+            console.log(`Signature: Confirm mobile transaction: ${JSON.stringify(signature, null, 2)}`);
     
             // Now we got to check the signature
             try {
