@@ -2,12 +2,9 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { handleTransactionCallback } from '@/utils/SolanaWallet';
 import { logInfo, logError } from '@/utils/logger';
-import { decryptPayload, getUint8ArrayFromJsonString } from '@/utils/PhantomConnect';
 import { useAuth } from '@/components/FirebaseProvider';
 import CryptoJS from 'crypto-js';
-
 
 
 function CallbackContent() {
@@ -57,11 +54,18 @@ function CallbackContent() {
           nonce: nonce
         });
 
+        const token = await auth.currentUser?.getIdToken();
+
+        logInfo('Token', {
+          component: 'Market callback',
+          token: token
+        });
+
         const response = await fetch(`/api/confirm_mobile_transaction`, {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             data: data,
