@@ -575,9 +575,11 @@ export default function MarketPage() {
         const token = await authUser.getIdToken();
 
         // CREATE PENDING BET
-        console.log('Is mobile device: ',isMobileDevice);
-        console.log('Token: ', token);
-        
+        logInfo('Checks before endpoint calls: ', {
+          isMobile: isMobileDevice,
+          token: token
+        });
+
         const createBetTransactionResponse = await fetch("/api/create_bet_transaction", {
           method: 'POST',
           headers: {
