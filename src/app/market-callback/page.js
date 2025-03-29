@@ -14,6 +14,9 @@ function CallbackContent() {
   const marketId = "1234";
 
   useEffect(() => {
+    if (!auth) {
+      return;
+    }
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
       const marketId = localStorage.getItem('pending_transaction_market_id');
@@ -53,13 +56,6 @@ function CallbackContent() {
           data: data,
           nonce: nonce
         });
-
-        if (!auth) {
-          logInfo('Auth is not ready', {
-            component: 'market callback page'
-          });
-          return;
-        }
 
         const token = await auth.currentUser?.getIdToken();
 
