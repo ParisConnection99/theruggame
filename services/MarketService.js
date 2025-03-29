@@ -119,6 +119,8 @@ class MarketService {
 
     console.log(`Before market expiry service.`);
 
+    console.log(`PlaceBetFromTransfer: ${betData} amountToAddToBalance: ${amountToAddToBalance}`);
+
     try {
       // Validate market is in betting phase
       await this.expiryService.validateBetPlacement(marketId);
