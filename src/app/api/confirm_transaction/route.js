@@ -60,12 +60,20 @@ export async function POST(request) {
 
         // Now we got to check the signature
         try {
-            await verifyBetTransaction(signature);
+            const result = await verifyBetTransaction(signature);
 
-            return new Response(JSON.stringify({result: 'Success' }), {
-                status: 201,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            if (result.success) {
+                return new Response(JSON.stringify({ result: 'Success' }), {
+                    status: 201,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            } else {
+                return new Response(JSON.stringify({ result: 'Failure', error: result.error }), {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Error verifying transaction' }), {
                 status: 404,
@@ -76,10 +84,10 @@ export async function POST(request) {
     } catch (error) {
         console.error('Error processing bet transaction request:', error);
 
-        const status =
-            error.message === 'User not found' || error.message === 'Insufficient balance'
-                ? 400
-                : 500;
+        // const status =
+        //     error.message === 'User not found' || error.message === 'Insufficient balance'
+        //         ? 400
+        //         : 500;
 
         return new Response(JSON.stringify({ error: error.message }), {
             status,

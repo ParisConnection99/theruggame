@@ -360,28 +360,3 @@ export async function placeBet(
     if (setLoading && !isMobile) setLoading(false);
   }
 }
-
-// const response = await fetch(`/api/betting/transfer`, {
-//   method: 'POST',
-//   headers: {
-//     Authorization: `Bearer ${token}`,
-//     'Content-Type': 'application/json',
-//   },
-//   body: JSON.stringify({
-//     marketId: marketId,
-//     userId: userId,
-//     amountToAddToBalance: amountToAdd,
-//     amount: betAmount,
-//     betType: betType,
-//     token_name: token_name
-//   })
-// });
-
-// if (!response.ok) {
-//   const errorData = await response.json();
-//   logInfo('Error placing bet', {
-//     errorData: errorData,
-//     component: 'Market Page'
-//   });
-//   throw new Error(errorData.message || errorData.error || 'Error saving bet details');
-// }

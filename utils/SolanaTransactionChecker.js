@@ -1,54 +1,8 @@
 import { Connection, clusterApiUrl, LAMPORTS_PER_SOL } from "@solana/web3.js";
-
-const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
 import { serviceRepo } from '@/services/ServiceRepository';
-const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
+const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
 
-// export async function verifyTransaction(signature) {
-//     console.log(`Signature: ${signature}`);
 
-//     const tx = await connection.getParsedTransaction(signature, { commitment: "confirmed" });
-  
-//     if (!tx) throw new Error("Transaction not found");
-
-//     if (tx.meta.err) throw new Error('Error found.');
-
-//     console.log('Parsed transaction: ', tx);
-  
-//     // const sender = tx.transaction.message.accountKeys[0].pubkey.toString();
-//     // const receiver = tx.transaction.message.instructions[0].parsed.info.destination;
-//     // const amount = tx.transaction.message.instructions[0].parsed.info.lamports / 1_000_000_000;
-
-//     // console.log(`Sender: ${sender}, Receiver: ${receiver}, Amount: ${amount} SOL`);
-
-//     const memo = await getMemoFromSignature(signature);
-
-//     console.log(`Memo: ${memo}`);
-    
-//     // use memo to fetch pending bet
-//   }
-
-//   export async function getMemoFromSignature(signature) {
-//     const transaction = await connection.getParsedTransaction(signature, {
-//       commitment: "confirmed",
-//     });
-  
-//     if (!transaction) {
-//       console.log("Transaction not found");
-//       return null;
-//     }
-  
-//     // Look for Memo Program instructions
-//     for (const instruction of transaction.transaction.message.instructions) {
-//       if (instruction.programId.toString() === "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr") {
-//         console.log("Memo Found:", instruction.parsed);
-//         return instruction.parsed;
-//       }
-//     }
-  
-//     console.log("No Memo Found in Transaction");
-//     return null;
-//   }
 
 export async function verifyBetTransaction(signature) {
     const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
@@ -125,6 +79,24 @@ export async function verifyBetTransaction(signature) {
     //   await markBetAsPaid(pendingBet.id); // Implement this DB function
   
     //   return { success: true, betId: pendingBet.id, /* other details */ };
+
+    // Send the signature + update the status 
+
+    const pendingBetData = {
+        ...pendingBet,
+        signature: signature,
+        status: 'complete'
+    };
+
+    // Updated the pending bet data
+    await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
+
+    // Create Bet
+    await createBet(pendingBet);
+
+    console.log('Bet successfully created.');
+
+    return { success: true };
   
     } catch (error) {
       console.error("Payment verification failed:", error.message);
@@ -142,9 +114,24 @@ export async function verifyBetTransaction(signature) {
         return null;
     }
   }
-  
-  async function markBetAsPaid(betId) {
-    // Update your database: UPDATE pending_bets SET status = 'paid' WHERE id = ?
-    console.log(`DB Update: Marking bet ${betId} as paid.`);
-    // Replace with actual DB call
+
+  async function createBet(pendingBet) {
+     try {
+        const betData = {
+            userId: pendingBet.user_id,
+            amount: pendingBet.amount,
+            betType: pendingBet.bet_type,
+            token_name: pendingBet.token_name 
+        };
+
+        await serviceRepo.bettingService
+            .placeBetFromTransfer(
+                pendingBet.market_id,
+                betData,
+                pendingBet.amount_to_add
+            );
+     } catch (error) {
+        console.log(`Error placing bet: `,error);
+     }
   }
+ 
