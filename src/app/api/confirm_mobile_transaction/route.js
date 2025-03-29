@@ -86,7 +86,7 @@ export async function POST(request) {
     
             // Now we got to check the signature
             try {
-                const result = await verifyBetTransaction(signature);
+                const result = await verifyBetTransaction(signature.signature);
     
                 if (result.success) {
                     return new Response(JSON.stringify({ result: 'Success' }), {
