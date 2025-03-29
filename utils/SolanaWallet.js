@@ -156,15 +156,17 @@ export async function transferSOL(
       throw new Error(`Transaction failed: ${confirmation.value.err}`);
     }
 
+    logInfo('Calling the confirm transaction endpoint', {});
+
     const response = await fetch('/api/confirm_transaction', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        body: JSON.stringify({
-          signature
-        }),
+        Authorization: `Bearer ${token}`
       },
+      body: JSON.stringify({
+        signature
+      }),
     });
 
     if (!response.ok) {
