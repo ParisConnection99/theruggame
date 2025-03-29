@@ -70,7 +70,7 @@ export async function verifyBetTransaction(signature) {
   
       // 2 & 3. Find Memo and Transfer Instructions
       for (const instruction of tx.transaction.message.instructions) {
-        if (instruction.programId.toBase58() === 'MemoSq4gqABAXKb96qnH8TysNcVtrp5GrojdHxuCc еврея' && typeof instruction.parsed === 'string') {
+        if (instruction.programId.toBase58() === 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' && typeof instruction.parsed === 'string') {
           extractedNonce = instruction.parsed; // Assuming simple string memo
           console.log("Extracted Nonce:", extractedNonce);
         } else if (instruction.programId.toBase58() === '11111111111111111111111111111111' && instruction.parsed?.type === 'transfer') {

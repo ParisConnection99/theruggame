@@ -61,6 +61,11 @@ export async function POST(request) {
         // Now we got to check the signature
         try {
             await verifyBetTransaction(signature);
+
+            return new Response(JSON.stringify({result: 'Success' }), {
+                status: 201,
+                headers: { 'Content-Type': 'application/json' },
+            });
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Error verifying transaction' }), {
                 status: 404,
