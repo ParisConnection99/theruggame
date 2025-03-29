@@ -521,6 +521,7 @@ export default function MarketPage() {
           logInfo('User public key', {
             userPublicKey: userPublicKey
           });
+
           if (!userPublicKey) {
             alert('Wallet connection not found. Please reconnect your wallet.');
             setIsBetting(false);
@@ -548,7 +549,7 @@ export default function MarketPage() {
 
         try {
           const { solBalance } = isMobileDevice
-            ? await checkSufficientBalanceForMobile(betWithFees)
+            ? await checkSufficientBalanceForMobile(betWithFees, userPublicKey)
             : await checkSufficientBalance(userPublicKey, betWithFees);
 
           solanaBalance = solBalance;

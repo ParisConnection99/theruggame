@@ -50,10 +50,8 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
   }
 }
 
-export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_ENDPOINT) {
-  const publicKeyOrString = localStorage.getItem('phantomPublicKey'); // Retrieve from localStorage
-
-  if (!publicKeyOrString) {
+export async function checkSufficientBalanceForMobile(amount, publicKey, endpoint = RPC_ENDPOINT) {
+  if (!publicKey) {
     throw new Error('Wallet not connected on mobile');
   }
 
@@ -65,7 +63,7 @@ export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_END
     const connection = new Connection(endpoint, 'confirmed');
 
     // Convert string to PublicKey if needed
-    const publicKey = new PublicKey(publicKeyOrString);
+    const publicKey = new PublicKey(publicKey);
 
     const lamports = await connection.getBalance(publicKey);
 
@@ -83,7 +81,7 @@ export async function checkSufficientBalanceForMobile(amount, endpoint = RPC_END
     console.error('Error checking balance on mobile:', error);
     logInfo('Error checking balance on mobile', {
       error: error.message,
-      publicKey: publicKeyOrString
+      publicKey: publicKey
     });
     throw new Error(`Failed to check wallet balance on mobile: ${error.message}`);
   }
