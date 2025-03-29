@@ -1,4 +1,5 @@
 import { serviceRepo } from '@/services/ServiceRepository';
+import { phantomConnect } from '@/utils/PhantomConnect';
 import admin from 'firebase-admin';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -47,10 +48,10 @@ export async function POST(request) {
 
         const body = await request.json();
 
-        const { marketId, betType, tokenName, amount, amountToAdd } = body;
+        const { marketId, betType, tokenName, amount, amountToAdd, isMobile } = body;
 
 
-        if (!marketId || !betType || !tokenName || !amount || !amountToAdd) {
+        if (!marketId || !betType || !tokenName || !amount || !amountToAdd || !isMobile) {
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -87,12 +88,27 @@ export async function POST(request) {
 
         await serviceRepo.pendingBetsService.createPendingBet(betData);
 
-        return new Response(JSON.stringify({
-            key: encodedNonce
-        }), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        // If mobile handle call phantom connect and fetch the url
+
+        if (!isMobile) {
+            return new Response(JSON.stringify({
+                key: encodedNonce
+            }), {
+                status: 201,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        } else {
+            try {
+                const url = await phantomConnect.signAndSendTransaction(amountToAdd, uid, encodedNonce);
+                return new Response(JSON.stringify({ url: url }), {
+                    status: 201,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            } catch (error) {
+                console.log(`Error making mobile transaction. ${error}`);
+                throw error;
+            }
+        }
     } catch (error) {
         console.error('Error processing bet transaction request:', error);
 

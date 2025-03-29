@@ -593,7 +593,8 @@ export default function MarketPage() {
             betType: betType,
             tokenName: market.name,
             amount: betAmount,
-            amountToAdd: amountToAdd
+            amountToAdd: amountToAdd,
+            isMobile: isMobileDevice
           }),
         });
 
@@ -603,48 +604,59 @@ export default function MarketPage() {
           throw new Error(`Error creating bet transaction: ${errorData}`);
         }
 
-        const { key } = await createBetTransactionResponse.json();
+        if (isMobileDevice) {
+          const { url } = await createBetTransactionResponse.json();
 
-        await new Promise((resolve, reject) => {
-          placeBet(
-            userPublicKey,
-            sendTransaction,
-            betAmount,
-            // Success callback
-            async (transferResult) => {
-              try {
+          logInfo('Fetched URL', {
+            component: 'Market page',
+            url: url
+          });
 
-                setUserBalance(0);
-                // Reset form
-                setBetAmount(0);
-                setHouseFee(0);
-                setPotentialReturn({ amount: 0, percentage: 0 });
-                if (inputRef.current) {
-                  inputRef.current.value = "";
+        } else {
+          const { key } = await createBetTransactionResponse.json();
+
+          await new Promise((resolve, reject) => {
+            placeBet(
+              userPublicKey,
+              sendTransaction,
+              betAmount,
+              // Success callback
+              async (transferResult) => {
+                try {
+  
+                  setUserBalance(0);
+                  // Reset form
+                  setBetAmount(0);
+                  setHouseFee(0);
+                  setPotentialReturn({ amount: 0, percentage: 0 });
+                  if (inputRef.current) {
+                    inputRef.current.value = "";
+                  }
+  
+                  alert('Your bet has been successfully placed.');
+                  resolve();
+                } catch (error) {
+                  reject(error);
                 }
-
-                alert('Your bet has been successfully placed.');
-                resolve();
-              } catch (error) {
-                reject(error);
-              }
-            },
-            // Error callback
-            (errorMessage) => {
-              reject(new Error(errorMessage));
-            },
-            // Loading state (already handled by the outer function)
-            null,
-            isMobileDevice,
-            market.id,
-            dbUser.user_id,
-            amountToAdd,
-            betType,
-            market.name,
-            token,
-            key
-          );
-        });
+              },
+              // Error callback
+              (errorMessage) => {
+                reject(new Error(errorMessage));
+              },
+              // Loading state (already handled by the outer function)
+              null,
+              isMobileDevice,
+              market.id,
+              dbUser.user_id,
+              amountToAdd,
+              betType,
+              market.name,
+              token,
+              key
+            );
+          });
+        }
+        
       }
     } catch (error) {
       console.error('Error placing bet: ', error);

@@ -326,7 +326,7 @@ export async function placeBet(
         //   throw new Error('PhantomConnect not initialized');
         // }
 
-        // await phantomConnect.signAndSendTransaction(amountToAdd, publicKeyToCheck);
+        //  await phantomConnect.signAndSendTransaction(amountToAdd, publicKey, key);
 
         logInfo('Bet was successfull on mobile', {
           component: 'Solana wallet'

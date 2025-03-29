@@ -6,6 +6,8 @@ import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
 import EncryptionService from '@/lib/EncryptionService';
+import { createMemoInstruction } from '@solana/spl-memo';
+
 global.Buffer = global.Buffer || Buffer;
 const RPC_ENDPOINT = clusterApiUrl('devnet');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
@@ -25,7 +27,7 @@ const buildUrl = (path, params) =>
 class PhantomConnect {
     decryptPayload = (data, nonce, sharedSecret) => {
         if (!sharedSecret) throw new Error("missing shared secret");
-    
+
         const decryptedData = nacl.box.open.after(
             bs58.decode(data),
             bs58.decode(nonce),
@@ -36,17 +38,17 @@ class PhantomConnect {
         }
         return JSON.parse(Buffer.from(decryptedData).toString("utf8"));
     };
-    
+
     encryptPayload = (payload, sharedSecret) => {
         if (!sharedSecret) throw new Error("missing shared secret");
-    
+
         const nonce = nacl.randomBytes(24);
         const encryptedPayload = nacl.box.after(
             Buffer.from(JSON.stringify(payload)),
             nonce,
             sharedSecret
         );
-    
+
         return [nonce, encryptedPayload];
     };
 
@@ -54,10 +56,10 @@ class PhantomConnect {
         try {
             // Parse the JSON string into an object (or an array of numbers)
             const storedSecretArray = JSON.parse(jsonString);
-    
+
             // Convert the array of numbers into a Uint8Array
             const uint8Array = new Uint8Array(storedSecretArray);
-    
+
             return uint8Array;
         } catch (error) {
             console.error('Error converting stored data to Uint8Array:', error.message);
@@ -80,17 +82,17 @@ class PhantomConnect {
 
         try {
 
-            console.log('Created session now saving. ',sessionData);
-            
+            console.log('Created session now saving. ', sessionData);
+
             const response = await fetch('https://theruggame.fun/api/session', {
                 method: 'POST',
-                headers: { "Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(sessionData)
             })
 
             if (!response.ok) {
                 const errorData = await response.json();
-                logError('Session save error',{
+                logError('Session save error', {
                     component: 'Phantom connect',
                     errorData: errorData
                 });
@@ -190,45 +192,75 @@ class PhantomConnect {
         logInfo('Session data successfully deleted.', {});
     }
 
-    async signAndSendTransaction(betAmount, publicKey) {
-        // const transaction = await this.createTransferTransaction(betAmount, publicKey);
+    async signAndSendTransaction(betAmount, publicKey, key) {
+        const transaction = await this.createTransferTransaction(betAmount, publicKey, key);
 
-        // logInfo('Created transaction:', {
-        //     component: 'Phantom connect',
-        //     transaction: transaction
-        // });
+        if (!publicKey) {
+            throw new Error('Public Key needed to create transaction.');
+        }
 
-        // const serializedTransaction = transaction.serialize({
-        //     requireAllSignatures: false,
-        // });
+        const response = await fetch(`/api/session?key=${publicKey}`, {
+            method: 'GET',
+            headers: { "Content-Type": "application/json" }
+        });
+
+        let session_data;
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            logInfo('Fetching session data error', {
+                component: 'Phantom connect',
+                errorData: errorData
+            });
+
+            throw new Error('Error fetching session data.');
+        }
+
+        session_data = await response.json();
+
+        const session = encryptionService.decrypt(session_data.session);
+
+        logInfo('Created transaction:', {
+            component: 'Phantom connect',
+            transaction: transaction
+        });
+
+        const serializedTransaction = transaction.serialize({
+            requireAllSignatures: false,
+        });
 
         // const session = window.localStorage.getItem('phantomSession');
         // const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
 
-        // const payload = {
-        //     session,
-        //     transaction: bs58.encode(serializedTransaction),
-        // };
+        const payload = {
+            session,
+            transaction: bs58.encode(serializedTransaction),
+        };
 
-        // logInfo('Created payload', {
-        //     component: 'phantom connect',
-        //     transaction: transaction
-        // });
+        logInfo('Created payload', {
+            component: 'phantom connect',
+            transaction: transaction
+        });
+
+        const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
+        const convertedSharedSecret = this.getUint8ArrayFromJsonString(decryptedSharedSecret);
 
         // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
-        // const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
+        const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
 
-        // const params = new URLSearchParams({
-        //     dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
-        //     nonce: bs58.encode(nonce),
-        //     redirect_link: 'https://theruggame.fun/market-callback',
-        //     payload: bs58.encode(encryptedPayload),
-        // });
+        const params = new URLSearchParams({
+            dapp_encryption_public_key: session_data.dapp_public,
+            nonce: bs58.encode(nonce),
+            redirect_link: 'https://theruggame.fun/market-callback',
+            payload: bs58.encode(encryptedPayload),
+        });
 
-        // logInfo('Sending transaction.....', {});
+        logInfo('Sending transaction.....', {});
 
-        // const url = buildUrl("signAndSendTransaction", params);
+        const url = buildUrl("signAndSendTransaction", params);
+
+        return url;
 
         // try {
         //     window.location.href = url;
@@ -241,7 +273,7 @@ class PhantomConnect {
         // }
     }
 
-    createTransferTransaction = async (amount, publicKey) => {
+    createTransferTransaction = async (amount, publicKey, nonce) => {
         if (!publicKey) throw new Error("missing public key from user");
 
         publicKey = new PublicKey(publicKey);
@@ -255,8 +287,12 @@ class PhantomConnect {
                 lamports: Math.round(amount * LAMPORTS_PER_SOL),
             })
         );
+
+        transaction.add(
+            createMemoInstruction(`${nonce}`, [publicKey])
+        );
+
         transaction.feePayer = publicKey;
-        logInfo('Getting recent blockhash', {});
         transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
 
         return transaction;
@@ -293,7 +329,7 @@ class PhantomConnect {
 
         const sharedSecretJsonString = JSON.stringify(convertedSharedSecret);
         const encryptedSharedSecret = encryptionService.encrypt(sharedSecretJsonString);
-       
+
         const newSession = {
             ...session_data,
             session: encryptedSession,
