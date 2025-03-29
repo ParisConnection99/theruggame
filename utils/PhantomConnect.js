@@ -249,7 +249,7 @@ class PhantomConnect {
 
         // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
 
-        const [nonce, encryptedPayload] = encryptPayload(payload, convertedSharedSecret);
+        const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: session_data.dapp_public,
