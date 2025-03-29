@@ -511,11 +511,9 @@ export default function MarketPage() {
         if (isMobileDevice) {
           // localStorage.setItem('pending_bet_type', isPumpActive ? 'PUMP' : 'RUG');
           // localStorage.setItem('pending_transaction_amount', betAmount.toString());
-          // localStorage.setItem('pending_transaction_market_id', market.id);
+          localStorage.setItem('pending_transaction_market_id', market.id);
           // localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
 
-          // For mobile, get the public key from localStorage
-          //userPublicKey = localStorage.getItem('phantomPublicKey');
           userPublicKey = authUser?.uid;
 
           logInfo('User public key', {
@@ -550,12 +548,6 @@ export default function MarketPage() {
 
         try {
           solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
-          // if (isMobileDevice) {
-          //   solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
-          //   //solanaBalance = await fetchSolBalanceForMobile(userPublicKey);
-          // } else {
-          //   solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
-          // }
         } catch (error) {
           logInfo('Error fetching solana balance', {
             component: 'Market page',

@@ -231,9 +231,6 @@ class PhantomConnect {
             requireAllSignatures: false,
         });
 
-        // const session = window.localStorage.getItem('phantomSession');
-        // const sharedSecret = window.localStorage.getItem('phantomSharedSecret');
-
         const payload = {
             session,
             transaction: bs58.encode(serializedTransaction),
@@ -246,9 +243,6 @@ class PhantomConnect {
 
         const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(decryptedSharedSecret);
-
-        // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
-
         const [nonce, encryptedPayload] = this.encryptPayload(payload, convertedSharedSecret);
 
         const params = new URLSearchParams({
@@ -263,16 +257,6 @@ class PhantomConnect {
         const url = buildUrl("signAndSendTransaction", params);
 
         return url;
-
-        // try {
-        //     window.location.href = url;
-        // } catch (error) {
-        //     logError(error, {
-        //         component: 'PhantomConnect',
-        //         action: 'signAndSend navigation'
-        //     });
-        //     throw error;
-        // }
     }
 
     createTransferTransaction = async (amount, publicKey, nonce) => {

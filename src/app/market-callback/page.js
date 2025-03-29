@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { handleTransactionCallback } from '@/utils/SolanaWallet';
 import { logInfo, logError } from '@/utils/logger';
 import { decryptPayload, getUint8ArrayFromJsonString } from '@/utils/PhantomConnect';
+import { useAuth } from '@/components/FirebaseProvider';
 import CryptoJS from 'crypto-js';
 
 
@@ -12,13 +13,13 @@ import CryptoJS from 'crypto-js';
 function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  const { auth } = useAuth();
   const marketId = "1234";
-  
+
   useEffect(() => {
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
-      // const marketId = localStorage.getItem('pending_transaction_market_id');
+      const marketId = localStorage.getItem('pending_transaction_market_id');
 
       try {
         // Log all parameters for debugging
@@ -50,10 +51,31 @@ function CallbackContent() {
           throw new Error('Missing transaction data parameters');
         }
 
+        logInfo('Market callback starting', {
+          component: 'Market callback page',
+          data: data,
+          nonce: nonce
+        });
+
+        const response = await fetch(`/api/confirm_mobile_transaction`, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+          },
+          body: JSON.stringify({
+            data: data,
+            nonce: nonce
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error);
+        }
+
         logInfo('Market callback success', {
           component: 'Market callback page',
-          data: data, 
-          nonce: nonce
         });
 
         // const sharedSecret = localStorage.getItem('phantomSharedSecret');
@@ -79,10 +101,10 @@ function CallbackContent() {
         // // Clear stored transaction data
         // localStorage.removeItem('pending_transaction_amount');
         // localStorage.removeItem('pending_transaction_timestamp');
-        // localStorage.removeItem('pending_transaction_market_id');
+        localStorage.removeItem('pending_transaction_market_id');
 
         // // Redirect back to the market page with success parameter
-        // router.push(`/market/${marketId}?txSignature=${signature}`);
+        router.push(`/market/${marketId}?txSignature=complete`);
       } catch (error) {
         logError('Error in callback:', {
           marketId,
@@ -124,24 +146,24 @@ function CallbackContent() {
 
     const encryptedBalanceResponse = localStorage.getItem('encryptedBalanceData');
     const encryptedBetResponse = localStorage.getItem('encryptedBetData');
-  
+
     if (encryptedBetResponse && encryptedBalanceResponse) {
       try {
         // Decrypt the balance response
         const decryptedBalanceBytes = CryptoJS.AES.decrypt(encryptedBalanceResponse, encryptKey);
         const decryptedBalanceData = JSON.parse(decryptedBalanceBytes.toString(CryptoJS.enc.Utf8));
-  
+
         // Decrypt the bet response
         const decryptedBetBytes = CryptoJS.AES.decrypt(encryptedBetResponse, encryptKey);
         const decryptedBetData = JSON.parse(decryptedBetBytes.toString(CryptoJS.enc.Utf8));
-  
+
         // Log the decrypted data
         logInfo('Decrypted data', {
           component: 'Market-callback',
           balance: decryptedBalanceData,
           bet: decryptedBetData,
         });
-  
+
         // Update user balance
         const updatedUserResponse = await fetch(`/api/users`, {
           method: 'POST',
@@ -150,13 +172,13 @@ function CallbackContent() {
           },
           body: JSON.stringify(decryptedBalanceData),
         });
-  
+
         if (!updatedUserResponse.ok) {
           const errorData = await updatedUserResponse.json();
           logInfo('Error updating users balance', { errorMessage: errorData });
           throw new Error(errorData.message || errorData.error || 'Error recording bet');
         }
-  
+
         // Create the bet in the database
         const response = await fetch(`/api/betting`, {
           method: 'POST',
@@ -165,17 +187,17 @@ function CallbackContent() {
           },
           body: JSON.stringify(decryptedBetData),
         });
-  
+
         if (!response.ok) {
           const errorData = await response.json();
           logInfo('Error creating bet in database', { errorMessage: errorData });
           throw new Error(errorData.message || errorData.error || 'Error recording bet');
         }
-  
+
         // Remove the encrypted data from localStorage after successful processing
         localStorage.removeItem('encryptedBalanceData');
         localStorage.removeItem('encryptedBetData');
-  
+
         logInfo('Encrypted data removed from localStorage', {
           component: 'Market-callback',
         });
