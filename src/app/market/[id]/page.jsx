@@ -509,10 +509,10 @@ export default function MarketPage() {
         let userPublicKey;
 
         if (isMobileDevice) {
-          localStorage.setItem('pending_bet_type', isPumpActive ? 'PUMP' : 'RUG');
-          localStorage.setItem('pending_transaction_amount', betAmount.toString());
-          localStorage.setItem('pending_transaction_market_id', market.id);
-          localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
+          // localStorage.setItem('pending_bet_type', isPumpActive ? 'PUMP' : 'RUG');
+          // localStorage.setItem('pending_transaction_amount', betAmount.toString());
+          // localStorage.setItem('pending_transaction_market_id', market.id);
+          // localStorage.setItem('pending_transaction_timestamp', Date.now().toString());
 
           // For mobile, get the public key from localStorage
           //userPublicKey = localStorage.getItem('phantomPublicKey');
@@ -549,14 +549,20 @@ export default function MarketPage() {
         let solanaBalance;
 
         try {
-          const { solBalance } = isMobileDevice
-            ? await fetchSolBalanceForMobile(userPublicKey)
-            : await checkSufficientBalance(userPublicKey, betWithFees);
+          if (isMobileDevice) {
+            solanaBalance = await fetchSolBalanceForMobile(userPublicKey);
+          } else {
+            solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
+          }
+          // const { solBalance } = isMobileDevice
+          //   ? await fetchSolBalanceForMobile(userPublicKey)
+          //   : await checkSufficientBalance(userPublicKey, betWithFees);
 
-          solanaBalance = solBalance;
+          //solanaBalance = solBalance;
         } catch (error) {
-          logError(error, {
-            component: 'Market Page'
+          logInfo('Error fetching solana balance', {
+            component: 'Market page',
+            error: error.message
           });
           alert("Failed to check wallet balance.");
           setIsBetting(false);
