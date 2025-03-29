@@ -139,7 +139,7 @@ function CallbackContent() {
       // Fallback redirect in case of critical error
       router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, auth]);
 
   async function completeBetAndBalanceUpdate() {
     const encryptKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
