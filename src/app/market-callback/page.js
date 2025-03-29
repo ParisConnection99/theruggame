@@ -54,6 +54,13 @@ function CallbackContent() {
           nonce: nonce
         });
 
+        if (!auth) {
+          logInfo('Auth is not ready', {
+            component: 'market callback page'
+          });
+          return;
+        }
+
         const token = await auth.currentUser?.getIdToken();
 
         logInfo('Token', {
@@ -140,84 +147,6 @@ function CallbackContent() {
       router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
   }, [searchParams, router, auth]);
-
-  async function completeBetAndBalanceUpdate() {
-    const encryptKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
-
-    if (!encryptKey) {
-      throw new Error('Encryption key is missing or undefined');
-    }
-
-    const encryptedBalanceResponse = localStorage.getItem('encryptedBalanceData');
-    const encryptedBetResponse = localStorage.getItem('encryptedBetData');
-
-    if (encryptedBetResponse && encryptedBalanceResponse) {
-      try {
-        // Decrypt the balance response
-        const decryptedBalanceBytes = CryptoJS.AES.decrypt(encryptedBalanceResponse, encryptKey);
-        const decryptedBalanceData = JSON.parse(decryptedBalanceBytes.toString(CryptoJS.enc.Utf8));
-
-        // Decrypt the bet response
-        const decryptedBetBytes = CryptoJS.AES.decrypt(encryptedBetResponse, encryptKey);
-        const decryptedBetData = JSON.parse(decryptedBetBytes.toString(CryptoJS.enc.Utf8));
-
-        // Log the decrypted data
-        logInfo('Decrypted data', {
-          component: 'Market-callback',
-          balance: decryptedBalanceData,
-          bet: decryptedBetData,
-        });
-
-        // Update user balance
-        const updatedUserResponse = await fetch(`/api/users`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(decryptedBalanceData),
-        });
-
-        if (!updatedUserResponse.ok) {
-          const errorData = await updatedUserResponse.json();
-          logInfo('Error updating users balance', { errorMessage: errorData });
-          throw new Error(errorData.message || errorData.error || 'Error recording bet');
-        }
-
-        // Create the bet in the database
-        const response = await fetch(`/api/betting`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(decryptedBetData),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          logInfo('Error creating bet in database', { errorMessage: errorData });
-          throw new Error(errorData.message || errorData.error || 'Error recording bet');
-        }
-
-        // Remove the encrypted data from localStorage after successful processing
-        localStorage.removeItem('encryptedBalanceData');
-        localStorage.removeItem('encryptedBetData');
-
-        logInfo('Encrypted data removed from localStorage', {
-          component: 'Market-callback',
-        });
-      } catch (error) {
-        logError('Error decrypting or processing data', {
-          component: 'Market-callback',
-          error: error.message,
-        });
-        console.error('Error decrypting or processing data:', error);
-      }
-    } else {
-      logError('Missing encrypted data in localStorage', {
-        component: 'Market-callback',
-      });
-    }
-  }
 
   return (
     <div className="text-center">
