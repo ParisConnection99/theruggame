@@ -17,6 +17,7 @@ import MarketChart from '@/components/MarketChart';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { logInfo, logError } from '@/utils/logger';
+import { logActivity } from '@/utils/LogActivity';
 import CryptoJS from 'crypto-js';
 
 const marketPageService = new MarketPageService(supabase);
@@ -602,6 +603,8 @@ export default function MarketPage() {
           throw new Error(`Error creating bet transaction: ${errorData}`);
         }
 
+        await logActivity('bet_placed', auth);
+
         if (isMobileDevice) {
           const { url } = await createBetTransactionResponse.json();
 
@@ -1002,41 +1005,3 @@ export default function MarketPage() {
     </div>
   );
 }
-
-
-// if (isMobileDevice) {
-//   logInfo('Encrypting data', {
-//     component: 'Market Page'
-//   });
-
-//   const balanceData = {
-//     userId: dbUser.user_id,
-//     amount: betWithFees
-//   }
-
-//   const betData = {
-//     marketId: market.id,
-//     userId: dbUser.user_id,
-//     amount: betAmount,
-//     betType: betType,
-//     token_name: market.name,
-//   };
-
-//   if (!encryptKey) {
-//     throw new Error('Encryption key is missing or undefined.');
-//   }
-
-//   // Encrypt the data
-//   const encryptedBalanceData = CryptoJS.AES.encrypt(JSON.stringify(balanceData), encryptKey).toString();
-//   const encryptedBetData = CryptoJS.AES.encrypt(JSON.stringify(betData), encryptKey).toString();
-
-
-//   // Save the encrypted data to local storage
-//   localStorage.setItem('encryptedBalanceData', encryptedBalanceData);
-//   localStorage.setItem('encryptedBetData', encryptedBetData);
-
-//   logInfo('Encrypted data saved to local storage', {
-//     component: 'Market Page'
-//   });
-// }
-// Use placeBet with proper callbacks

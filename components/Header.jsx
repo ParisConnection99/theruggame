@@ -511,10 +511,6 @@ export default function Header() {
         setIsMenuOpen(false);
     };
 
-    const menuClicked = (type) => {
-
-    };
-
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
