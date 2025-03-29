@@ -23,6 +23,8 @@ class PendingBetsService {
 
         return data[0];
     }
+
+    async fetchPendingBet() {}
 }
 
 module.exports = PendingBetsService;

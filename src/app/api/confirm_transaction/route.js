@@ -1,4 +1,5 @@
 import { serviceRepo } from '@/services/ServiceRepository';
+import { verifyTransaction } from '@/utils/SolanaTransactionChecker';
 import admin from 'firebase-admin';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -44,54 +45,27 @@ export async function POST(request) {
         }
 
         const uid = decodedToken.uid;
-
         const body = await request.json();
 
-        const { marketId, betType, tokenName, amount, amountToAdd } = body;
+        const { signature } = body;
 
-
-        if (!marketId || !betType || !tokenName || !amount || !amountToAdd) {
+        if (!signature) {
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        // Fetch the user and check their balance
-        const user = await serviceRepo.userService.getUserByWallet(uid);
-
-        if (!user) {
-            return new Response(JSON.stringify({ error: 'User not found.' }), {
+        // Now we got to check the signature
+        try {
+            await verifyTransaction(signature);
+        } catch (error) {
+            return new Response(JSON.stringify({ error: 'Error verifying transaction' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const nonce = nacl.randomBytes(24);
-
-        const encodedNonce = bs58.encode(nonce);
-
-        const betData = {
-            user_id: user.user_id,
-            market_id: marketId,
-            bet_type: betType,
-            token_name: tokenName,
-            amount: amount,
-            amount_to_add: amountToAdd,
-            nonce: encodedNonce,
-            status: 'pending'
-        };
-
-        console.log('Creating pending bet:', betData);
-
-        await serviceRepo.pendingBetsService.createPendingBet(betData);
-
-        return new Response(JSON.stringify({
-            key: encodedNonce
-        }), {
-            status: 201,
-            headers: { 'Content-Type': 'application/json' },
-        });
     } catch (error) {
         console.error('Error processing bet transaction request:', error);
 

@@ -102,8 +102,8 @@ export async function transferSOL(
   publicKey,
   sendTransaction,
   amount,
-  destinationAddress = SITE_WALLET_ADDRESS,
   key,
+  token,
   endpoint = RPC_ENDPOINT
 ) {
   if (!publicKey) {
@@ -155,6 +155,31 @@ export async function transferSOL(
     if (confirmation.value.err) {
       throw new Error(`Transaction failed: ${confirmation.value.err}`);
     }
+
+    const response = await fetch('/api/confirm_transaction', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        body: JSON.stringify({
+          signature
+        }),
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      logInfo('Confirm transaction error', {
+        component: 'Solana Wallet',
+        error: errorData
+      });
+      return {
+        success: false,
+        error: errorData
+      };
+    }
+
+    // Pass the signature to the backend
 
     // If we get here, the transaction was confirmed
     return {
@@ -314,7 +339,7 @@ export async function placeBet(
       }
     } else {
       // Handle web transaction as before
-      const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key);
+      const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
 
       if (result.success) {
         // we can call the endpoint from here to check if successful
@@ -335,26 +360,26 @@ export async function placeBet(
 }
 
 // const response = await fetch(`/api/betting/transfer`, {
-        //   method: 'POST',
-        //   headers: {
-        //     Authorization: `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify({
-        //     marketId: marketId,
-        //     userId: userId,
-        //     amountToAddToBalance: amountToAdd,
-        //     amount: betAmount,
-        //     betType: betType,
-        //     token_name: token_name
-        //   })
-        // });
+//   method: 'POST',
+//   headers: {
+//     Authorization: `Bearer ${token}`,
+//     'Content-Type': 'application/json',
+//   },
+//   body: JSON.stringify({
+//     marketId: marketId,
+//     userId: userId,
+//     amountToAddToBalance: amountToAdd,
+//     amount: betAmount,
+//     betType: betType,
+//     token_name: token_name
+//   })
+// });
 
-        // if (!response.ok) {
-        //   const errorData = await response.json();
-        //   logInfo('Error placing bet', {
-        //     errorData: errorData,
-        //     component: 'Market Page'
-        //   });
-        //   throw new Error(errorData.message || errorData.error || 'Error saving bet details');
-        // }
+// if (!response.ok) {
+//   const errorData = await response.json();
+//   logInfo('Error placing bet', {
+//     errorData: errorData,
+//     component: 'Market Page'
+//   });
+//   throw new Error(errorData.message || errorData.error || 'Error saving bet details');
+// }
