@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet, checkSufficientBalanceForMobile, handleTransaction } from '@/utils/SolanaWallet.js';
+import { checkSufficientBalance, placeBet, checkSufficientBalanceForMobile, fetchSolBalanceForMobile } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
@@ -549,7 +549,7 @@ export default function MarketPage() {
 
         try {
           const { solBalance } = isMobileDevice
-            ? await checkSufficientBalanceForMobile(betWithFees, userPublicKey)
+            ? await fetchSolBalanceForMobile(userPublicKey)
             : await checkSufficientBalance(userPublicKey, betWithFees);
 
           solanaBalance = solBalance;
@@ -557,7 +557,7 @@ export default function MarketPage() {
           logError(error, {
             component: 'Market Page'
           });
-          alert("Failed to fetch wallet balance. Please try again.");
+          alert("Failed to check wallet balance. Please try again.");
           setIsBetting(false);
           setLoading(false);
           return;

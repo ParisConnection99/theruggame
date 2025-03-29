@@ -50,6 +50,28 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
   }
 }
 
+export async function fetchSolBalanceForMobile(publicKey, endpoint = RPC_ENDPOINT) {
+  if (!publicKey) {
+    throw new Error('Wallet not connected on mobile');
+  }
+
+  logInfo('Checking balance for mobile', {
+    component: 'Solana wallet'
+  });
+
+  try {
+    const connection = new Connection(endpoint, 'confirmed');
+    const publicKey = new PublicKey(publicKey);
+    const lamports = await connection.getBalance(publicKey);
+    return lamports / LAMPORTS_PER_SOL;
+  } catch (error) {
+    logInfo('Failed to fetch wallet balance', {
+      error: error
+    });
+    throw error;
+  }
+}
+
 export async function checkSufficientBalanceForMobile(amount, publicKey, endpoint = RPC_ENDPOINT) {
   if (!publicKey) {
     throw new Error('Wallet not connected on mobile');
