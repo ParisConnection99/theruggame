@@ -50,6 +50,8 @@ export async function POST(request) {
 
         const { marketId, betType, tokenName, amount, amountToAdd, isMobile } = body;
 
+        console.log(`${marketId}, ${betType}, ${tokenName}, ${amount}, ${amountToAdd}, ${isMobile}`);
+
 
         if (!marketId || !betType || !tokenName || !amount || !amountToAdd || !isMobile) {
             console.log('Parameters are missing.');
