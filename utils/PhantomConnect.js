@@ -199,7 +199,9 @@ class PhantomConnect {
             throw new Error('Public Key needed to create transaction.');
         }
 
-        const response = await fetch(`/api/session?key=${publicKey}`, {
+        console.log('Sign and send transaction: ',publicKey);
+
+        const response = await fetch(`${APP_URL}/api/session?key=${publicKey}`, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
         });
