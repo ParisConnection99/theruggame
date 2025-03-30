@@ -16,8 +16,8 @@ import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
-import { logInfo, logError } from '@/utils/logger';
 import { logActivity } from '@/utils/LogActivity';
+import { errorLog } from '@/utils/ErrorLog';
 import CryptoJS from 'crypto-js';
 
 const marketPageService = new MarketPageService(supabase);
@@ -112,7 +112,12 @@ export default function MarketPage() {
           console.log('No Markets found.');
         }
       } catch (error) {
-        console.error('Error fetching market data.');
+        await errorLog(
+          "FETCHING_MARKET_ERROR",
+          error.message,
+          error.stack || "no stack trace available",
+          "MARKET",
+          "SERIOUS");
         logEvent(analytics, 'market_page_error', {
           error_message: error.message,
           error_code: error.code || 'unknown'
@@ -136,10 +141,7 @@ export default function MarketPage() {
 
       try {
         setUserLoading(true);
-        console.log(`Auth user uid: ${authUser.uid}`);
-
         const token = await authUser.getIdToken();
-
         const response = await fetch(`/api/users`, {
           method: 'GET',
           headers: {
@@ -154,10 +156,14 @@ export default function MarketPage() {
         const dbUser = await response.json();
 
         setUserBalance(dbUser.balance);
-
-        console.log(`Fetched user balance: ${dbUser.balance}`);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        await errorLog(
+          "FETCHING_USER_DATA_ERROR",
+          error.message,
+          error.stack || "no stack trace available",
+          "MARKET",
+          "SERIOUS",
+          `${authUser?.uid}` || "");
         logEvent(analytics, 'market_page_error', {
           error_message: error.message,
           error_code: error.code || 'unknown'
@@ -175,7 +181,7 @@ export default function MarketPage() {
     // Skip if market is not yet loaded
     if (!market?.id) return;
 
-    const handleMarketUpdate = (updatedMarket) => {
+    const handleMarketUpdate = async (updatedMarket) => {
       switch (updatedMarket.type) {
         case 'PUMP VS RUG SPLIT UPDATE':
           if (updatedMarket.payload.id === market.id) {
@@ -201,7 +207,12 @@ export default function MarketPage() {
               setIsExpired(true);
               setIsBettingClosed(true);
             } else {
-              console.error(`Received unexpected outcome: ${updatedMarket.payload.outcome}`);
+              await errorLog(
+                "MARKET_UPDATE_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "MARKET",
+                "MILD");
             }
           }
           break;
@@ -221,7 +232,6 @@ export default function MarketPage() {
   const handlePriceUpdate = (priceData) => {
     setCurrentPrice(priceData.price);
     setLiquidity(priceData.liquidity);
-    console.log(`Market page updated with new price: ${priceData.price}`);
   }
 
   // Add the countdown timer effect from MarketCard
@@ -230,7 +240,7 @@ export default function MarketPage() {
     if (!market) return;
 
     // Function to calculate time difference and format it
-    const updateCountdown = () => {
+    const updateCountdown = async () => {
       try {
         const now = new Date();
         const startTime = new Date(market.start_time);
@@ -238,7 +248,6 @@ export default function MarketPage() {
 
         // Add validation for date objects
         if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
-          console.error("Invalid date format:", { start_time: market.start_time, end_time: market.end_time });
           setTimeLeft('INVALID DATE');
           return;
         }
@@ -303,7 +312,12 @@ export default function MarketPage() {
 
         setTimeLeft(`${formattedMinutes}:${formattedSeconds}`);
       } catch (error) {
-        console.error("Error calculating countdown:", error);
+        await errorLog(
+          "MARKET_COUNTDOWN_ERROR",
+          error.message,
+          error.stack || "no stack trace available",
+          "MARKET",
+          "SERIOUS");
         logEvent(analytics, 'market_page_error', {
           error_message: error.message,
           error_code: error.code || 'unknown'
@@ -360,7 +374,11 @@ export default function MarketPage() {
           percentage: returnPercentage
         });
       } catch (error) {
-        console.error('Error calculating odds:', error);
+        await errorLog("CALCULATING_ODDS_ERROR",
+          error.message,
+          error.stack || "no stack trace available",
+          "MARKET",
+          "SERIOUS");
         setPotentialReturn({ amount: 0, percentage: 0 });
       }
     } else {
@@ -390,12 +408,6 @@ export default function MarketPage() {
   };
 
   const handleBetClick = async () => {
-    console.log('PLACE BET!');
-
-    logInfo('PLACE BET', {
-      component: 'Market Page'
-    });
-
     if (analytics) {
       logEvent(analytics, 'place_bet_button_click', {
         page: 'market',
@@ -405,7 +417,6 @@ export default function MarketPage() {
 
     // Prevent multiple clicks while processing
     if (isBetting) {
-      console.log('Bet already in progress');
       return;
     }
 
@@ -420,8 +431,6 @@ export default function MarketPage() {
     }
 
     try {
-      console.log(`Fetching user`);
-
       const token = await authUser.getIdToken();
 
       const response = await fetch(`/api/users`, {
@@ -465,8 +474,6 @@ export default function MarketPage() {
 
       if (balance >= betWithFees) {
         // Handle Bet with existing balance
-        console.log(`Bet data: ${market.id}, ${dbUser.user_id}, ${betAmount}, ${betType}`);
-
         const response = await fetch(`/api/betting`, {
           method: 'POST',
           headers: {
@@ -500,8 +507,6 @@ export default function MarketPage() {
 
         alert('Your bet has been successfully placed.');
       } else {
-        logInfo('Balance is not enough need to check wallet', {});
-
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
         );
@@ -513,10 +518,6 @@ export default function MarketPage() {
           localStorage.setItem('pending_transaction_market_id', market.id);
 
           userPublicKey = authUser?.uid;
-
-          logInfo('User public key', {
-            userPublicKey: userPublicKey
-          });
 
           if (!userPublicKey) {
             alert('Wallet connection not found. Please reconnect your wallet.');
@@ -536,21 +537,17 @@ export default function MarketPage() {
         }
         // Need to use wallet payment
 
-        logInfo('Public Key', {
-          component: 'Market Page',
-          pk: userPublicKey,
-          isMobileDevice: isMobileDevice
-        });
-
         let solanaBalance;
 
         try {
           solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
         } catch (error) {
-          logInfo('Error fetching solana balance', {
-            component: 'Market page',
-            error: error.message
-          });
+          await errorLog("FETCHING_BALANCE_ERROR",
+            error.message,
+            error.stack || "no stack trace available",
+            "MARKET",
+            "SERIOUS",
+            `${authUser?.uid}` || "");
           alert("Failed to check wallet balance.");
           setIsBetting(false);
           setLoading(false);
@@ -559,27 +556,14 @@ export default function MarketPage() {
 
         const amountToAdd = Math.max(0, betWithFees - balance);
 
-        logInfo('Calculated amountToAdd:', { amountToAdd, solanaBalance, balance, betWithFees });
-
         if (solanaBalance < amountToAdd) {
-          logInfo('You dont have enough SOL', {});
           alert("You don't have enough SOL to place this bet.");
           setIsBetting(false);
           setLoading(false);
           return;
         }
 
-        logInfo('Enough money ready to place bet.', {
-          component: 'Market Page'
-        });
-
         const token = await authUser.getIdToken();
-
-        // CREATE PENDING BET
-        logInfo('Checks before endpoint calls: ', {
-          isMobile: isMobileDevice,
-          token: token
-        });
 
         const createBetTransactionResponse = await fetch("/api/create_bet_transaction", {
           method: 'POST',
@@ -610,29 +594,15 @@ export default function MarketPage() {
 
           localStorage.setItem('key_id', userPublicKey);
 
-          logInfo('Fetched URL', {
-            component: 'Market page',
-            url: url
-          });
-
           try {
             window.location.href = url;
           } catch (error) {
-            logError(error, {
-              component: 'Market Page',
-              action: 'transfering sol'
-            });
             throw error;
           }
 
         } else {
 
           const { key } = await createBetTransactionResponse.json();
-
-          logInfo('KEY', {
-            key: key,
-            publicKey: userPublicKey
-          });
 
           await new Promise((resolve, reject) => {
             placeBet(
@@ -678,17 +648,17 @@ export default function MarketPage() {
 
       }
     } catch (error) {
-      console.error('Error placing bet: ', error);
+      await errorLog("PLACING_BET_ERROR",
+        error.message,
+        error.stack || "no stack trace available",
+        "MARKET",
+        "SERIOUS",
+        `${authUser?.uid}` || "");
 
       // delete saved data
       logEvent(analytics, 'market_page_error', {
         error_message: error.message,
         error_code: error.code || 'unknown'
-      });
-
-      logError(error, {
-        action: 'Placing bet',
-        component: 'Market page'
       });
       alert(`Error placing bet.`);
     } finally {
