@@ -514,8 +514,7 @@ export default function MarketPage() {
         let userPublicKey;
 
         if (isMobileDevice) {
-          localStorage.setItem('pending_transaction_market_id', market.id);
-
+  
           userPublicKey = authUser?.uid;
 
           if (!userPublicKey) {
@@ -588,10 +587,11 @@ export default function MarketPage() {
 
         await logActivity('bet_placed', auth);
 
+        localStorage.setItem('key_id', userPublicKey);
+        localStorage.setItem('pending_transaction_market_id', market.id);
+
         if (isMobileDevice) {
           const { url } = await createBetTransactionResponse.json();
-
-          localStorage.setItem('key_id', userPublicKey);
 
           try {
             window.location.href = url;

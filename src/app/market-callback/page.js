@@ -2,7 +2,7 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { logInfo, logError } from '@/utils/logger';
+import { errorLog } from '@/utils/ErrorLog';
 
 
 function CallbackContent() {
@@ -10,7 +10,7 @@ function CallbackContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    
+
     async function processCallback() {
       // Initialize marketId early to ensure it's available for error handling
       const marketId = localStorage.getItem('pending_transaction_market_id');
@@ -22,17 +22,12 @@ function CallbackContent() {
         searchParams.forEach((value, key) => {
           params[key] = value;
         });
-        console.log('Received parameters:', params);
 
         // Check for Phantom error response first
         const errorCode = searchParams.get('errorCode');
         const errorMessage = searchParams.get('errorMessage');
 
         if (errorCode || errorMessage) {
-          logError('Phantom Error:', {
-            errorCode,
-            errorMessage
-          });
           throw new Error(`Phantom Error: ${errorMessage || 'Unknown error'} (${errorCode || 'no code'})`);
         }
 
@@ -40,17 +35,9 @@ function CallbackContent() {
         const data = searchParams.get('data');
         const nonce = searchParams.get('nonce');
 
-        logInfo('Transaction data:', { data, nonce });
-
         if (!data || !nonce) {
           throw new Error('Missing transaction data parameters');
         }
-
-        logInfo('Market callback starting', {
-          component: 'Market callback page',
-          data: data,
-          nonce: nonce
-        });
 
         const response = await fetch(`/api/confirm_mobile_transaction`, {
           method: 'POST',
@@ -69,53 +56,16 @@ function CallbackContent() {
           throw new Error(errorData.error);
         }
 
-        logInfo('Market callback success', {
-          component: 'Market callback page',
-        });
-
-        // const sharedSecret = localStorage.getItem('phantomSharedSecret');
-
-        // const convertedSharedSecret = getUint8ArrayFromJsonString(sharedSecret);
-
-        // // Process the transaction callback
-        // //const signature = await handleTransactionCallback(data, nonce);
-        // const signature = decryptPayload(data, nonce, convertedSharedSecret);
-
-        // // Get the stored transaction details
-        // const amount = localStorage.getItem('pending_transaction_amount');
-
-        // // Log successful transaction
-        // logInfo('Transaction processed:', {
-        //   signature,
-        //   marketId,
-        //   amount
-        // });
-
-        // await completeBetAndBalanceUpdate();
-
-        // // Clear stored transaction data
-        // localStorage.removeItem('pending_transaction_amount');
-        // localStorage.removeItem('pending_transaction_timestamp');
         localStorage.removeItem('pending_transaction_market_id');
 
         // // Redirect back to the market page with success parameter
         router.push(`/market/${marketId}?txSignature=complete`);
       } catch (error) {
-        logError('Error in callback:', {
-          marketId,
-          error: error.message
-        });
-        console.error('Error in callback:', error);
-
-        // Clear stored transaction data
-        try {
-          localStorage.removeItem('pending_transaction_amount');
-          localStorage.removeItem('pending_transaction_timestamp');
-          localStorage.removeItem('pending_transaction_market_id');
-        } catch (e) {
-          console.error('Error clearing localStorage:', e);
-        }
-
+        await errorLog("MARKET_CALLBACK_ERROR",
+          error.message,
+          error.stack || "no stack trace available",
+          "MARKET-CALLBACK",
+          "SERIOUS");
         // Redirect back to the market page with error parameter
         const errorMessage = error.message || 'Unknown error processing transaction';
         router.push(`/market/${marketId}?error=${encodeURIComponent(errorMessage)}`);
