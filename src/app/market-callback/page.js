@@ -61,7 +61,7 @@ function CallbackContent() {
         router.push(`/market/${marketId}?txSignature=complete`);
       } catch (error) {
         await errorLog("MARKET_CALLBACK_ERROR",
-          error.message,
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET-CALLBACK",
           "SERIOUS");

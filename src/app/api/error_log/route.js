@@ -88,7 +88,7 @@ export async function POST(request) {
             severity: severity
         };
 
-        console.log('Errodata: ', errorData);
+        console.log('Errordata: ', errorData);
         try {
 
             await serviceRepo.errorService.createError(errorData);

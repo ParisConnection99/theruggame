@@ -54,7 +54,7 @@ function WalletCallbackContent() {
                 router.push('/');
             } catch (error) {
                 await errorLog("WALLET_CALLBACK_ERROR",
-                    error.message,
+                    error.message || 'Error object with empty message',
                     error.stack || "no stack trace available",
                     "WALLET-CALLBACK",
                     "SERIOUS");

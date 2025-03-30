@@ -113,7 +113,7 @@ export default function MarketPage() {
       } catch (error) {
         await errorLog(
           "FETCHING_MARKET_ERROR",
-          error.message,
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET",
           "SERIOUS");
@@ -158,7 +158,7 @@ export default function MarketPage() {
       } catch (error) {
         await errorLog(
           "FETCHING_USER_DATA_ERROR",
-          error.message,
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET",
           "SERIOUS",
@@ -208,7 +208,7 @@ export default function MarketPage() {
             } else {
               await errorLog(
                 "MARKET_UPDATE_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "MARKET",
                 "MILD");
@@ -313,7 +313,7 @@ export default function MarketPage() {
       } catch (error) {
         await errorLog(
           "MARKET_COUNTDOWN_ERROR",
-          error.message,
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET",
           "SERIOUS");
@@ -374,7 +374,7 @@ export default function MarketPage() {
         });
       } catch (error) {
         await errorLog("CALCULATING_ODDS_ERROR",
-          error.message,
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET",
           "SERIOUS");
@@ -541,7 +541,7 @@ export default function MarketPage() {
           solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
         } catch (error) {
           await errorLog("FETCHING_BALANCE_ERROR",
-            error.message,
+            error.message || 'Error object with empty message',
             error.stack || "no stack trace available",
             "MARKET",
             "SERIOUS",
@@ -648,7 +648,7 @@ export default function MarketPage() {
       }
     } catch (error) {
       await errorLog("PLACING_BET_ERROR",
-        error.message,
+        error.message || 'Error object with empty message',
         error.stack || "no stack trace available",
         "MARKET",
         "SERIOUS",

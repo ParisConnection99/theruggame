@@ -61,7 +61,7 @@ export default function Header() {
 
         } catch (error) {
             await errorLog("PHANTOM_DESKTOP_CONNECTION_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
@@ -80,7 +80,7 @@ export default function Header() {
             }
         } catch (error) {
             await errorLog("PHANTOM_DESKTOP_DISCONNECTION_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
@@ -173,7 +173,7 @@ export default function Header() {
            await logActivity('user_login', auth);
         } catch (error) {
             await errorLog("DESKTOP_AUTH_CONNECTION_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
@@ -202,7 +202,7 @@ export default function Header() {
                 window.location.href = url;
             } catch (error) {
                 await errorLog("PHANTOM_MOBILE_DISCONNECT_DEEPLINK",
-                    error.message,
+                    error.message || 'Error object with empty message',
                     error.stack || "no stack trace available",
                     "HEADER",
                     "SERIOUS",
@@ -230,7 +230,7 @@ export default function Header() {
             return response;
         } catch (error) {
             await errorLog("PHANTOM_MOBILE_DISCONNECT_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS",
@@ -249,7 +249,7 @@ export default function Header() {
             await handleCleanup(uid);
         } catch (error) {
             await errorLog("MOBILE_CLEANUP_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "MILD",
@@ -309,7 +309,7 @@ export default function Header() {
             return response;
         } catch (error) {
             await errorLog("PHANTOM_MOBILE_CONNECTION_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
@@ -333,7 +333,7 @@ export default function Header() {
                 window.location.href = deepLink;
             } catch (error) {
                 await errorLog("PHANTOM_MOBILE_CONNECTION_DEEPLINK",
-                    error.message,
+                    error.message || 'Error object with empty message',
                     error.stack || "no stack trace available",
                     "HEADER",
                     "SERIOUS");
@@ -440,7 +440,7 @@ export default function Header() {
             await logActivity('user_login', auth);
         } catch (error) {
             await errorLog("MOBILE_AUTH_CONNECTION_ERROR",
-                error.message,
+                error.message || 'Error object with empty message',
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");

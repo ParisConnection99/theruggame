@@ -79,7 +79,7 @@ export default function Home() {
       } catch (error) {
         await errorLog(
           "FETCHING_MARKETS_ERROR",
-          error.message,
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "HOME",
           "SERIOUS");
