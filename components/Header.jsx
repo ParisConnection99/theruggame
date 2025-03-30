@@ -82,6 +82,7 @@ export default function Header() {
             });
 
         } catch (error) {
+            logInfo('Desktop connection error');
             await errorLog("PHANTOM_DESKTOP_CONNECTION_ERROR",
                 error.message,
                 error.stack || "no stack trace available",

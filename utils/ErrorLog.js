@@ -15,6 +15,8 @@ export async function errorLog(type, message, stackTrace, location, severity, ke
             os: parser.getOS()
         }
 
+        logInfo('Before loggging error');
+
         const response = await fetch('/api/error_log', {
             method: 'POST',
             headers: {
