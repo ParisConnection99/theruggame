@@ -4,13 +4,9 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logInfo, logError } from '@/utils/logger';
 import { createMemoInstruction } from '@solana/spl-memo';
-//import { phantomConnect } from '@/utils/PhantomConnect';
-import nacl from 'tweetnacl';
-import bs58 from 'bs58';
 const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 //const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
-const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU'; // Replace with your wallet address
 
 /**
  * Checks if a user has sufficient SOL balance for a transaction
@@ -41,77 +37,7 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
     return { isEnough: solBalance >= requiredAmount, solBalance: solBalance };
 
   } catch (error) {
-    console.error('Error checking balance:', error);
-    logInfo('Error checking balance', {
-      error: error.message,
-      publicKey: typeof publicKeyOrString === 'string' ? publicKeyOrString : publicKeyOrString.toString()
-    });
     throw new Error(`Failed to check wallet balance: ${error.message}`);
-  }
-}
-
-export async function fetchSolBalanceForMobile(publicKey, endpoint = RPC_ENDPOINT) {
-  if (!publicKey) {
-    throw new Error('Wallet not connected on mobile');
-  }
-
-  logInfo('Checking balance for mobile', {
-    component: 'Solana wallet'
-  });
-
-  try {
-    const connection = new Connection(clusterApiUrl('devnet'), "confirmed");
-    const publicKey = new PublicKey(publicKey);
-
-    logInfo('Before checking balance', {
-      publicKey: publicKey,
-      component: 'Solana Wallet'
-    });
-
-    const lamports = await connection.getBalance(publicKey);
-    return lamports / LAMPORTS_PER_SOL;
-  } catch (error) {
-    logInfo('Failed to fetch wallet balance', {
-      error: error.message
-    });
-    throw error;
-  }
-}
-
-export async function checkSufficientBalanceForMobile(amount, publicKey, endpoint = RPC_ENDPOINT) {
-  if (!publicKey) {
-    throw new Error('Wallet not connected on mobile');
-  }
-
-  logInfo('Checking balance for mobile', {
-    component: 'Solana wallet'
-  });
-
-  try {
-    const connection = new Connection(endpoint, 'confirmed');
-
-    // Convert string to PublicKey if needed
-    const publicKey = new PublicKey(publicKey);
-
-    const lamports = await connection.getBalance(publicKey);
-
-    const solBalance = lamports / LAMPORTS_PER_SOL;
-
-    logInfo('Sol balance', {
-      component: 'Solana wallet',
-      balance: solBalance
-    });
-    // Add small buffer for transaction fees
-    const requiredAmount = amount + 0.000005;
-
-    return { isEnough: solBalance >= requiredAmount, solBalance: solBalance };
-  } catch (error) {
-    console.error('Error checking balance on mobile:', error);
-    logInfo('Error checking balance on mobile', {
-      error: error.message,
-      publicKey: publicKey
-    });
-    throw new Error(`Failed to check wallet balance on mobile: ${error.message}`);
   }
 }
 
@@ -182,8 +108,6 @@ export async function transferSOL(
       throw new Error(`Transaction failed: ${confirmation.value.err}`);
     }
 
-    logInfo('Calling the confirm transaction endpoint', {});
-
     const response = await fetch('/api/confirm_transaction', {
       method: 'POST',
       headers: {
@@ -197,27 +121,18 @@ export async function transferSOL(
 
     if (!response.ok) {
       const errorData = await response.json();
-      logInfo('Confirm transaction error', {
-        component: 'Solana Wallet',
-        error: errorData
-      });
       return {
         success: false,
         error: errorData
       };
     }
 
-    // Pass the signature to the backend
-
-    // If we get here, the transaction was confirmed
     return {
       success: true,
       signature,
       transactionUrl: `https://explorer.solana.com/tx/${signature}`
     };
   } catch (error) {
-    console.error('Transaction failed:', error);
-
     // Provide more specific error messaging
     let errorMessage = error.message;
     if (error.message.includes('User rejected')) {

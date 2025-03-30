@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet, checkSufficientBalanceForMobile, fetchSolBalanceForMobile } from '@/utils/SolanaWallet.js';
+import { checkSufficientBalance, placeBet } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
@@ -18,7 +18,6 @@ import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
-import CryptoJS from 'crypto-js';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
