@@ -21,7 +21,6 @@ export async function errorLog(type, message, stackTrace, location, severity, ke
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({
                 key: key,
