@@ -19,6 +19,8 @@ class ErrorService {
             }])
             .select();
 
+        console.error(`Error saving error: ${error}`);
+
         if (error) throw error; 
     }
 
