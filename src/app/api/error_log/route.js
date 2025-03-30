@@ -25,36 +25,10 @@ export const config = {
 
 export async function POST(request) {
     try {
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) {
-            return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        const token = authHeader.split(' ')[1]; // Bearer <token>
-        if (!token) {
-            return new Response(JSON.stringify({ error: 'Unauthorized: Missing token in Authorization header' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        let decodedToken;
-        try {
-            decodedToken = await admin.auth().verifyIdToken(token);
-        } catch (error) {
-            return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
-        const uid = decodedToken.uid;
         const body = await request.json();
 
         const {
+            key,
             device_info,
             type,
             message,
@@ -105,15 +79,6 @@ export async function POST(request) {
             });
         }
 
-        const user = await serviceRepo.userService.getUserByWallet(uid);
-
-        if (!user) {
-            return new Response(JSON.stringify({ error: 'User not found.' }), {
-                status: 404,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-
         const forwarded = request.headers.get('x-forwarded-for');
         const realIp = request.headers.get('x-real-ip');
         const geoData = geolocation(request);
@@ -131,7 +96,7 @@ export async function POST(request) {
         };
 
         const errorData = {
-            user_id: user.user_id,
+            wallet_ca: key,
             error_message: message,
             error_type: type,
             stack_trace: stackTrace,

@@ -11,7 +11,7 @@ class ErrorService {
                 error_type: errorData.error_type,
                 error_message: errorData.error_message,
                 stack_trace: errorData.stack_trace,
-                user_id: errorData.user_id,
+                wallet_ca: errorData.wallet_ca,
                 ip: errorData.ip,
                 request_data: errorData.request_data,
                 source_location: errorData.source_location,

@@ -2,14 +2,9 @@ import { UAParser } from 'ua-parser-js';
 const parser = new UAParser();
 import { logInfo, logError } from '@/utils/logger';
 
-export async function errorLog(type, message, stackTrace, location, severity, token) {
+export async function errorLog(type, message, stackTrace, location, severity, key = "") {
     if (!type || !message || !stackTrace || !location || !severity) {
         logInfo('Missing parameters error logs.');
-        return;
-    }
-
-    if (!token) {
-        logInfo('Missing token parameter error logs.');
         return;
     }
 
@@ -27,6 +22,7 @@ export async function errorLog(type, message, stackTrace, location, severity, to
                 Authorization: `Bearer ${token}`
             },
             body: JSON.stringify({
+                key: key,
                 device_info: device_info,
                 type: type,
                 message: message,

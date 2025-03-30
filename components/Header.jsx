@@ -11,6 +11,7 @@ import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { logActivity } from '@/utils/LogActivity';
+import { errorLog } from '@/utils/ErrorLog';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -47,6 +48,7 @@ export default function Header() {
 
     const handleDesktopWalletConnection = async () => {
         try {
+            throw new Error('Test');
             setConnectionStatus('connecting');
 
             // Log initial state
@@ -80,6 +82,11 @@ export default function Header() {
             });
 
         } catch (error) {
+            await errorLog("PHANTOM_DESKTOP_CONNECTION_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "SERIOUS");
             console.error('Connection error:', error);
             setConnectionStatus('error');
             showConnectionError('Connection failed, please try again');
@@ -103,6 +110,11 @@ export default function Header() {
                 });
             }
         } catch (error) {
+            await errorLog("PHANTOM_DESKTOP_DISCONNECTION_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "SERIOUS");
             logError(error, {
                 component: 'Header',
                 action: 'desktop wallet disconnect'
@@ -198,6 +210,11 @@ export default function Header() {
 
            await logActivity('user_login', auth);
         } catch (error) {
+            await errorLog("DESKTOP_AUTH_CONNECTION_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "SERIOUS");
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
 
@@ -267,6 +284,11 @@ export default function Header() {
             const response = await handlePhantomDisconnection(uid);
             return response;
         } catch (error) {
+            await errorLog("PHANTOM_MOBILE_DISCONNECT_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "SERIOUS");
             console.error('Error disconnecting from phantom: ',error);
         }
     }
@@ -281,6 +303,11 @@ export default function Header() {
         try {
             await handleCleanup(uid);
         } catch (error) {
+            await errorLog("MOBILE_CLEANUP_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "MILD");
             logError(error, {
                 component: 'Header',
                 action: 'Cleaning data'
@@ -342,6 +369,11 @@ export default function Header() {
             const response = await handlePhantomConnect();
             return response;
         } catch (error) {
+            await errorLog("PHANTOM_MOBILE_CONNECTION_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "SERIOUS");
             console.error('Error connecting to phantom: ',error);
         }
     };
@@ -355,7 +387,6 @@ export default function Header() {
                 component: 'Header'
             });
 
-            //const  { deepLink, id } = await phantomConnect.connect();
             const { deepLink, id } = await connectToPhantom();
 
             localStorage.setItem('session_id', id);
@@ -363,6 +394,11 @@ export default function Header() {
             try {
                 window.location.href = deepLink;
             } catch (error) {
+                await errorLog("PHANTOM_MOBILE_CONNECTION_DEEPLINK",
+                    error.message,
+                    error.stack || "no stack trace available",
+                    "HEADER",
+                    "SERIOUS");
                 logError(error, {
                     component: 'Header',
                     action: 'connecting phantom wallet'
@@ -371,6 +407,7 @@ export default function Header() {
             }
 
         } catch (error) {
+            
             logError(error, {
                 component: 'Header',
                 action: 'Error during mobile wallet connection'
@@ -490,6 +527,11 @@ export default function Header() {
 
             await logActivity('user_login', auth);
         } catch (error) {
+            await errorLog("MOBILE_AUTH_CONNECTION_ERROR",
+                error.message,
+                error.stack || "no stack trace available",
+                "HEADER",
+                "SERIOUS");
             console.error("Error during authentication:", error);
             setConnectionStatus("error");
 
