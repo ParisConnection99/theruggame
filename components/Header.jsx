@@ -49,18 +49,7 @@ export default function Header() {
     const handleDesktopWalletConnection = async () => {
         try {
             setConnectionStatus('connecting');
-
-            // Log initial state
-            logInfo('Starting wallet connection', {
-                component: 'Header',
-                walletState: {
-                    connecting,
-                    connected,
-                    hasWallet: !!wallet,
-                    hasPhantom: !!window?.phantom?.solana
-                }
-            });
-
+            
             // Check if Phantom is available
             if (!window?.phantom?.solana) {
                 throw new Error('Phantom wallet is not installed');
@@ -69,16 +58,6 @@ export default function Header() {
             // Attempt connection
             await select('Phantom');
             await connect();
-
-            logInfo('Connection successful', {
-                component: 'Header',
-                walletState: {
-                    connecting,
-                    connected,
-                    hasWallet: !!wallet,
-                    hasPhantom: !!window?.phantom?.solana
-                }
-            });
 
         } catch (error) {
             await errorLog("PHANTOM_DESKTOP_CONNECTION_ERROR",
@@ -97,15 +76,7 @@ export default function Header() {
 
             if (connected) {
                 await disconnect();
-                // Clear any stored session data
                 setIsEffectivelyConnected(false);
-                logInfo('Desktop wallet disconnected', {
-                    component: 'Header',
-                    walletState: {
-                        connected: connected,
-                        publicKey: publicKey?.toString()
-                    }
-                });
             }
         } catch (error) {
             await errorLog("PHANTOM_DESKTOP_DISCONNECTION_ERROR",
@@ -113,10 +84,6 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
-            logError(error, {
-                component: 'Header',
-                action: 'desktop wallet disconnect'
-            });
             throw error;
         }
     };
@@ -125,9 +92,6 @@ export default function Header() {
         const handleAsyncEffect = async () => {
             try {
                 if (connected && publicKey && auth) {
-                    logInfo("Wallet connected:", {
-                        publicKey: publicKey.toString(),
-                    });
                     await handleDesktopUserConnection();
                     setIsEffectivelyConnected(true);
                 }
@@ -232,18 +196,8 @@ export default function Header() {
         try {
             await signOut(auth);
 
-            logInfo('UID',{
-                component: 'Header',
-                uid: uid
-            });
-
             const url = await disconnectFromPhantom(uid);
-
-            logInfo('Fetched disconnect url', {
-                component: 'Header',
-                url: url
-            });
-
+            
             try {
                 window.location.href = url;
             } catch (error) {
