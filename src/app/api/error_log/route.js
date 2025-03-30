@@ -81,9 +81,9 @@ export async function POST(request) {
             wallet_ca: key,
             error_message: message,
             error_type: type,
-            stack_trace: JSON.stringify(stackTrace),
+            stack_trace: stackTrace,
             source_location: location,
-            request_data: JSON.stringify(enhanced_device_info),
+            request_data: enhanced_device_info,
             ip: ip,
             severity: severity
         };
