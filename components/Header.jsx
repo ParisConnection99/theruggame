@@ -48,7 +48,6 @@ export default function Header() {
 
     const handleDesktopWalletConnection = async () => {
         try {
-            throw new Error('Test');
             setConnectionStatus('connecting');
 
             // Log initial state
@@ -82,13 +81,11 @@ export default function Header() {
             });
 
         } catch (error) {
-            logInfo('Desktop connection error');
             await errorLog("PHANTOM_DESKTOP_CONNECTION_ERROR",
                 error.message,
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
-            console.error('Connection error:', error);
             setConnectionStatus('error');
             showConnectionError('Connection failed, please try again');
         }
@@ -152,7 +149,7 @@ export default function Header() {
             logError(error, {
                 component: 'Header',
                 action: 'Connecting user'
-            })
+            });
         }
     };
 
@@ -216,7 +213,6 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
-            console.error("Error during authentication:", error);
             setConnectionStatus("error");
 
             if (error.message?.includes("Firebase")) {
@@ -251,10 +247,12 @@ export default function Header() {
             try {
                 window.location.href = url;
             } catch (error) {
-                logError(error, {
-                    component: 'Header',
-                    action: 'disconnect user from phantom'
-                });
+                await errorLog("PHANTOM_MOBILE_DISCONNECT_DEEPLINK",
+                    error.message,
+                    error.stack || "no stack trace available",
+                    "HEADER",
+                    "SERIOUS",
+                    uid || "");
                 throw error;
             }
 
@@ -264,10 +262,6 @@ export default function Header() {
             await cleanup(uid);
 
         } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'mobile disconnect'
-            });
             throw error;
         }
     };
@@ -276,11 +270,7 @@ export default function Header() {
         if (!uid) {
             throw new Error('Key needed to disconnect.');
         }
-
-        logInfo('Disconnect from phantom.', {
-            component: 'Header'
-        });
-
+        
         try {
             const response = await handlePhantomDisconnection(uid);
             return response;
@@ -289,8 +279,8 @@ export default function Header() {
                 error.message,
                 error.stack || "no stack trace available",
                 "HEADER",
-                "SERIOUS");
-            console.error('Error disconnecting from phantom: ',error);
+                "SERIOUS",
+                uid || "");
         }
     }
 
@@ -308,11 +298,8 @@ export default function Header() {
                 error.message,
                 error.stack || "no stack trace available",
                 "HEADER",
-                "MILD");
-            logError(error, {
-                component: 'Header',
-                action: 'Cleaning data'
-            });
+                "MILD",
+                uid || "");
         }
     }
 
@@ -322,9 +309,6 @@ export default function Header() {
 
         const handleWalletDisconnect = async () => {
             if (isDisconnecting) {
-                logInfo('Disconnect already in progress, ignoring call', {
-                    component: 'Header'
-                });
                 return;
             }
 
@@ -375,7 +359,6 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
-            console.error('Error connecting to phantom: ',error);
         }
     };
 
@@ -400,19 +383,10 @@ export default function Header() {
                     error.stack || "no stack trace available",
                     "HEADER",
                     "SERIOUS");
-                logError(error, {
-                    component: 'Header',
-                    action: 'connecting phantom wallet'
-                });
                 throw error;
             }
 
         } catch (error) {
-            
-            logError(error, {
-                component: 'Header',
-                action: 'Error during mobile wallet connection'
-            });
             setConnectionStatus('error');
             showConnectionError('Connection failed, please try again');
         }
@@ -436,32 +410,19 @@ export default function Header() {
             try {
                 setConnectionStatus('connecting');
 
-                logInfo('Recieved wallet-callback event', {
-                    component: 'Header',
-                    publicKey: event.detail.publicKey
-                });
-
                 // Process the connection with the received data
                 if (event.detail.publicKey) {
-                    logInfo('Handle wallet callback connection', {});
                     await handleWalletCallbackConnection({
                         publicKey: event.detail.publicKey
                     });
 
                     setConnectionStatus('success');
                     setIsEffectivelyConnected(true);
-                } else {
-                    logInfo('Public Key is null', { component: 'Header' });
-                }
-
+                } 
 
             } catch (error) {
                 setConnectionStatus('error');
                 showConnectionError('Connection failed, please try again');
-                logError(error, {
-                    component: 'Header',
-                    action: 'Error during wallet callback'
-                });
             }
         };
 
@@ -504,12 +465,8 @@ export default function Header() {
             }
 
             // Sign in with the custom token
-            const userCredential = await signInWithCustomToken(auth, data.token);
-            logInfo("Firebase sign-in successful", {
-                component: "Header",
-                user: userCredential.user,
-            });
-
+            await signInWithCustomToken(auth, data.token);
+            
             // Instead of fetching the user we want to check if the user exists
             const userResponse = await fetch(`/api/users/check`, {
                 method: "POST",
@@ -533,7 +490,6 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
-            console.error("Error during authentication:", error);
             setConnectionStatus("error");
 
             if (error.message?.includes("Firebase")) {
