@@ -9,6 +9,7 @@ import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { useAuth } from '@/components/FirebaseProvider';
+import { errorLog } from '@/utils/ErrorLog';
 
 
 export default function Home() {
@@ -76,6 +77,12 @@ export default function Home() {
         }
 
       } catch (error) {
+        await errorLog(
+          "FETCHING_MARKETS_ERROR",
+          error.message,
+          error.stack || "no stack trace available",
+          "HOME",
+          "SERIOUS");
         console.error("Error fetching markets: ", error);
         logEvent(analytics, 'home_page_error', {
           error_message: error.message,
