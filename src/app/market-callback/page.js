@@ -12,7 +12,6 @@ function CallbackContent() {
   useEffect(() => {
 
     async function processCallback() {
-      // Initialize marketId early to ensure it's available for error handling
       const marketId = localStorage.getItem('pending_transaction_market_id');
       const key = localStorage.getItem('key_id');
 
@@ -76,8 +75,6 @@ function CallbackContent() {
     try {
       processCallback();
     } catch (error) {
-      console.error('Critical error in callback:', error);
-      // Fallback redirect in case of critical error
       router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
   }, [searchParams, router]);

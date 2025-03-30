@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { handlePhantomConnectionResponse } from '@/utils/PhantomConnectAction';
-import { logError, logInfo } from '@/utils/logger';
+import { errorLog } from '@/utils/ErrorLog';
 import { useRouter } from 'next/navigation';
 
 function WalletCallbackContent() {
@@ -16,10 +16,10 @@ function WalletCallbackContent() {
             const response = await handlePhantomConnectionResponse(data, nonce, phantomEncryptionPublicKey, sessionId);
             return response;
         } catch (error) {
-            console.error('Error handling connect response: ',error);
+            console.error('Error handling connect response: ', error);
         }
     };
-    
+
     useEffect(() => {
         const handleWalletConnection = async () => {
             try {
@@ -44,11 +44,6 @@ function WalletCallbackContent() {
                     sessionId
                 );
 
-                logInfo('Connection response', {
-                    component: 'Wallet callback',
-                    publicKey: publicKey
-                });
-
                 // // Dispatch event to notify header
                 window.dispatchEvent(new CustomEvent('wallet-callback-event', {
                     detail: { publicKey: publicKey }
@@ -56,15 +51,13 @@ function WalletCallbackContent() {
 
                 await new Promise((resolve) => setTimeout(resolve, 500)); // 500ms delay
 
-
-                // Redirect to home page after successful connection
                 router.push('/');
             } catch (error) {
-                logError(error, {
-                    component: 'WalletCallback',
-                    action: 'wallet connection'
-                });
-                // Redirect to home page with error
+                await errorLog("WALLET_CALLBACK_ERROR",
+                    error.message,
+                    error.stack || "no stack trace available",
+                    "WALLET-CALLBACK",
+                    "SERIOUS");
                 router.push('/?error=connection_failed');
             }
         };
