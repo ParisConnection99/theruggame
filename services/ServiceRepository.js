@@ -18,6 +18,7 @@ const CashoutService = require('./CashoutService');
 const SessionDataService = require('./SessionDataService');
 const ActivityLogService = require('./ActivityLogService');
 const PendingBetsService = require('./PendingBetService');
+const ErrorService = require('./ErrorService');
 const dbConfig = require('@/utils/db-config');
 
 
@@ -36,6 +37,7 @@ class ServiceRepository {
     this.register('db', new PostgresDatabase(this.get('pool')));
 
     // Independent services (services with minimal dependencies)
+    this.register('errorService', new ErrorService(this.get('supabase')));
     this.register('sessionDataService', new SessionDataService(this.get('supabase')));
     this.register('activityLogService', new ActivityLogService(this.get('supabase')));
     this.register('pendingBetsService', new PendingBetsService(this.get('supabase')));
@@ -146,6 +148,7 @@ class ServiceRepository {
   get sessionDataService() { return this.get('sessionDataService'); }
   get activityLogService() { return this.get('activityLogService'); }
   get pendingBetsService() { return this.get('pendingBetsService'); }
+  get errorService() { return this.get('errorService'); }
 }
 
 // Create and export a singleton instance
