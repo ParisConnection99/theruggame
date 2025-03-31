@@ -108,29 +108,6 @@ export async function verifyBetTransaction(signature) {
     });
 
     await updatePendingBets(pendingBet.id, pendingBetData);
-
-    // Updated the pending bet data
-    // await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
-
-    // await serviceRepo.activityLogService.logActivity({
-    //   user_id: pendingBetData.user_id,
-    //   action_type: 'pending_bet_update',
-    //   device_info: "",
-    //   ip: "",
-    //   additional_metadata: ""
-    // });
-
-    // Create Bet
-    // await createBet(pendingBet);
-
-    // await serviceRepo.activityLogService.logActivity({
-    //   user_id: pendingBetData.user_id,
-    //   action_type: 'bet_added_successfully',
-    //   device_info: "",
-    //   ip: "",
-    //   additional_metadata: ""
-    // });
-
     await createBetAndLog(pendingBet, pendingBetData.user_id);
 
     return { success: true };
@@ -142,7 +119,8 @@ export async function verifyBetTransaction(signature) {
 }
 
 async function createBetAndLog(pendingBet, userId) {
-  await createBet(pendingBet);
+  //await createBet(pendingBet);
+  await createBetWithRetry(pendingBet, 3);
 
   await serviceRepo.activityLogService.logActivity({
     user_id: userId,
@@ -165,7 +143,6 @@ async function updatePendingBets(pendingBetId, pendingBetData) {
   });
 }
 
-// Dummy DB functions - replace with your actual implementation
 async function findPendingBetByNonce(nonce) {
   try {
     const pendingBet = await serviceRepo.pendingBetsService.fetchPendingBetByNonce(nonce);
@@ -174,6 +151,38 @@ async function findPendingBetByNonce(nonce) {
     console.log('Error fetching pending bet:', error);
     return null;
   }
+}
+
+async function createBetWithRetry(pendingBet, maxRetries = 3) {
+   let retries = 0;
+
+   while (retries < maxRetries) {
+    try {
+      console.log(`Attempt ${retries + 1} to create bet.`);
+      throw new Error(test);
+      const betData = {
+        userId: pendingBet.user_id,
+        amount: pendingBet.amount,
+        betType: pendingBet.bet_type,
+        token_name: pendingBet.token_name
+      };
+  
+      await serviceRepo.bettingService
+        .placeBetFromTransfer(
+          pendingBet.market_id,
+          betData,
+          pendingBet.amount_to_add
+        );
+    } catch (error) {
+      console.error(`Attempt ${retries + 1} failed:`, error);
+      const delay = 300;
+      await new Promise(resolve => setTimeout(resolve, delay));
+      retries++;
+      // Logging the error
+    }
+   } 
+
+   throw new Error('Failed to create Bet');
 }
 
 async function createBet(pendingBet) {
