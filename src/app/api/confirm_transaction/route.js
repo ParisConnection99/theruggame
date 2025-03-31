@@ -67,6 +67,9 @@ export async function POST(request) {
                 });
             } else {
 
+                console.log(`Confirm transaction error: ${JSON.stringify(result.error?.message)}`);
+                console.log(`${JSON.stringify(result.error)}`);
+
                 // Update the pending bets with the error
                 const pendingBet = await serviceRepo.pendingBetsService.fetchPendingBetByWalletCa(uid);
 

@@ -18,9 +18,7 @@ class ErrorService {
                 severity: errorData.severity,
             }])
             .select();
-
-        console.error(`Error saving error: ${error.message}`);
-
+            
         if (error) throw error; 
     }
 
