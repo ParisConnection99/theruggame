@@ -210,22 +210,12 @@ class PhantomConnect {
 
         if (!response.ok) {
             const errorData = await response.json();
-            logInfo('Fetching session data error', {
-                component: 'Phantom connect',
-                errorData: errorData
-            });
-
             throw new Error('Error fetching session data.');
         }
 
         session_data = await response.json();
 
         const session = encryptionService.decrypt(session_data.session);
-
-        logInfo('Created transaction:', {
-            component: 'Phantom connect',
-            transaction: transaction
-        });
 
         const serializedTransaction = transaction.serialize({
             requireAllSignatures: false,
@@ -235,11 +225,6 @@ class PhantomConnect {
             session,
             transaction: bs58.encode(serializedTransaction),
         };
-
-        logInfo('Created payload', {
-            component: 'phantom connect',
-            transaction: transaction
-        });
 
         const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
         const convertedSharedSecret = this.getUint8ArrayFromJsonString(decryptedSharedSecret);
@@ -251,8 +236,6 @@ class PhantomConnect {
             redirect_link: 'https://theruggame.fun/market-callback',
             payload: bs58.encode(encryptedPayload),
         });
-
-        logInfo('Sending transaction.....', {});
 
         const url = buildUrl("signAndSendTransaction", params);
 

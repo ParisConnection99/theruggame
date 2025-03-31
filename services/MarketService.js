@@ -126,9 +126,9 @@ class MarketService {
       await this.expiryService.validateBetPlacement(marketId);
 
       // Call the transaction function
-      const { data, error } = await this.supabase.rpc('update_balance_and_place_bet', {
+      const { data, error } = await this.supabase.rpc('create_bet_from_transfer', {
         user_id_param: betData.userId,
-        amount_to_add_param: amountToAddToBalance,
+        //amount_to_add_param: amountToAddToBalance,
         market_id_param: marketId,
         amount_param: betData.amount,
         net_amount_param: betData.netAmount,

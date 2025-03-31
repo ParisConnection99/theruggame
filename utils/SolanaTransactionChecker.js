@@ -109,8 +109,25 @@ export async function verifyBetTransaction(signature) {
       status: 'complete'
     };
 
+    // Updated the activity log - transfer checks complete
+    await serviceRepo.activityLogService.logActivity({
+      user_id: pendingBetData.user_id,
+      action_type:'transfer_check_completed',
+      device_info: "",
+      ip: "",
+      additional_metadata: ""
+    });
+
     // Updated the pending bet data
     await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
+
+    await serviceRepo.activityLogService.logActivity({
+      user_id: pendingBetData.user_id,
+      action_type:'pending_bet_update',
+      device_info: "",
+      ip: "",
+      additional_metadata: ""
+    });
 
     // Create Bet
     await createBet(pendingBet);
@@ -153,5 +170,6 @@ async function createBet(pendingBet) {
       );
   } catch (error) {
     console.log(`Error placing bet: `, error);
+    // Logging the error
   }
 }

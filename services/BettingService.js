@@ -15,8 +15,10 @@ class BettingService {
 
   async placeBetFromTransfer(marketId, { userId, amount, betType, token_name }, amountToAddToBalance) {
     if (!marketId || !userId || !amount || !betType || !token_name || !amountToAddToBalance) {
-      throw new Error('Error processing Bet.');
+      throw new Error('Error processing Bet. Parameters missing.');
     }
+
+    // Placing bet from transfer
 
     try {
       // Validate bet amount
@@ -44,7 +46,7 @@ class BettingService {
         token_name
       }, amountToAddToBalance);
 
-      // up
+      // add logging to activity log
 
       // Create and match units
       await this.createUnitsAndMatch(bet);

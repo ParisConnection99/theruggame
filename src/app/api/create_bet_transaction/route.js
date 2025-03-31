@@ -1,5 +1,6 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import PhantomConnect from '@/utils/PhantomConnect';
+import { geolocation } from '@vercel/edge';
 import admin from 'firebase-admin';
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
@@ -20,6 +21,10 @@ if (!admin.apps.length) {
         console.error("Firebase Admin initialization error:", error);
     }
 }
+
+export const config = {
+    runtime: 'edge', // This is important to run at the edge
+};
 
 export async function POST(request) {
     console.log('Creation pending bet transaction...');
@@ -99,7 +104,22 @@ export async function POST(request) {
 
         console.log('Creating pending bet:', betData);
 
+        // Add some logs
+
         await serviceRepo.pendingBetsService.createPendingBet(betData);
+
+        const { ip, device_info } = await fetchRequestData(request);
+
+
+        const activityData = {
+            user_id: user.user_id,
+            action_type: 'pending_bet_created',
+            device_info: device_info,
+            ip: ip,
+            additional_metadata: ""
+        };
+
+        await serviceRepo.activityLogService.logActivity(activityData);
 
         // If mobile handle call phantom connect and fetch the url
 
@@ -138,4 +158,23 @@ export async function POST(request) {
             headers: { 'Content-Type': 'application/json' },
         });
     }
+}
+
+async function fetchRequestData(request) {
+    const forwarded = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const geoData = geolocation(request);
+
+    const ip =
+        forwarded?.split(',')[0] ||
+        realIp ||
+        geoData?.ip ||
+        request.headers.get('cf-connecting-ip') ||
+        'unknown';
+
+    const enhanced_device_info = {
+        geo: geoData ? { city: geoData.city, country: geoData.country, region: geoData.region } : {},
+    };
+
+    return { ip, enhanced_device_info };
 }
