@@ -2,7 +2,6 @@
 // This file provides functions for Solana wallet interaction including balance checking and transfers
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
-import { logInfo, logError } from '@/utils/logger';
 import { createMemoInstruction } from '@solana/spl-memo';
 const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 //const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
@@ -148,64 +147,6 @@ export async function transferSOL(
   }
 }
 
-// export async function placeBet(
-//   publicKey,
-//   sendTransaction,
-//   betAmount, // Full bet amount without fees / will be added to create bet
-//   onSuccess,
-//   onError,
-//   setLoading = null,
-//   userId,
-//   amountToAdd, // This is the amount needed to be fetched from wallet
-//   betType,
-//   token_name,
-//   token,
-//   key
-// ) {
-//   if (setLoading) setLoading(true);
-
-//   if (!betAmount || !userId || !amountToAdd || !betType || !token_name) {
-//     throw new Error('Inputs cant be empty');
-//   }
-
-//   try {
-
-//     if (!publicKey) {
-//       throw new Error('Wallet not connected');
-//     }
-
-//     logInfo('Amount: to add', {
-//       am: amountToAdd
-//     });
-
-//     const { hasEnough, balance } = await checkSufficientBalance(publicKey, amountToAdd);
-
-//     logInfo('Has enough', {
-//       hasEnough: hasEnough,
-//       balance: balance
-//     });
-
-//     if (!hasEnough) {
-//       throw new Error("You don't have enough SOL to place this bet");
-//     }
-
-//     const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
-
-//     if (result.success) {
-//       // we can call the endpoint from here to check if successful
-//       onSuccess(result);
-//     } else {
-//       throw new Error(result.error);
-//     }
-
-//   } catch (error) {
-//     onError(error.message);
-//   } finally {
-//     if (setLoading) setLoading(false);
-//   }
-
-// }
-
 // Update placeBet function to include marketId
 export async function placeBet(
   publicKey,
@@ -263,12 +204,8 @@ export async function placeBet(
     }
 
   } catch (error) {
-    logError(error, {
-      component: 'Solana wallet',
-      platform: isMobile ? 'mobile' : 'web'
-    });
     onError(error.message);
   } finally {
-    if (setLoading && !isMobile) setLoading(false);
+    if (setLoading) setLoading(false);
   }
 }
