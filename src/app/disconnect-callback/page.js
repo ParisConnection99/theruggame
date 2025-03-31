@@ -2,7 +2,7 @@
 import { Suspense } from 'react';
 import { useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { logInfo, logError } from '@/utils/logger';
+import { errorLog } from '@/utils/ErrorLog';
 
 function DisconnectHandler() {
     const router = useRouter();
@@ -15,37 +15,22 @@ function DisconnectHandler() {
                 const errorCode = searchParams.get('errorCode');
                 const errorMessage = searchParams.get('errorMessage');
 
-                logInfo('Disconnect callback - all params received:', {
-                    component: 'DisconnectCallbackPage',
-                    allParams: Object.fromEntries(searchParams.entries()),
-                    searchParamsKeys: Array.from(searchParams.keys()),
-                    rawURL: window.location.href
-                });
-
                 // Check if there was an error or missing data
                 if (errorCode) {
-                    logInfo('Disconnect error', {
-                        component: 'Disconnect callback',
-                        error: errorMessage,
-                        errorCode: errorCode
-                    });
                     throw new Error(errorCode || 'Invalid disconnect response');
                 }
-
-                logInfo('Disconnect successful', {
-                    component: 'DisconnectCallbackPage'
-                });
 
                 setTimeout(() => {
                     router.push('/');
                 }, 500);
 
             } catch (error) {
-                logError(error, {
-                    component: 'DisconnectCallbackPage',
-                    action: 'disconnect verification'
-                });
-                
+                await errorLog("DISCONNEC_CALLBACK_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "DISCONNECT-CALLBACK",
+                    "SERIOUS");
+
                 // Don't clear data if disconnect wasn't authenticated
                 router.push('/?error=disconnect_failed');
             }
