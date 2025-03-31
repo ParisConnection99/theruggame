@@ -53,10 +53,7 @@ export async function POST(request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
-
-        console.log(`Signature: ${signature} - Router`);
-
-        // Now we got to check the signature
+        
         try {
             const result = await verifyBetTransaction(signature);
 
@@ -66,9 +63,6 @@ export async function POST(request) {
                     headers: { 'Content-Type': 'application/json' },
                 });
             } else {
-
-                console.log(`Confirm transaction error: ${JSON.stringify(result.error?.message)}`);
-                console.log(`${JSON.stringify(result.error)}`);
 
                 // Update the pending bets with the error
                 const pendingBet = await serviceRepo.pendingBetsService.fetchPendingBetByWalletCa(uid);
@@ -80,7 +74,7 @@ export async function POST(request) {
                 };
 
                 await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
-                return new Response(JSON.stringify({ result: 'Failure', error: result.error?.message }), {
+                return new Response(JSON.stringify({ result: 'Failure', error: result.error?.message || "Unknown error" }), {
                     status: 404,
                     headers: { 'Content-Type': 'application/json' },
                 });
