@@ -242,9 +242,7 @@ export default function Header() {
         if (!uid) {
             throw new Error('Key needed to cleanup.');
         }
-
-        logInfo('Cleaning session data,', {});
-
+        
         try {
             await handleCleanup(uid);
         } catch (error) {

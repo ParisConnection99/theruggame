@@ -13,19 +13,19 @@ function DisconnectHandler() {
             try {
                 // Get encrypted data and nonce from URL params
                 const errorCode = searchParams.get('errorCode');
-                const errorMessage = searchParams.get('errorMessage');
 
                 // Check if there was an error or missing data
                 if (errorCode) {
                     throw new Error(errorCode || 'Invalid disconnect response');
                 }
 
+                localStorage.removeItem('session_id');
                 setTimeout(() => {
                     router.push('/');
-                }, 500);
+                }, 200);
 
             } catch (error) {
-                await errorLog("DISCONNEC_CALLBACK_ERROR",
+                await errorLog("DISCONNECT_CALLBACK_ERROR",
                     error.message || 'Error object with empty message',
                     error.stack || "no stack trace available",
                     "DISCONNECT-CALLBACK",
