@@ -471,7 +471,7 @@ export default function MarketPage() {
       const betWithFees = betAmount + betAmount * PLATFORM_FEE;
       const betType = isPumpActive ? 'PUMP' : 'RUG';
 
-      if (balance >= betWithFees) {
+      if (balance > betWithFees) {
         // Handle Bet with existing balance
         const response = await fetch(`/api/betting`, {
           method: 'POST',
