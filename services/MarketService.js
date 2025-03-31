@@ -121,6 +121,8 @@ class MarketService {
 
     console.log(`PlaceBetFromTransfer: ${betData} amountToAddToBalance: ${amountToAddToBalance}`);
 
+    console.log(`Odds: ${JSON.stringify(betData, null, 2)}`);
+
     try {
       // Validate market is in betting phase
       await this.expiryService.validateBetPlacement(marketId);
