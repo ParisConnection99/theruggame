@@ -646,8 +646,8 @@ export default function MarketPage() {
       }
     } catch (error) {
       await errorLog("PLACING_BET_ERROR",
-        error.message || 'Error object with empty message',
-        error.stack || "no stack trace available",
+        JSON.stringify(error.message) || 'Error object with empty message',
+        JSON.stringify(error.stack) || "no stack trace available",
         "MARKET",
         "SERIOUS",
         `${authUser?.uid}` || "");

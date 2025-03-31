@@ -117,12 +117,6 @@ class MarketService {
       throw new Error('Potential payout must be positive.');
     }
 
-    console.log(`Before market expiry service.`);
-
-    console.log(`PlaceBetFromTransfer: ${betData} amountToAddToBalance: ${amountToAddToBalance}`);
-
-    console.log(`Odds: ${JSON.stringify(betData, null, 2)}`);
-
     try {
       // Validate market is in betting phase
       await this.expiryService.validateBetPlacement(marketId);
@@ -140,8 +134,6 @@ class MarketService {
         potential_payout_param: betData.potentialPayout,
         token_name_param: betData.token_name
       });
-
-      console.log(`New bet: ${data} - Market service`);
 
       if (error) throw error;
       return data;
