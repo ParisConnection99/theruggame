@@ -26,9 +26,9 @@ const ActivityBanner = () => {
     const limitTokenName = (name) => name.length > 7 ? name.slice(0, 7) + '...' : name;
     
     if (bet.type === 'INSERT') {
-      return `${shortUserId} bet ${bet.payload.amount} SOL on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} in 10 mins 🚀`;
+      return `${shortUserId} bet ${bet.payload.amount} SOL on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} in 20 mins 🚀`;
     } else if (bet.type === 'UPDATE' && bet.payload.status === 'WON') {
-      return `${shortUserId} won ${bet.payload.potential_payout} SOL on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} in 10 mins 🎉`;
+      return `${shortUserId} won ${bet.payload.potential_payout} SOL on ${limitTokenName(bet.payload.token_name)} to ${bet.payload.bet_type} in 20 mins 🎉`;
     }
     
     return null;
