@@ -80,7 +80,7 @@ export async function POST(request) {
                 };
 
                 await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
-                return new Response(JSON.stringify({ result: 'Failure', error: result.error }), {
+                return new Response(JSON.stringify({ result: 'Failure', error: result.error?.message }), {
                     status: 404,
                     headers: { 'Content-Type': 'application/json' },
                 });

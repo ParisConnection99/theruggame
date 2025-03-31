@@ -120,7 +120,7 @@ export async function transferSOL(
 
     if (!response.ok) {
       const result = await response.json();
-      throw result.error;
+      throw new Error(result.error);
       // return {
       //   success: false,
       //   error: errorData
