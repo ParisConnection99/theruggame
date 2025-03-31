@@ -148,6 +148,65 @@ export async function transferSOL(
   }
 }
 
+// export async function placeBet(
+//   publicKey,
+//   sendTransaction,
+//   betAmount, // Full bet amount without fees / will be added to create bet
+//   onSuccess,
+//   onError,
+//   setLoading = null,
+//   userId,
+//   amountToAdd, // This is the amount needed to be fetched from wallet
+//   betType,
+//   token_name,
+//   token,
+//   key
+// ) {
+//   if (setLoading) setLoading(true);
+
+//   if (!betAmount || !userId || !amountToAdd || !betType || !token_name) {
+//     throw new Error('Inputs cant be empty');
+//   }
+
+//   try {
+
+//     if (!publicKey) {
+//       throw new Error('Wallet not connected');
+//     }
+
+//     logInfo('Amount: to add', {
+//       am: amountToAdd
+//     });
+
+//     const { hasEnough, balance } = await checkSufficientBalance(publicKey, amountToAdd);
+
+//     logInfo('Has enough', {
+//       hasEnough: hasEnough,
+//       balance: balance
+//     });
+
+//     if (!hasEnough) {
+//       throw new Error("You don't have enough SOL to place this bet");
+//     }
+
+//     const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
+
+//     if (result.success) {
+//       // we can call the endpoint from here to check if successful
+//       onSuccess(result);
+//     } else {
+//       throw new Error(result.error);
+//     }
+
+//   } catch (error) {
+//     onError(error.message);
+//   } finally {
+//     if (setLoading) setLoading(false);
+//   }
+
+// }
+
+// Update placeBet function to include marketId
 export async function placeBet(
   publicKey,
   sendTransaction,
@@ -169,21 +228,26 @@ export async function placeBet(
   }
 
   try {
-
     if (!publicKey) {
       throw new Error('Wallet not connected');
     }
 
-    logInfo('Amount: to add', {
-      am: amountToAdd
-    });
+    // For mobile, get the public key from localStorage
+    const publicKeyToCheck = publicKey;
 
-    const { hasEnough, balance } = await checkSufficientBalance(publicKey, amountToAdd);
+    if (!publicKeyToCheck) {
+      throw new Error('Wallet public key not found');
+    }
 
-    logInfo('Has enough', {
-      hasEnough: hasEnough,
-      balance: balance
-    });
+    // Check balance (works for both mobile and web)
+    let hasEnough;
+
+    try {
+      const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
+      hasEnough = isEnough;
+    } catch (error) {
+      throw new Error('Failed to fetch wallet balance');
+    }
 
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
@@ -199,88 +263,12 @@ export async function placeBet(
     }
 
   } catch (error) {
+    logError(error, {
+      component: 'Solana wallet',
+      platform: isMobile ? 'mobile' : 'web'
+    });
     onError(error.message);
   } finally {
-    if (setLoading) setLoading(false);
+    if (setLoading && !isMobile) setLoading(false);
   }
-
 }
-
-// Update placeBet function to include marketId
-// export async function placeBet(
-//   publicKey,
-//   sendTransaction,
-//   betAmount, // Full bet amount without fees / will be added to create bet
-//   onSuccess,
-//   onError,
-//   setLoading = null,
-//   isMobile = false,
-//   marketId = null, // Add marketId parameter
-//   userId,
-//   amountToAdd, // This is the amount needed to be fetched from wallet
-//   betType,
-//   token_name,
-//   token,
-//   key
-// ) {
-//   if (setLoading) setLoading(true);
-
-//   if (!betAmount || !userId || !amountToAdd || !betType || !token_name) {
-//     throw new Error('Inputs cant be empty');
-//   }
-
-//   try {
-//     if (!publicKey) {
-//       throw new Error('Wallet not connected');
-//     }
-
-//     // For mobile, get the public key from localStorage
-//     const publicKeyToCheck = publicKey;
-
-//     if (!publicKeyToCheck) {
-//       throw new Error('Wallet public key not found');
-//     }
-
-//     // Check balance (works for both mobile and web)
-//     let hasEnough;
-
-//     if (isMobile) {
-//       try {
-//         const { isEnough } = await checkSufficientBalanceForMobile(amountToAdd);
-//         hasEnough = isEnough;
-//       } catch (error) {
-//         throw new Error('Failed to fetch wallet balance');
-//       }
-
-//     } else {
-//       try {
-//         const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
-//         hasEnough = isEnough;
-//       } catch (error) {
-//         throw new Error('Failed to fetch wallet balance');
-//       }
-//     }
-
-//     if (!hasEnough) {
-//       throw new Error("You don't have enough SOL to place this bet");
-//     }
-
-//     const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
-
-//     if (result.success) {
-//       // we can call the endpoint from here to check if successful
-//       onSuccess(result);
-//     } else {
-//       throw new Error(result.error);
-//     }
-
-//   } catch (error) {
-//     logError(error, {
-//       component: 'Solana wallet',
-//       platform: isMobile ? 'mobile' : 'web'
-//     });
-//     onError(error.message);
-//   } finally {
-//     if (setLoading && !isMobile) setLoading(false);
-//   }
-// }
