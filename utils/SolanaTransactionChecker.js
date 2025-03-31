@@ -131,7 +131,7 @@ export async function verifyBetTransaction(signature) {
     //   additional_metadata: ""
     // });
 
-    await createBet(pendingBet, pendingBetData.user_id);
+    await createBetAndLog(pendingBet, pendingBetData.user_id);
 
     return { success: true };
 
@@ -141,7 +141,7 @@ export async function verifyBetTransaction(signature) {
   }
 }
 
-async function createBet(pendingBet, userId) {
+async function createBetAndLog(pendingBet, userId) {
   await createBet(pendingBet);
 
   await serviceRepo.activityLogService.logActivity({
