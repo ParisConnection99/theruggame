@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import '@solana/wallet-adapter-react-ui/styles.css';
 import ActivityBanner from '@/components/ActivityBanner';
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
+import { Analytics } from '@vercel/analytics/next';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({ children }) {
             <ActivityBanner />
             <Header />
             {children}
+            <Analytics />
             <Footer />
           </ClientProviders>
         </GlobalErrorHandler>
