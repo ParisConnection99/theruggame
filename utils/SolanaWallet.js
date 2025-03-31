@@ -181,7 +181,8 @@ export async function placeBet(
     const { hasEnough, balance } = await checkSufficientBalance(publicKey, amountToAdd);
 
     logInfo('Has enough', {
-      hasEnough: hasEnough
+      hasEnough: hasEnough,
+      balance: balance
     });
 
     if (!hasEnough) {
