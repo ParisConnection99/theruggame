@@ -39,8 +39,6 @@ export async function verifyBetTransaction(signature) {
 
   try {
     // 1. Fetch Parsed Transaction
-    //const tx = await connection.getParsedTransaction(signature, { commitment: "confirmed" });
-    console.log(`Verifying transaction: ${signature}`);
     const tx = await getTransactionWithRetry(signature);
 
     // 1a. Check Existence and Success
@@ -58,10 +56,8 @@ export async function verifyBetTransaction(signature) {
     for (const instruction of tx.transaction.message.instructions) {
       if (instruction.programId.toBase58() === 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr' && typeof instruction.parsed === 'string') {
         extractedNonce = instruction.parsed; // Assuming simple string memo
-        console.log("Extracted Nonce:", extractedNonce);
       } else if (instruction.programId.toBase58() === '11111111111111111111111111111111' && instruction.parsed?.type === 'transfer') {
         transferInstruction = instruction.parsed.info;
-        console.log("Found Transfer:", transferInstruction);
       }
     }
 
@@ -77,30 +73,23 @@ export async function verifyBetTransaction(signature) {
     if (transferInstruction.destination !== SITE_WALLET_ADDRESS) {
       throw new Error(`Incorrect destination wallet. Expected ${SITE_WALLET_ADDRESS}, got ${transferInstruction.destination}`);
     }
-    console.log("Destination Wallet Verified.");
 
     // 5. Match Nonce with Pending Bet (DB Query)
     const pendingBet = await findPendingBetByNonce(extractedNonce); // Implement this DB function
     if (!pendingBet) {
       throw new Error(`No matching pending bet found for nonce: ${extractedNonce}`);
     }
-    console.log("Pending Bet Found:", pendingBet.id);
 
     // 6. Verify Amount
     const expectedLamports = Math.round(pendingBet.amount_to_add * LAMPORTS_PER_SOL); // Get expected amount from DB record
     if (transferInstruction.lamports !== expectedLamports) {
       throw new Error(`Incorrect amount transferred. Expected ${expectedLamports} lamports, got ${transferInstruction.lamports}`);
     }
-    console.log("Amount Verified.");
 
     // 7. Verify Source (Recommended)
     const expectedSource = pendingBet.wallet_ca; // Get expected user wallet from DB record
     if (transferInstruction.source !== expectedSource) {
-      // Decide how strict: log warning or throw error
-      console.warn(`Transaction source ${transferInstruction.source} does not match expected user ${expectedSource} for bet ${pendingBet.id}.`);
-      // Optionally: throw new Error("Transaction source does not match user.");
-    } else {
-      console.log("Source Wallet Verified.");
+      throw new Error("Transaction source does not match user.");
     }
 
     const pendingBetData = {
@@ -112,33 +101,37 @@ export async function verifyBetTransaction(signature) {
     // Updated the activity log - transfer checks complete
     await serviceRepo.activityLogService.logActivity({
       user_id: pendingBetData.user_id,
-      action_type:'transfer_check_completed',
+      action_type: 'transfer_check_completed',
       device_info: "",
       ip: "",
       additional_metadata: ""
     });
+
+    await updatePendingBets(pendingBet.id, pendingBetData);
 
     // Updated the pending bet data
-    await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
+    // await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
 
-    await serviceRepo.activityLogService.logActivity({
-      user_id: pendingBetData.user_id,
-      action_type:'pending_bet_update',
-      device_info: "",
-      ip: "",
-      additional_metadata: ""
-    });
+    // await serviceRepo.activityLogService.logActivity({
+    //   user_id: pendingBetData.user_id,
+    //   action_type: 'pending_bet_update',
+    //   device_info: "",
+    //   ip: "",
+    //   additional_metadata: ""
+    // });
 
     // Create Bet
-    await createBet(pendingBet);
+    // await createBet(pendingBet);
 
-    await serviceRepo.activityLogService.logActivity({
-      user_id: pendingBetData.user_id,
-      action_type:'bet_added_successfully',
-      device_info: "",
-      ip: "",
-      additional_metadata: ""
-    });
+    // await serviceRepo.activityLogService.logActivity({
+    //   user_id: pendingBetData.user_id,
+    //   action_type: 'bet_added_successfully',
+    //   device_info: "",
+    //   ip: "",
+    //   additional_metadata: ""
+    // });
+
+    await createBet(pendingBet, pendingBetData.user_id);
 
     return { success: true };
 
@@ -146,6 +139,30 @@ export async function verifyBetTransaction(signature) {
     console.error("Payment verification failed:", error.message);
     return { success: false, error: error.message };
   }
+}
+
+async function createBet(pendingBet, userId) {
+  await createBet(pendingBet);
+
+  await serviceRepo.activityLogService.logActivity({
+    user_id: userId,
+    action_type: 'bet_added_successfully',
+    device_info: "",
+    ip: "",
+    additional_metadata: ""
+  });
+}
+
+async function updatePendingBets(pendingBetId, pendingBetData) {
+  await serviceRepo.pendingBetsService.updatePendingBetById(pendingBetId, pendingBetData);
+
+  await serviceRepo.activityLogService.logActivity({
+    user_id: pendingBetData.user_id,
+    action_type: 'pending_bet_update',
+    device_info: "",
+    ip: "",
+    additional_metadata: ""
+  });
 }
 
 // Dummy DB functions - replace with your actual implementation
