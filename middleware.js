@@ -4,6 +4,9 @@ export function middleware(req) {
   const ip = req.ip || 'unknown';
   const rateLimit = 10; // Max requests per minute
 
+  console.log('Middleware executed for:', req.nextUrl.pathname);
+  console.log('Client IP:', req.ip);
+
   // Example: Simple in-memory tracking (not persistent in serverless)
   globalThis.rateLimitCache = globalThis.rateLimitCache || {};
   const now = Date.now();
