@@ -119,11 +119,12 @@ export async function transferSOL(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      return {
-        success: false,
-        error: errorData
-      };
+      const result = await response.json();
+      throw result.error;
+      // return {
+      //   success: false,
+      //   error: errorData
+      // };
     }
 
     return {

@@ -112,7 +112,7 @@ export async function verifyBetTransaction(signature) {
 
   } catch (error) {
     console.error("Payment verification failed:", error.message);
-    return { success: false, error: error.message };
+    return { success: false, error: error };
   }
 }
 
