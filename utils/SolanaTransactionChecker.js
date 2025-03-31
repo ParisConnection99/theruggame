@@ -92,23 +92,21 @@ export async function verifyBetTransaction(signature) {
       throw new Error("Transaction source does not match user.");
     }
 
-    const pendingBetData = {
-      ...pendingBet,
-      signature: signature,
-      status: 'complete'
-    };
-
     // Updated the activity log - transfer checks complete
     await serviceRepo.activityLogService.logActivity({
-      user_id: pendingBetData.user_id,
+      user_id: pendingBet.user_id,
       action_type: 'transfer_check_completed',
       device_info: "",
       ip: "",
       additional_metadata: ""
     });
 
-    await updatePendingBets(pendingBet.id, pendingBetData);
-    await createBetAndLog(pendingBet, pendingBetData.user_id);
+    await createBetAndLog(pendingBet, pendingBet.user_id);
+    await updatePendingBets(pendingBet.id, {
+      ...pendingBet,
+      signature: signature,
+      status: 'complete'
+    });
 
     return { success: true };
 
@@ -133,13 +131,13 @@ async function createBetAndLog(pendingBet, userId) {
 async function updatePendingBets(pendingBetId, pendingBetData) {
   await serviceRepo.pendingBetsService.updatePendingBetById(pendingBetId, pendingBetData);
 
-  await serviceRepo.activityLogService.logActivity({
-    user_id: pendingBetData.user_id,
-    action_type: 'pending_bet_update',
-    device_info: "",
-    ip: "",
-    additional_metadata: ""
-  });
+  // await serviceRepo.activityLogService.logActivity({
+  //   user_id: pendingBetData.user_id,
+  //   action_type: 'pending_bet_update',
+  //   device_info: "",
+  //   ip: "",
+  //   additional_metadata: ""
+  // });
 }
 
 async function findPendingBetByNonce(nonce) {
