@@ -59,7 +59,7 @@ function CallbackContent() {
           detail: { isConnected: true }
         }));
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         localStorage.removeItem('pending_transaction_market_id');
 

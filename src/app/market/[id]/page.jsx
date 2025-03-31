@@ -633,8 +633,6 @@ export default function MarketPage() {
               },
               // Loading state (already handled by the outer function)
               null,
-              isMobileDevice,
-              market.id,
               dbUser.user_id,
               amountToAdd,
               betType,
