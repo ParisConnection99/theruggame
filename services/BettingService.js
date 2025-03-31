@@ -90,8 +90,6 @@ class BettingService {
         token_name
       });
 
-      // up
-
       // Create and match units
       await this.createUnitsAndMatch(bet);
 
