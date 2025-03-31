@@ -11,6 +11,7 @@ import { logEvent } from 'firebase/analytics';
 import { UAParser } from 'ua-parser-js';
 import { logInfo, logError } from '@/utils/logger';
 import { logActivity } from '@/utils/LogActivity';
+import { errorLog } from '@/utils/ErrorLog';
 
 export default function ProfilePage() {
     const { user: authUser, auth } = useAuth();
@@ -46,19 +47,11 @@ export default function ProfilePage() {
                 return;
             }
 
-            logInfo('Before token id token fetching', {
-                component: 'Profile Page'
-            });
             const token = await authUser.getIdToken();
-
-            logInfo('User token', {
-                token: token,
-                component: 'Profile Page'
-            });
 
             try {
                 setUserLoading(true);
-                
+
                 const response = await fetch(`/api/users`, {
                     method: 'GET',
                     headers: {
@@ -73,7 +66,11 @@ export default function ProfilePage() {
                 const dbUser = await response.json();
                 setUserData(dbUser);
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                await errorLog("USER_FETCH_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "PROFILE",
+                    "SERIOUS");
                 logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
                     error_code: error.code || 'unknown'
@@ -123,7 +120,11 @@ export default function ProfilePage() {
                     setBets([]);
                 }
             } catch (error) {
-                console.error('Error fetching bets:', error);
+                await errorLog("FETCHING_BETS_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "PROFILE",
+                    "SERIOUS");
                 logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
                     error_code: error.code || 'unknown'
@@ -147,7 +148,7 @@ export default function ProfilePage() {
             try {
                 setCashoutsLoading(true);
                 const token = await authUser.getIdToken();
-                
+
                 const response = await fetch(`/api/cashouts/users/${userData.user_id}`, {
                     method: 'GET',
                     headers: {
@@ -172,7 +173,11 @@ export default function ProfilePage() {
                     setCashouts([]);
                 }
             } catch (error) {
-                console.error('Error fetching users cashouts: ', error);
+                await errorLog("FETCHING_CASHOUTS_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "PROFILE",
+                    "SERIOUS");
                 logEvent(analytics, 'profile_page_error', {
                     error_message: error.message,
                     error_code: error.code || 'unknown'
@@ -194,7 +199,7 @@ export default function ProfilePage() {
             });
         }
         try {
-            
+
             // Add event
             const walletEvent = new CustomEvent('wallet-disconnect-event', {
                 timestamp: new Date()
@@ -202,14 +207,13 @@ export default function ProfilePage() {
 
             window.dispatchEvent(walletEvent);
 
-            logInfo('Signing out - event dispatched', {
-                component: 'ProfilePage',
-                action: 'sign out'
-            });
-
             router.push('/');
         } catch (error) {
-            console.error('Error signing out:', error);
+            await errorLog("DISPATCHING_SIGNOUT_EVENT_ERROR",
+                error.message || 'Error object with empty message',
+                error.stack || "no stack trace available",
+                "PROFILE",
+                "SERIOUS");
             logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
                 error_code: error.code || 'unknown'
@@ -277,21 +281,16 @@ export default function ProfilePage() {
         if (!userData || !userData.user_id || !authUser) {
             throw new Error("User data not available");
         }
-    
+
         try {
             // Update username in your database
             const updatedData = {
                 username: newUsername,
                 username_changed_at: new Date().toISOString(),
             };
-    
-            logInfo('Saving updated username', {
-                component: 'Profile Page',
-                updatedData: JSON.stringify(updatedData, null, 2)
-            });
-    
+
             const token = await authUser.getIdToken();
-    
+
             const response = await fetch('/api/users/username_check', {
                 method: 'POST',
                 headers: {
@@ -300,30 +299,33 @@ export default function ProfilePage() {
                 },
                 body: JSON.stringify({ username: newUsername }),
             });
-    
+
             if (!response.ok) {
                 if (response.status === 409) {
-                    // Show an alert if the username already exists
-                    //alert('The username already exists. Please choose a different one.');
                     return false; // Return false to indicate failure
                 }
-    
+
                 const errorData = await response.json();
                 throw new Error(`Error updating username: ${errorData.error || 'Unknown error'}`);
             }
 
             await logActivity('username_changed', auth);
-    
+
             // Update local state
             setUserData({
                 ...userData,
                 username: newUsername,
                 username_changed_at: new Date().toISOString()
             });
-    
+
             return true; // Return true to indicate success
         } catch (error) {
-            console.error("Error updating username:", error);
+            await errorLog("UPDATING_USERNAME_ERROR",
+                error.message || 'Error object with empty message',
+                error.stack || "no stack trace available",
+                "PROFILE",
+                "MILD",
+                `${authUser?.uid}` || "");
             logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
                 error_code: error.code || 'unknown'
@@ -347,7 +349,7 @@ export default function ProfilePage() {
             const token = await authUser.getIdToken();
 
             const response = await fetch('/api/cashouts', {
-                method: 'POST', 
+                method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -382,7 +384,12 @@ export default function ProfilePage() {
 
             alert('Your cashout request has been submitted and is pending approval.');
         } catch (error) {
-            console.error('Error processing cashout:', error);
+            await errorLog("CASHOUT_SUBMIT_ERROR",
+                error.message || 'Error object with empty message',
+                error.stack || "no stack trace available",
+                "PROFILE",
+                "SERIOUS",
+                 `${authUser?.uid}` || "");
             logEvent(analytics, 'profile_page_error', {
                 error_message: error.message,
                 error_code: error.code || 'unknown'
