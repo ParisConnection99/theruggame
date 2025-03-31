@@ -139,6 +139,8 @@ class MarketService {
         token_name_param: betData.token_name
       });
 
+      console.log(`New bet: ${data} - Market service`);
+
       if (error) throw error;
       return data;
     } catch (error) {
