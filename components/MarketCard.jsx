@@ -120,7 +120,7 @@ function MarketCard({ name, imageSrc, start_time, end_time, duration, onMarketCl
           height={40}
           className="rounded-md"
         />
-        <h1 className="text-sm font-semibold">
+        <h1 className="text-sm font-semibold break-words overflow-hidden line-clamp-2">
           {questionStart}
           <span className="text-amber-400 font-bold drop-shadow-sm">{tokenNameNoSpaces}</span>
           {questionEnd}
