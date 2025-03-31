@@ -89,12 +89,6 @@ export async function POST(request) {
 
     } catch (error) {
         console.error('Error processing bet transaction request:', error);
-
-        // const status =
-        //     error.message === 'User not found' || error.message === 'Insufficient balance'
-        //         ? 400
-        //         : 500;
-
         return new Response(JSON.stringify({ error: error.message }), {
             status,
             headers: { 'Content-Type': 'application/json' },
