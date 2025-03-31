@@ -119,7 +119,6 @@ export async function verifyBetTransaction(signature) {
 }
 
 async function createBetAndLog(pendingBet, userId) {
-  //await createBet(pendingBet);
   await createBetWithRetry(pendingBet, 3);
 
   await serviceRepo.activityLogService.logActivity({
@@ -158,8 +157,6 @@ async function createBetWithRetry(pendingBet, maxRetries = 3) {
 
    while (retries < maxRetries) {
     try {
-      console.log(`Attempt ${retries + 1} to create bet.`);
-      throw new Error(test);
       const betData = {
         userId: pendingBet.user_id,
         amount: pendingBet.amount,
@@ -174,7 +171,6 @@ async function createBetWithRetry(pendingBet, maxRetries = 3) {
           pendingBet.amount_to_add
         );
     } catch (error) {
-      console.error(`Attempt ${retries + 1} failed:`, error);
       const delay = 300;
       await new Promise(resolve => setTimeout(resolve, delay));
       retries++;
@@ -182,7 +178,7 @@ async function createBetWithRetry(pendingBet, maxRetries = 3) {
     }
    } 
 
-   throw new Error('Failed to create Bet');
+   throw new Error(`Failed to create Bet after ${maxRetries} attempts.`);
 }
 
 async function createBet(pendingBet) {
