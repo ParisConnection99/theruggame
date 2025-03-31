@@ -37,6 +37,23 @@ class PendingBetsService {
         return data;
     }
 
+    async fetchPendingBetByWalletCa(wallet_ca) {
+        const { data, error } = await this.supabase
+          .from(this.tableName)
+          .select('*')
+          .eq('wallet_ca', wallet_ca)
+          .eq('status', 'pending')
+          .order('inserted_at', { ascending: false })
+          .limit(1);
+          
+        if (error) {
+          console.error('Error fetching pending bet:', error);
+          throw error;
+        }
+        
+        return data && data.length > 0 ? data[0] : null;
+      }
+
     async updatePendingBetById(id, updateData) {
         const { data, error } = await this.supabase
             .from(this.tableName)

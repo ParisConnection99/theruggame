@@ -1,8 +1,6 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import { verifyBetTransaction } from '@/utils/SolanaTransactionChecker';
 import admin from 'firebase-admin';
-import nacl from 'tweetnacl';
-import bs58 from 'bs58';
 
 
 // Initialize Firebase Admin SDK if not already initialized
@@ -68,6 +66,17 @@ export async function POST(request) {
                     headers: { 'Content-Type': 'application/json' },
                 });
             } else {
+
+                // Update the pending bets with the error
+                const pendingBet = await serviceRepo.pendingBetsService.fetchPendingBetByWalletCa(uid);
+
+                const pendingBetData = {
+                    ...pendingBet,
+                    status: 'error',
+                    signature: signature
+                };
+
+                await serviceRepo.pendingBetsService.updatePendingBetById(pendingBet.id, pendingBetData);
                 return new Response(JSON.stringify({ result: 'Failure', error: result.error }), {
                     status: 404,
                     headers: { 'Content-Type': 'application/json' },

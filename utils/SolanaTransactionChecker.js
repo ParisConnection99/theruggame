@@ -157,21 +157,22 @@ async function createBetWithRetry(pendingBet, maxRetries = 3) {
 
    while (retries < maxRetries) {
     try {
-      const betData = {
-        userId: pendingBet.user_id,
-        amount: pendingBet.amount,
-        betType: pendingBet.bet_type,
-        token_name: pendingBet.token_name
-      };
+      throw new Error('Testing saving pending data.');
+      // const betData = {
+      //   userId: pendingBet.user_id,
+      //   amount: pendingBet.amount,
+      //   betType: pendingBet.bet_type,
+      //   token_name: pendingBet.token_name
+      // };
   
-      await serviceRepo.bettingService
-        .placeBetFromTransfer(
-          pendingBet.market_id,
-          betData,
-          pendingBet.amount_to_add
-        );
+      // await serviceRepo.bettingService
+      //   .placeBetFromTransfer(
+      //     pendingBet.market_id,
+      //     betData,
+      //     pendingBet.amount_to_add
+      //   );
 
-      return;
+      // return;
     } catch (error) {
       const delay = 300;
       await new Promise(resolve => setTimeout(resolve, delay));
