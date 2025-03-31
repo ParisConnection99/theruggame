@@ -170,6 +170,8 @@ async function createBetWithRetry(pendingBet, maxRetries = 3) {
           betData,
           pendingBet.amount_to_add
         );
+
+      return;
     } catch (error) {
       const delay = 300;
       await new Promise(resolve => setTimeout(resolve, delay));
