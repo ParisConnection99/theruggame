@@ -29,28 +29,6 @@ if (!admin.apps.length) {
 
 export async function POST(request) {
     try {
-        // const authHeader = request.headers.get('Authorization');
-        // if (!authHeader) {
-        //     return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
-        //         status: 401,
-        //         headers: { 'Content-Type': 'application/json' },
-        //     });
-        // }
-
-        // // Verify the token
-        // const token = authHeader.split(' ')[1]; // Bearer <token>
-        // let decodedToken;
-        // try {
-        //     decodedToken = await admin.auth().verifyIdToken(token); // Verify the token
-        // } catch (error) {
-        //     return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
-        //         status: 401,
-        //         headers: { 'Content-Type': 'application/json' },
-        //     });
-        // }
-
-        // const uid = decodedToken.uid;
-
         const body = await request.json();
 
         const { data, nonce, key } = body;

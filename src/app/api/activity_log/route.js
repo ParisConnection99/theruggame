@@ -149,6 +149,10 @@ function isAllowedActionType(action_type) {
         case 'feature_market_selected':
         case 'support_selected':
         case 'how_it_works_selected':
+        case 'pending_bet_created':
+        case 'transfer_started':
+        case 'pending_bet_update':
+        case 'bet_added_successfully':
             return true;
 
         default:

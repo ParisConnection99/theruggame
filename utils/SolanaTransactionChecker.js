@@ -132,7 +132,13 @@ export async function verifyBetTransaction(signature) {
     // Create Bet
     await createBet(pendingBet);
 
-    console.log('Bet successfully created.');
+    await serviceRepo.activityLogService.logActivity({
+      user_id: pendingBetData.user_id,
+      action_type:'bet_added_successfully',
+      device_info: "",
+      ip: "",
+      additional_metadata: ""
+    });
 
     return { success: true };
 

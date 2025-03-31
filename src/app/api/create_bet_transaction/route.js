@@ -109,17 +109,13 @@ export async function POST(request) {
         await serviceRepo.pendingBetsService.createPendingBet(betData);
 
         const { ip, device_info } = await fetchRequestData(request);
-
-
-        const activityData = {
+        await serviceRepo.activityLogService.logActivity({
             user_id: user.user_id,
             action_type: 'pending_bet_created',
             device_info: device_info,
             ip: ip,
             additional_metadata: ""
-        };
-
-        await serviceRepo.activityLogService.logActivity(activityData);
+        });
 
         // If mobile handle call phantom connect and fetch the url
 

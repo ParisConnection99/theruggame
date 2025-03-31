@@ -1,7 +1,6 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import admin from 'firebase-admin';
-import nacl from 'tweetnacl';
-import bs58 from 'bs58';
+import { geolocation } from '@vercel/edge';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
@@ -19,6 +18,10 @@ if (!admin.apps.length) {
     console.error("Firebase Admin initialization error:", error);
   }
 }
+
+export const config = {
+  runtime: 'edge', // This is important to run at the edge
+};
 
 export async function POST(request) {
   console.log(`Just entered the place bet route.`);
@@ -76,6 +79,16 @@ export async function POST(request) {
       token_name
     });
 
+    const { ip, device_info } = await fetchRequestData(request);
+
+    await serviceRepo.activityLogService.logActivity({
+      user_id: userId,
+      action_type: 'bet_added_successfully',
+      device_info: device_info,
+      ip: ip,
+      additional_metadata: ""
+    });
+
     return new Response(JSON.stringify(bet), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -86,4 +99,23 @@ export async function POST(request) {
       headers: { 'Content-Type': 'application/json' }
     });
   }
+}
+
+async function fetchRequestData(request) {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  const geoData = geolocation(request);
+
+  const ip =
+      forwarded?.split(',')[0] ||
+      realIp ||
+      geoData?.ip ||
+      request.headers.get('cf-connecting-ip') ||
+      'unknown';
+
+  const enhanced_device_info = {
+      geo: geoData ? { city: geoData.city, country: geoData.country, region: geoData.region } : {},
+  };
+
+  return { ip, enhanced_device_info };
 }
