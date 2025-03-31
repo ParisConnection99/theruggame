@@ -60,12 +60,10 @@ export async function POST(request) {
 
         const { action_type, device_info, additional_metadata } = body;
 
-        console.log(`${action_type}, ${device_info}, ${additional_metadata}`);
-
         // Check if the action type is allowed
-        if (!isAllowedActionType(action_type)) {
-            throw new Error('Action type not allowed.');
-        }
+        // if (!isAllowedActionType(action_type)) {
+        //     throw new Error('Action type not allowed.');
+        // }
 
         if (!action_type || typeof action_type !== 'string') {
             return new Response(JSON.stringify({ error: 'Invalid or missing action_type.' }), {
