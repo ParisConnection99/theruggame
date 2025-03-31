@@ -49,7 +49,7 @@ export default function Header() {
     const handleDesktopWalletConnection = async () => {
         try {
             setConnectionStatus('connecting');
-            
+
             // Check if Phantom is available
             if (!window?.phantom?.solana) {
                 throw new Error('Phantom wallet is not installed');
@@ -153,7 +153,7 @@ export default function Header() {
 
             // Sign in with the custom token
             await signInWithCustomToken(auth, data.token);
-            
+
             // Instead of fetching the user we want to check if the user exists
             const userResponse = await fetch(`/api/users/check`, {
                 method: "POST",
@@ -170,7 +170,7 @@ export default function Header() {
 
             setConnectionStatus("success");
 
-           await logActivity('user_login', auth);
+            await logActivity('user_login', auth);
         } catch (error) {
             await errorLog("DESKTOP_AUTH_CONNECTION_ERROR",
                 error.message || 'Error object with empty message',
@@ -197,7 +197,7 @@ export default function Header() {
             await signOut(auth);
 
             const url = await disconnectFromPhantom(uid);
-            
+
             try {
                 window.location.href = url;
             } catch (error) {
@@ -224,7 +224,7 @@ export default function Header() {
         if (!uid) {
             throw new Error('Key needed to disconnect.');
         }
-        
+
         try {
             const response = await handlePhantomDisconnection(uid);
             return response;
@@ -372,7 +372,7 @@ export default function Header() {
 
                     setConnectionStatus('success');
                     setIsEffectivelyConnected(true);
-                } 
+                }
 
             } catch (error) {
                 setConnectionStatus('error');
@@ -383,7 +383,30 @@ export default function Header() {
         window.addEventListener('wallet-callback-event', handleWalletCallbackEvent);
         return () => window.removeEventListener('wallet-callback-event', handleWalletCallbackEvent);
     }, []);
-    
+
+    // Listen for market-callbackEvent
+
+    useEffect(() => {
+        const handleMarketCallbackEvent = async (event) => {
+            try {
+
+                if (event.detail.isConnected) {
+                    setIsEffectivelyConnected(true);
+                }
+
+            } catch (error) {
+                await errorLog("MARKET_CALLBACK_EVENT_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "HEADER",
+                    "MILD");
+            }
+        };
+
+        window.addEventListener('market-callback-event', handleMarketCallbackEvent);
+        return () => window.removeEventListener('market-callback-event', handleMarketCallbackEvent);
+    }, []);
+
     const connectMobileUser = async (publicKey) => {
         try {
             setConnectionStatus("connecting");
@@ -420,7 +443,7 @@ export default function Header() {
 
             // Sign in with the custom token
             await signInWithCustomToken(auth, data.token);
-            
+
             // Instead of fetching the user we want to check if the user exists
             const userResponse = await fetch(`/api/users/check`, {
                 method: "POST",

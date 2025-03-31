@@ -55,6 +55,12 @@ function CallbackContent() {
           throw new Error(errorData.error);
         }
 
+        window.dispatchEvent(new CustomEvent('market-callback-event', {
+          detail: { isConnected: true }
+        }));
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         localStorage.removeItem('pending_transaction_market_id');
 
         // // Redirect back to the market page with success parameter

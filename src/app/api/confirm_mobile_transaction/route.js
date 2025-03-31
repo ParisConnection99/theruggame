@@ -72,6 +72,8 @@ export async function POST(request) {
             // Now we got to check the signature
             try {
                 const result = await verifyBetTransaction(signature.signature);
+
+                // Check if session exists in database
     
                 if (result.success) {
                     return new Response(JSON.stringify({ result: 'Success' }), {
