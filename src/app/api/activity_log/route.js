@@ -108,10 +108,10 @@ export async function POST(request) {
 
         const logData = {
             user_id: user.user_id,
-            action_type,
-            ip,
+            action_type: action_type,
+            ip: ip,
             device_info: enhanced_device_info,
-            additional_metadata,
+            additional_metadata: "",
         };
 
         try {
