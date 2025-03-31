@@ -174,7 +174,15 @@ export async function placeBet(
       throw new Error('Wallet not connected');
     }
 
+    logInfo('Amount: to add', {
+      am: amountToAdd
+    });
+
     const { hasEnough } = await checkSufficientBalance(publicKey, amountToAdd);
+
+    logInfo('Has enough', {
+      hasEnough: hasEnough
+    });
 
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
