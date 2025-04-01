@@ -46,8 +46,11 @@ export default function Header() {
         if (isMobileDevice && 
             auth && localStorage.getItem('session_id')
              && !isEffectivelyConnected) {
+            logInfo('Session id: check', {
+                id: localStorage.getItem('session_id')
+            });
             setIsEffectivelyConnected(true);
-        }
+        } 
     }, [auth]);
 
     // Monitor connection states
