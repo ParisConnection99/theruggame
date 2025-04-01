@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import 'react-toastify/dist/ReactToastify.css';
 import React from "react";
 import ClientProviders from '@/components/ClientProviders';
 import Header from '@/components/Header';
@@ -8,6 +9,8 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import ActivityBanner from '@/components/ActivityBanner';
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
 import { Analytics } from '@vercel/analytics/next';
+import { ToastContainer } from 'react-toastify';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +47,7 @@ export default function RootLayout({ children }) {
             <Header />
             {children}
             <Analytics />
+            <ToastContainer />
             <Footer />
           </ClientProviders>
         </GlobalErrorHandler>

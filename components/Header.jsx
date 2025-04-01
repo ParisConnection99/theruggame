@@ -12,6 +12,7 @@ import { logInfo, logError } from '@/utils/logger';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
+import { showToast } from '@/components/CustomToast';
 
 export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
@@ -41,6 +42,7 @@ export default function Header() {
     useEffect(() => {
         if (connected) {
             setConnectionStatus('success');
+            showToast('Connected successfully', 'success');
         }
     }, [connected, publicKey]);
 
