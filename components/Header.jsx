@@ -45,11 +45,11 @@ export default function Header() {
             navigator.userAgent
         );
 
-        if (isMobileDevice && 
+        if (isMobileDevice &&
             auth && localStorage.getItem('session_id')
-             && !isEffectivelyConnected) {
+            && !isEffectivelyConnected) {
             setIsEffectivelyConnected(true);
-        } 
+        }
     }, [auth]);
 
     // Monitor connection states
@@ -178,13 +178,14 @@ export default function Header() {
                 throw new Error(errorData.error || "Failed to check if user exists.");
             }
 
-            const doesExist = { exists } = await userResponse.json();
+            const { exists } = await userResponse.json();
 
             logInfo('Does user exist', {
-                exist: doesExist
+                exists,
+                created
             });
 
-            if (!doesExist) {
+            if (!exists) {
                 setShowPopup(true);
             }
 
@@ -264,7 +265,7 @@ export default function Header() {
         if (!uid) {
             throw new Error('Key needed to cleanup.');
         }
-        
+
         try {
             await handleCleanup(uid);
         } catch (error) {
@@ -335,7 +336,7 @@ export default function Header() {
 
         try {
             setConnectionStatus('connecting');
-            
+
             const { deepLink, id } = await connectToPhantom();
 
             localStorage.setItem('session_id', id);
