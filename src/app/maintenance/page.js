@@ -24,7 +24,7 @@ export default function MaintenancePage() {
       </p>
 
       {/* Countdown Component */}
-      <CountdownTimer initialHours={5} />
+      <CountdownTimer />
     </div>
   );
 }
