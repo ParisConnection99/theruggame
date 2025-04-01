@@ -177,6 +177,8 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
         saveAs(blob, `bet-outcome-${bet.id}.png`);
         setIsGenerating(false);
       });
+
+      // 
     } catch (error) {
       console.error("Error generating image:", error);
       setIsGenerating(false);
@@ -208,7 +210,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: "url('/images/background1.webp')",
+              backgroundImage: "url('/images/morfeus.webp')",
               filter: "brightness(0.7)"
             }}
           />
