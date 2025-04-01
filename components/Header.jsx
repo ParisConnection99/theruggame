@@ -38,6 +38,25 @@ export default function Header() {
         checkMobile();
     }, []);
 
+    useEffect(() => {
+        const isMobileDevice = () => {
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+            );
+        };
+
+        if (isMobileDevice) {
+            if (auth) {
+                logInfo('Checking connection', {
+                    component: 'Header',
+                    isConnected: isEffectivelyConnected
+                });
+            }
+        }
+
+
+    }, [auth]);
+
     // Monitor connection states
     useEffect(() => {
         if (connected) {
