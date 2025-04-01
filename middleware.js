@@ -1,6 +1,7 @@
 // middleware.js
 import { NextResponse } from 'next/server';
 import { get } from '@vercel/edge-config';
+import { logInfo, logError } from '@/utils/logger';
 
 export const config = {
   matcher: [
@@ -13,6 +14,9 @@ export async function middleware(request) {
     const isInMaintenanceMode = await get('isInMaintenanceMode');
     
     if (true) {
+        logInfo('Middleware', {
+            isMode: isInMaintenanceMode
+        });
       const url = request.nextUrl.clone();
       url.pathname = '/maintenance';
       return NextResponse.rewrite(url);
