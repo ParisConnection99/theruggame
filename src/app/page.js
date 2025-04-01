@@ -14,6 +14,7 @@ import { logInfo, logError } from '@/utils/logger';
 
 
 export default function Home() {
+  const [timeLeft, setTimeLeft] = useState('--:--:--');
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [endTime, setEndTime] = useState(null);
