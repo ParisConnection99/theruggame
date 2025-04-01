@@ -9,7 +9,7 @@ import BetShareModal from '@/components/BetShareModal'; // Import the BetShareMo
 import { useAnalytics } from '@/components/FirebaseProvider';
 import { logEvent } from 'firebase/analytics';
 import { UAParser } from 'ua-parser-js';
-import { logInfo, logError } from '@/utils/logger';
+import { showToast } from '@/components/CustomToast';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
 
@@ -230,7 +230,7 @@ export default function ProfilePage() {
         }
 
         if (!userData || userData.balance <= 0) {
-            alert(`You do not have enough funds to cash out.`);
+            showToast('You do not have enough funds to cashout', 'error');
             return;
         }
 
@@ -268,7 +268,7 @@ export default function ProfilePage() {
             if (differenceInDays < 7) {
                 // Username was changed less than 7 days ago
                 const daysRemaining = Math.ceil(7 - differenceInDays);
-                alert(`You can only change your username once per week. Please try again in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}.`);
+                showToast(`You can only change your username once per week. Please try again in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}.`, 'warning');
                 return;
             }
         }
@@ -382,7 +382,7 @@ export default function ProfilePage() {
             // Add the new cashout to the cashouts list
             setCashouts([newCashout, ...cashouts]);
 
-            alert('Your cashout request has been submitted and is pending approval.');
+            showToast('Your cashout request has been submitted and is pending approval.', 'success');
         } catch (error) {
             await errorLog("CASHOUT_SUBMIT_ERROR",
                 error.message || 'Error object with empty message',
