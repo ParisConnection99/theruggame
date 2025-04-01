@@ -184,9 +184,9 @@ export default function Header() {
                 exists
             });
 
-            if (!exists) {
+            //if (!exists) {
                 setShowPopup(true);
-            }
+            //}
 
             setConnectionStatus("success");
 
@@ -482,9 +482,13 @@ export default function Header() {
                 throw new Error(errorData.error || "Failed to check if user exists.");
             }
 
-            const doesExist = { exists } = await userResponse.json();
+            const { exists } = await userResponse.json();
 
-            if (!doesExist) {
+            logInfo('Does user exist', {
+                exists
+            });
+
+            if (!exists) {
                 setShowPopup(true);
             }
 

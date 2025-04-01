@@ -25,13 +25,6 @@ export default function HowItWorksPage() {
         <li>If the overall health score jumps up by 15% or more = PUMP win</li>
       </ul>
 
-      {/* <p className="mb-2">
-        <strong>When "HOUSE" Wins:</strong>
-      </p>
-      <ul className="list-disc pl-6 mb-4">
-        <li>If nothing dramatic happens and the token stays relatively stable = HOUSE win</li>
-      </ul> */}
-
       <h2 className="text-xl font-semibold mt-6 mb-2">🛡️ Anti-Cheat System</h2>
 
       <ul className="list-disc pl-6 mb-4">
