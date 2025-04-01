@@ -249,21 +249,6 @@ export default function Home() {
             {timeLeft}
           </div>
         </div>
-        
-        {/* Admin Controls (for development) */}
-        <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-          <button 
-            onClick={() => {
-              // Example: Extend maintenance by 1 hour
-              const newEndTime = new Date(Date.now() + 3600000);
-              setEndTime(newEndTime);
-              startCountdown(newEndTime);
-            }}
-            className="px-4 py-2 bg-purple-600 text-white rounded"
-          >
-            Extend Maintenance by 1 Hour
-          </button>
-        </div>
       </div>
     );
   }
