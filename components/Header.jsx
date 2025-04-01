@@ -45,9 +45,20 @@ export default function Header() {
             );
         };
 
-        if (isMobileDevice && auth && !isEffectivelyConnected) {
-            setIsEffectivelyConnected(true);
+        if (isMobileDevice) {
+            const user = firebase.auth().currentUser;
+            if (user) {
+                logInfo("Current user:", {
+                    user: user.uid
+                });
+            } else {
+                logInfo("No user currently signed in.");
+            }
         }
+
+        // if (isMobileDevice && auth && !isEffectivelyConnected) {
+        //     setIsEffectivelyConnected(true);
+        // }
     }, [auth]);
 
     // Monitor connection states
