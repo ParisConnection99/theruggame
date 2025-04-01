@@ -46,9 +46,6 @@ export default function Header() {
         if (isMobileDevice && 
             auth && localStorage.getItem('session_id')
              && !isEffectivelyConnected) {
-            logInfo('Session id: check', {
-                id: localStorage.getItem('session_id')
-            });
             setIsEffectivelyConnected(true);
         } 
     }, [auth]);
@@ -421,6 +418,24 @@ export default function Header() {
 
         window.addEventListener('market-callback-event', handleMarketCallbackEvent);
         return () => window.removeEventListener('market-callback-event', handleMarketCallbackEvent);
+    }, []);
+
+    // Listen for disconnect event
+    useEffect(() => {
+        const handleDisconnectEvent = async (event) => {
+            try {
+                setIsEffectivelyConnected(false);
+            } catch (error) {
+                await errorLog("DISCONNECT_EVENT_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "HEADER",
+                    "MILD");
+            }
+        };
+
+        window.addEventListener('disconnect-event', handleDisconnectEvent);
+        return () => window.removeEventListener('disconnect-event', handleDisconnectEvent);
     }, []);
 
     const connectMobileUser = async (publicKey) => {
