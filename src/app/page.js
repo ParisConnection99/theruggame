@@ -50,14 +50,9 @@ export default function Home() {
         });
         const { isMaintenance, endTimestamp } = await res.json();
 
-        logInfo('Maintenance mode', {
-          isMain: isMaintenance,
-          time: endTimestamp
-        });
-
         setIsMaintenance(isMaintenance);
 
-        if (isMaintenance && endTimestamp != null) {
+        if (isMaintenance && endTimestamp) {
           setEndTime(new Date(endTimestamp));
           startCountdown(new Date(endTimestamp));
           return; // Skip market fetch if in maintenance
