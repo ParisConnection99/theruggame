@@ -198,6 +198,22 @@ export default function Home() {
   const showMoreMarkets = () => {
     setVisibleMarkets((prev) => prev + 6); // Load 6 more markets
   };
+
+  if (isMaintenance) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4 text-center">
+        <img src="/images/logo1.png" alt="Logo" className="h-20 w-20 mb-6" />
+        <h1 className="text-3xl font-bold text-purple-400 mb-2">
+          THE RUG GAME
+        </h1>
+        <p className="text-xl text-white mb-6">IS CLOSED FOR MAINTENANCE</p>
+        <div className="text-2xl text-green-400">
+          Back online in: 05:00:00
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div>
       <main>
