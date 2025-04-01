@@ -1,18 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { get } from '@vercel/edge-config'
+// middleware.js
+import { NextResponse } from 'next/server';
+import { get } from '@vercel/edge-config';
 
+export const config = {
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico|maintenance).*)',
+  ],
+};
 
-export async function middleware(req) {
-  // Check Edge Config to see if the maintenance page should be shown
-  const isInMaintenanceMode = await get('isInMaintenanceMode')
-
-  // If in maintenance mode, point the url pathname to the maintenance page
-  if (isInMaintenanceMode) {
-    req.nextUrl.pathname = `/maintenance`
-
-    console.log('Is in maintenance mode');
-
-    // Rewrite to the url
-    return NextResponse.rewrite(req.nextUrl)
+export async function middleware(request) {
+  try {
+    const isInMaintenanceMode = await get('isInMaintenanceMode');
+    
+    if (isInMaintenanceMode) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/maintenance';
+      return NextResponse.rewrite(url);
+    }
+    
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return NextResponse.next();
   }
 }
