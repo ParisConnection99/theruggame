@@ -9,7 +9,7 @@ import { useAuth } from './FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import WelcomePopup from './components/WelcomePopup';
+import WelcomePopup from '@/components/WelcomePopup';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
