@@ -67,7 +67,7 @@ export default function MarketPage() {
       //alert(`Error placing bet.`);
       showToast('Error placing bet', 'error');
     } else if (signature) {
-      showToast('Your bet has been successfully placed', 'success');
+      showToast('Your bet has been placed', 'success');
       //alert('Your bet has been successfully placed.');
     }
 
@@ -511,8 +511,7 @@ export default function MarketPage() {
           inputRef.current.value = "";
         }
 
-       //alert('Your bet has been successfully placed.');
-       showToast('Your bet has been successfully placed', 'success');
+       showToast('Your bet has been placed', 'success');
       } else {
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
@@ -633,8 +632,7 @@ export default function MarketPage() {
                     inputRef.current.value = "";
                   }
 
-                  //alert('Your bet has been successfully placed.');
-                  showToast('Your bet has been successfully placed', 'success');
+                  showToast('Your bet has been placed', 'success');
                   resolve();
                 } catch (error) {
                   reject(error);
