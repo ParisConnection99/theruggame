@@ -17,19 +17,20 @@ export default function WelcomePopup({ onClose }) {
                 <h2 className="text-2xl font-bold text-center mb-6">how it works</h2>
 
                 <p className="text-center mb-6">
-                    <span>theruggame allows </span>
+                    <span>The Rug Game allows </span>
                     <span className="text-blue-400">anyone</span>
-                    <span> to predict wether a coin</span>
-                    <span className="text-green-400">will Pump (go up) </span>
-                    <span className="text-red-400">Or Rug (go down)</span>
-                    <span>by the end of the market time usually 10-30 mins.</span>
+                    <span> to bet on whether a solana memecoin will </span>
+                    <span className="text-green-400">Pump (go up) </span>
+                    <span>or </span>
+                    <span className="text-red-400">Rug (go down)</span>
+                    <span>by the time the market closes.</span>
                 </p>
 
                 <div className="space-y-2 mb-6">
                     <p className="text-center"><span className="font-medium">step 1:</span> pick a market</p>
                     <p className="text-center"><span className="font-medium">step 2:</span> select if you think it will pump or rug</p>
                     <p className="text-center"><span className="font-medium">step 3:</span> decide how much you want to bet </p>
-                    <p className="text-center"><span className="font-medium">step 4:</span> wait for market resolution and collect your winnings if correct</p>
+                    <p className="text-center"><span className="font-medium">step 4:</span> wait for market resolution and collect your winnings if correct.</p>
                 </div>
 
                 <p className="text-center text-sm mb-6">
@@ -44,21 +45,13 @@ export default function WelcomePopup({ onClose }) {
                 </button>
 
                 <div className="text-center text-sm text-gray-500 mt-4">
-                    <p>Please check our how it works page for more information, regarding what we class as the meaning of a pump / rug.</p>
-                    {/* <Link href="/docs/privacy-policy" className="hover:text-gray-300">privacy policy</Link>
+                    <a href="/docs/privacy-policy" className="hover:text-gray-300">privacy policy</a>
                     <span className="mx-2">|</span>
-                    <Link href="/docs/terms-of-service" className="hover:text-gray-300">terms of service</Link>
+                    <a href="/docs/terms-of-service" className="hover:text-gray-300">terms of service</a>
                     <span className="mx-2">|</span>
-                    <Link href="/docs/fees" className="hover:text-gray-300">fees</Link> */}
+                    <a href="/how-it-works" className="hover:text-gray-300">how it works</a>
                 </div>
 
-                {/* <div className="text-center text-sm text-gray-500 mt-4">
-          <a href="/privacy" className="hover:text-gray-300">privacy policy</a>
-          <span className="mx-2">|</span>
-          <a href="/terms" className="hover:text-gray-300">terms of service</a>
-          <span className="mx-2">|</span>
-          <a href="/fees" className="hover:text-gray-300">fees</a>
-        </div> */}
             </div>
         </div>
     );
