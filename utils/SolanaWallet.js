@@ -170,7 +170,6 @@ export async function placeBet(
       throw new Error('Wallet not connected');
     }
 
-    // For mobile, get the public key from localStorage
     const publicKeyToCheck = publicKey;
 
     if (!publicKeyToCheck) {

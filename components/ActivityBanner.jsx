@@ -15,7 +15,6 @@ const ActivityBanner = () => {
   // Format bet message
   const formatBetMessage = (bet) => {
     if (!bet || !bet.payload || !bet.payload.user_id) {
-      console.log("Received invalid bet data:", bet);
       return null;
     }
     
@@ -84,17 +83,13 @@ const ActivityBanner = () => {
     console.log("Setting up bet update listener");
     
     const handleBetUpdates = (updatedBet) => {
-      console.log("Received bet update:", updatedBet);
       const message = formatBetMessage(updatedBet);
-      console.log("Formatted bet message:", message);
       addToQueue(message);
     };
     
     const subscription = listenToBets(handleBetUpdates);
-    console.log("Bet subscription created:", !!subscription);
     
     return () => {
-      console.log("Cleaning up bet subscription");
       if (subscription) {
         subscription.unsubscribe();
       }

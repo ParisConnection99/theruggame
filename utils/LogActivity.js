@@ -5,6 +5,7 @@ const parser = new UAParser();
 export async function logActivity(type, auth, additional_meta = "Empty.") {
     if (!auth || !auth.currentUser || !type) {
         logInfo("Unable to log activity User data not available", {});
+        return;
     }
 
     try {
@@ -32,10 +33,6 @@ export async function logActivity(type, auth, additional_meta = "Empty.") {
         // Handle response
         if (!activityResponse.ok) {
             const errorData = await activityResponse.json();
-            logInfo('Activity Log Error', {
-                error: errorData,
-                timestamp: new Date(),
-            });
             throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
         }
     } catch (error) {

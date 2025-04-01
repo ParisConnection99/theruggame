@@ -44,18 +44,8 @@ export async function handleAddingActivityLog(logData, token) {
     // Handle response
     if (!response.ok) {
         const errorData = await response.json();
-        logInfo('Activity Log Error', {
-            error: errorData,
-            timestamp: new Date(),
-        });
         throw new Error(`Failed to log activity: ${errorData.error || 'Unknown error'}`);
     }
-
-    // Log success
-    logInfo('Activity Log Success', {
-        action_type,
-        timestamp: new Date(),
-    });
 }
 
 function isAllowedActionType(action_type) {

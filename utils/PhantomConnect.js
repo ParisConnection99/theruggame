@@ -1,7 +1,7 @@
 "use server";
 import nacl from 'tweetnacl';
 import bs58 from 'bs58';
-import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl, Memo } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { logError, logInfo } from '@/utils/logger';
 import { Buffer } from 'buffer';
 import { v4 as uuidv4 } from 'uuid';
@@ -92,15 +92,7 @@ class PhantomConnect {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                logError('Session save error', {
-                    component: 'Phantom connect',
-                    errorData: errorData
-                });
             }
-
-            logInfo('Id - save keypair', {
-                id: id,
-            });
             return id;
         } catch (error) {
             console.log(`Error saving session data.`);
@@ -129,11 +121,6 @@ class PhantomConnect {
             throw new Error('Public Key needed.');
         }
 
-        logInfo('Starting disconnect', {
-            component: 'Phantom connect',
-            key: key
-        });
-
         const response = await fetch(`${APP_URL}/api/session?key=${key}`, {
             method: 'GET',
             headers: { "Content-Type": "application/json" }
@@ -143,11 +130,6 @@ class PhantomConnect {
 
         if (!response.ok) {
             const errorData = await response.json();
-            logInfo('Fetching session data error', {
-                component: 'Phantom connect',
-                errorData: errorData
-            });
-
             throw new Error('Error fetching session data.');
         }
 
@@ -188,8 +170,6 @@ class PhantomConnect {
             const errorData = await deleteResponse.json();
             throw new Error(`Error delete session data: ${errorData}`);
         }
-
-        logInfo('Session data successfully deleted.', {});
     }
 
     async signAndSendTransaction(betAmount, publicKey, key) {
@@ -277,11 +257,6 @@ class PhantomConnect {
 
         if (!response.ok) {
             const errorData = await response.json();
-            logInfo('Fetching session data error', {
-                component: 'Phantom connect',
-                errorData: errorData
-            });
-
             throw new Error('Error fetching session data.');
         }
 
@@ -317,11 +292,6 @@ class PhantomConnect {
 
         if (!updateResponse.ok) {
             const errorData = await updateResponse.json();
-            logInfo('Updating session data error', {
-                component: 'Phantom connect',
-                errorData: errorData
-            });
-
             throw new Error('Error updating session data.');
         }
         return { publicKey: decryptedData.public_key };

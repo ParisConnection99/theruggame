@@ -88,8 +88,6 @@ export async function POST(request) {
             });
         }
 
-        logInfo('Handling log activity', {});
-
         const forwarded = request.headers.get('x-forwarded-for');
         const realIp = request.headers.get('x-real-ip');
         const geoData = geolocation(request);

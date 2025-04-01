@@ -154,11 +154,6 @@ export default function Header() {
             const data = await response.json();
 
             if (data.error) {
-                logInfo("Error fetching Firebase custom token", {
-                    component: "Header",
-                    error: data.error,
-                });
-
                 setConnectionStatus("error");
                 showConnectionError("Error authenticating user.");
                 throw new Error(data.error);
@@ -286,12 +281,6 @@ export default function Header() {
             );
 
             try {
-                logInfo('Disconnect triggered', {
-                    component: 'Header',
-                    isMobile: isMobileDevice,
-                    hasSession: !!window.localStorage.getItem('phantomSession')
-                });
-
                 await logActivity('user_logout', auth);
 
                 if (isMobileDevice) {
@@ -334,10 +323,7 @@ export default function Header() {
 
         try {
             setConnectionStatus('connecting');
-            logInfo('Connecting to phantom connect', {
-                component: 'Header'
-            });
-
+            
             const { deepLink, id } = await connectToPhantom();
 
             localStorage.setItem('session_id', id);
@@ -462,11 +448,6 @@ export default function Header() {
             const data = await response.json();
 
             if (data.error) {
-                logInfo("Error fetching Firebase custom token", {
-                    component: "Header",
-                    error: data.error,
-                });
-
                 setConnectionStatus("error");
                 showConnectionError("Error authenticating user.");
                 throw new Error(data.error);
