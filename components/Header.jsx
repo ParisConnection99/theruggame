@@ -45,16 +45,9 @@ export default function Header() {
             );
         };
 
-        if (isMobileDevice) {
-            if (auth) {
-                logInfo('Checking connection', {
-                    component: 'Header',
-                    isConnected: isEffectivelyConnected
-                });
-            }
+        if (isMobileDevice && auth && !isEffectivelyConnected) {
+            setIsEffectivelyConnected(true);
         }
-
-
     }, [auth]);
 
     // Monitor connection states
