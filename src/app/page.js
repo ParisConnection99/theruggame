@@ -43,7 +43,7 @@ export default function Home() {
   useEffect(() => {
     const fetchMarketsData = async () => {
       try {
-        const res = await fetch('/api/maintenance-timestamp');
+        const res = await fetch('/api/check-maintenance');
         const { isMaintenance, endTimestamp } = await res.json();
 
         setIsMaintenance(isMaintenance);
