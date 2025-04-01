@@ -10,7 +10,7 @@ import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { useAuth } from '@/components/FirebaseProvider';
 import { errorLog } from '@/utils/ErrorLog';
-import { get } from '@vercel/edge-config';
+import { logInfo, logError } from '@/utils/logger';
 
 
 export default function Home() {
