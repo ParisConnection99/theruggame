@@ -46,10 +46,7 @@ export default function Home() {
       try {
         const timestamp = new Date().getTime();
         const res = await fetch(`/api/check-maintenance?t=${timestamp}`, {
-          cache: 'no-store',
-          headers: {
-            'Pragma': 'no-cache'
-          }
+          cache: 'no-store'
         });
         const { isMaintenance, endTimestamp } = await res.json();
 

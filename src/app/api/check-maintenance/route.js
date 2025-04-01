@@ -21,7 +21,6 @@ export async function GET() {
       }
     });
   } catch (error) {
-    console.error('Edge Config error:', error);
     return Response.json({ 
       isMaintenance: false,
       endTimestamp: null
