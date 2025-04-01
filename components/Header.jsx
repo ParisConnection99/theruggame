@@ -42,7 +42,6 @@ export default function Header() {
     useEffect(() => {
         if (connected) {
             setConnectionStatus('success');
-            showToast('Connected successfully', 'success');
         }
     }, [connected, publicKey]);
 
@@ -171,6 +170,8 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
+
+            showToast('Connected successfully', 'success');
 
             await logActivity('user_login', auth);
         } catch (error) {
@@ -459,7 +460,7 @@ export default function Header() {
             }
 
             setConnectionStatus("success");
-
+            showToast('Connected successfully', 'success');
             await logActivity('user_login', auth);
         } catch (error) {
             await errorLog("MOBILE_AUTH_CONNECTION_ERROR",
@@ -490,12 +491,14 @@ export default function Header() {
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
-        setShowErrorToast(true);
+        //setShowErrorToast(true);
+
+        showToast('Connection error', 'error');
 
         // Auto-hide after 5 seconds
-        setTimeout(() => {
-            setShowErrorToast(false);
-        }, 5000);
+        // setTimeout(() => {
+        //     setShowErrorToast(false);
+        // }, 5000);
     };
 
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
