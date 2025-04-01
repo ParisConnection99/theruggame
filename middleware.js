@@ -12,7 +12,7 @@ export async function middleware(request) {
   try {
     const isInMaintenanceMode = await get('isInMaintenanceMode');
     
-    if (isInMaintenanceMode) {
+    if (true) {
       const url = request.nextUrl.clone();
       url.pathname = '/maintenance';
       return NextResponse.rewrite(url);
