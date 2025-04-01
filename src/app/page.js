@@ -44,9 +44,12 @@ export default function Home() {
   useEffect(() => {
     const fetchMarketsData = async () => {
       try {
-        const res = await fetch(`/api/check-maintenance?t=${Date.now()}`, {
+        const timestamp = new Date().getTime();
+        const res = await fetch(`/api/check-maintenance?t=${timestamp}`, {
           cache: 'no-store',
-          next: { revalidate: 0 }
+          headers: {
+            'Pragma': 'no-cache'
+          }
         });
         const { isMaintenance, endTimestamp } = await res.json();
 

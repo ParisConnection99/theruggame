@@ -15,6 +15,10 @@ export async function GET() {
     return Response.json({ 
       isMaintenance: !!isMaintenance,
       endTimestamp: endTimestamp || null  // Return null if no timestamp set
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+      }
     });
   } catch (error) {
     console.error('Edge Config error:', error);
