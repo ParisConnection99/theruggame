@@ -64,11 +64,9 @@ export default function MarketPage() {
     const error = searchParams.get('error');
 
     if (error) {
-      //alert(`Error placing bet.`);
       showToast('Error placing bet', 'error');
     } else if (signature) {
       showToast('Your bet has been placed', 'success');
-      //alert('Your bet has been successfully placed.');
     }
 
   }, [searchParams]);
@@ -426,7 +424,6 @@ export default function MarketPage() {
     setLoading(true);
 
     if (!authUser || !authUser.uid) {
-      //alert('Please log in to place a bet');
       showToast('Please log in to place a bet', 'info');
       setIsBetting(false);
       setLoading(false);
@@ -452,7 +449,6 @@ export default function MarketPage() {
 
       // Check if bet meets minimum requirement
       if (betAmount < MIN_BET_AMOUNT) {
-        //alert(`Minimum bet amount is ${MIN_BET_AMOUNT} SOL`);
         showToast(`Minimum bet amount is ${MIN_BET_AMOUNT} SOL`, 'info');
         setIsBetting(false);
         return;
@@ -460,7 +456,6 @@ export default function MarketPage() {
 
       // Check maximum bet limit
       if (betAmount > MAX_BET_AMOUNT) {
-        //alert(`Maximum bet amount is ${MAX_BET_AMOUNT} SOL`);
         showToast(`Maximum bet amount is ${MAX_BET_AMOUNT} SOL`, 'info');
         setIsBetting(false);
         return;
@@ -468,7 +463,6 @@ export default function MarketPage() {
 
       // Check if market is still open for betting
       if (isBettingClosed || isExpired) {
-        //alert('This market is no longer accepting bets');
         showToast('This market is no longer accepting bets', 'error');
         setIsBetting(false);
         return;
@@ -525,7 +519,6 @@ export default function MarketPage() {
           userPublicKey = authUser?.uid;
 
           if (!userPublicKey) {
-            //alert('Wallet connection not found. Please reconnect your wallet.');
             showToast('Wallet connection not found. Please reconnect your wallet.', 'error');
             setIsBetting(false);
             setLoading(false);
@@ -534,7 +527,6 @@ export default function MarketPage() {
         } else {
           // For web, use the wallet adapter's public key
           if (!publicKey) {
-            //alert('Wallet not connected');
             showToast('Wallet not connected', 'error');
             setIsBetting(false);
             setLoading(false);
@@ -555,7 +547,6 @@ export default function MarketPage() {
             "MARKET",
             "SERIOUS",
             `${authUser?.uid}` || "");
-          //alert("Failed to check wallet balance.");
           showToast('Failed to fetch wallet balance', 'error');
           setIsBetting(false);
           setLoading(false);
@@ -565,7 +556,6 @@ export default function MarketPage() {
         const amountToAdd = Math.max(0, betWithFees - balance);
 
         if (solanaBalance < amountToAdd) {
-          //alert("You don't have enough SOL to place this bet.");
           showToast("You don't have enough SOL to place this bet.", 'error');
           setIsBetting(false);
           setLoading(false);
@@ -668,7 +658,6 @@ export default function MarketPage() {
         error_message: error.message,
         error_code: error.code || 'unknown'
       });
-      //alert(`Error placing bet.`);
       showToast('Error placing bet', 'error');
     } finally {
       setIsBetting(false);
