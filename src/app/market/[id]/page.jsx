@@ -209,8 +209,8 @@ export default function MarketPage() {
             } else {
               await errorLog(
                 "MARKET_UPDATE_ERROR",
-                error.message || 'Error object with empty message',
-                error.stack || "no stack trace available",
+                'Error updating market',
+                "no stack trace available",
                 "MARKET",
                 "MILD");
             }
