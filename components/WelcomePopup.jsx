@@ -19,9 +19,10 @@ export default function WelcomePopup({ onClose }) {
                 <p className="text-center mb-6">
                     <span>theruggame allows </span>
                     <span className="text-blue-400">anyone</span>
-                    <span> to predict wether a coin with Pump (go up) </span>
-                    <span className="text-green-400">Or Rug (go down) within a designated time</span>
-                    <span>, usually 10-30 mins.</span>
+                    <span> to predict wether a coin</span>
+                    <span className="text-green-400">will Pump (go up) </span>
+                    <span className="text-red-400">Or Rug (go down)</span>
+                    <span>by the end of the market time usually 10-30 mins.</span>
                 </p>
 
                 <div className="space-y-2 mb-6">
@@ -43,11 +44,12 @@ export default function WelcomePopup({ onClose }) {
                 </button>
 
                 <div className="text-center text-sm text-gray-500 mt-4">
-                    <Link href="/docs/privacy-policy" className="hover:text-gray-300">privacy policy</Link>
+                    <p>Please check our how it works page for more information, regarding what we class as the meaning of a pump / rug.</p>
+                    {/* <Link href="/docs/privacy-policy" className="hover:text-gray-300">privacy policy</Link>
                     <span className="mx-2">|</span>
                     <Link href="/docs/terms-of-service" className="hover:text-gray-300">terms of service</Link>
                     <span className="mx-2">|</span>
-                    <Link href="/docs/fees" className="hover:text-gray-300">fees</Link>
+                    <Link href="/docs/fees" className="hover:text-gray-300">fees</Link> */}
                 </div>
 
                 {/* <div className="text-center text-sm text-gray-500 mt-4">
