@@ -9,6 +9,7 @@ import { useAuth } from './FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
+import WelcomePopup from './components/WelcomePopup';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
@@ -25,6 +26,7 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
+    const [showPopup, setShowPopup] = useState(true);
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -502,14 +504,7 @@ export default function Header() {
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
-        //setShowErrorToast(true);
-
         showToast('Connection error', 'error');
-
-        // Auto-hide after 5 seconds
-        // setTimeout(() => {
-        //     setShowErrorToast(false);
-        // }, 5000);
     };
 
     const WrappedClientWalletLayout = ({ children, className, ...props }) => {
@@ -666,6 +661,9 @@ export default function Header() {
                 onClose={() => setShowWalletConnectionModal(false)}
                 onError={showConnectionError}
             /> */}
+
+            {showPopup && <WelcomePopup onClose={() => setShowPopup(false)} />}
+
 
             {/* Mobile-specific instructions for wallet connection */}
             {isMobile && isEffectivelyConnected && connectionStatus === 'connecting' && (
