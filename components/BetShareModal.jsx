@@ -208,7 +208,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: "url('/images/background.webp')",
+              backgroundImage: "url('/images/background1.webp')",
               filter: "brightness(0.7)"
             }}
           />
