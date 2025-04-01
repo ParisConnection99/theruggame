@@ -180,6 +180,10 @@ export default function Header() {
 
             const doesExist = { exists } = await userResponse.json();
 
+            logInfo('Does user exist', {
+                exist: doesExist
+            });
+
             if (!doesExist) {
                 setShowPopup(true);
             }
