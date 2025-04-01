@@ -16,12 +16,13 @@ import { logInfo, logError } from '@/utils/logger';
 export default function Home() {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [endTime, setEndTime] = useState(null);
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [featuredMarket, setFeaturedMarket] = useState(null);
   const router = useRouter();
   const analytics = useAnalytics();
   const { auth } = useAuth();
-  
+
 
   // Helper function defined outside of any useEffect
   const updateFeaturedMarket = (marketsList) => {
@@ -42,15 +43,16 @@ export default function Home() {
   useEffect(() => {
     const fetchMarketsData = async () => {
       try {
-        const maintenanceRes = await fetch('/api/check-maintenance');
-        const { isMaintenance } = await maintenanceRes.json();
+        const res = await fetch('/api/maintenance-timestamp');
+        const { isMaintenance, endTimestamp } = await res.json();
+
         setIsMaintenance(isMaintenance);
 
-        logInfo('Is Maintenance mode', {
-          isMaintenance: isMaintenance
-        });
-        
-        if (isMaintenance) return; // Skip market fetch if in maintenance
+        if (isMaintenance && endTimestamp) {
+          setEndTime(new Date(endTimestamp));
+          startCountdown(new Date(endTimestamp));
+          return; // Skip market fetch if in maintenance
+        }
 
         setLoading(true);
 
@@ -199,16 +201,67 @@ export default function Home() {
     setVisibleMarkets((prev) => prev + 6); // Load 6 more markets
   };
 
+  let interval;
+
+  const startCountdown = (endDate) => {
+    clearInterval(interval); // Clear any existing timer
+    
+    const updateTimer = () => {
+      const now = new Date();
+      const diff = endDate - now;
+      
+      if (diff <= 0) {
+        clearInterval(interval);
+        setTimeLeft('00:00:00');
+        return;
+      }
+      
+      // Calculate hours, minutes, seconds
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      setTimeLeft(
+        `${hours.toString().padStart(2, '0')}:` +
+        `${minutes.toString().padStart(2, '0')}:` +
+        `${seconds.toString().padStart(2, '0')}`
+      );
+    };
+    
+    updateTimer(); // Immediate update
+    interval = setInterval(updateTimer, 1000); // Update every second
+  };
+
   if (isMaintenance) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4 text-center">
         <img src="/images/logo1.png" alt="Logo" className="h-20 w-20 mb-6" />
         <h1 className="text-3xl font-bold text-purple-400 mb-2">
           THE RUG GAME
         </h1>
         <p className="text-xl text-white mb-6">IS CLOSED FOR MAINTENANCE</p>
-        <div className="text-2xl text-green-400">
-          Back online in: 05:00:00
+        
+        {/* Countdown Timer */}
+        <div className="bg-black rounded-lg p-6 mb-6">
+          <p className="text-gray-300 mb-2">WE WILL BE BACK IN</p>
+          <div className="text-5xl font-mono font-bold text-green-400">
+            {timeLeft}
+          </div>
+        </div>
+        
+        {/* Admin Controls (for development) */}
+        <div className="mt-4 p-4 bg-gray-800 rounded-lg">
+          <button 
+            onClick={() => {
+              // Example: Extend maintenance by 1 hour
+              const newEndTime = new Date(Date.now() + 3600000);
+              setEndTime(newEndTime);
+              startCountdown(newEndTime);
+            }}
+            className="px-4 py-2 bg-purple-600 text-white rounded"
+          >
+            Extend Maintenance by 1 Hour
+          </button>
         </div>
       </div>
     );
