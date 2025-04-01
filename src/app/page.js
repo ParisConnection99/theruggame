@@ -10,6 +10,7 @@ import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { useAuth } from '@/components/FirebaseProvider';
 import { errorLog } from '@/utils/ErrorLog';
+import { get } from '@vercel/edge-config';
 
 
 export default function Home() {
@@ -19,7 +20,7 @@ export default function Home() {
   const router = useRouter();
   const analytics = useAnalytics();
   const { auth } = useAuth();
-
+  
 
   // Helper function defined outside of any useEffect
   const updateFeaturedMarket = (marketsList) => {
@@ -35,6 +36,16 @@ export default function Home() {
 
     setFeaturedMarket(newFeaturedMarket);
   };
+
+  useEffect(async () => {
+    const isMaintenance = await get('isInMaintenanceMode');
+
+    if (isMaintenance) {
+      logInfo('Maintenance mode.');
+    } else {
+      logInfo('Normal mode.');
+    }
+  }, []);
 
 
   // Fetching the active markets
