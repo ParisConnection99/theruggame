@@ -39,26 +39,15 @@ export default function Header() {
     }, []);
 
     useEffect(() => {
-        const isMobileDevice = () => {
-            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-                navigator.userAgent
-            );
-        };
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+        );
 
-        if (isMobileDevice) {
-            const user = auth.currentUser;
-            if (user) {
-                logInfo("Current user:", {
-                    user: user.uid
-                });
-            } else {
-                logInfo("No user currently signed in.");
-            }
+        if (isMobileDevice && 
+            auth && localStorage.getItem('session_id')
+             && !isEffectivelyConnected) {
+            setIsEffectivelyConnected(true);
         }
-
-        // if (isMobileDevice && auth && !isEffectivelyConnected) {
-        //     setIsEffectivelyConnected(true);
-        // }
     }, [auth]);
 
     // Monitor connection states
