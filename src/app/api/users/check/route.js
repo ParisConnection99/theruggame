@@ -40,7 +40,6 @@ export async function POST(request) {
         try {
             decodedToken = await admin.auth().verifyIdToken(token);
         } catch (error) {
-            console.error('Token verification failed:', error);
             return new Response(JSON.stringify({ error: 'Unauthorized' }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' },
@@ -55,8 +54,6 @@ export async function POST(request) {
         const doesUserExist = user != null;
 
         if (!doesUserExist) {
-            console.log(`User ${uid} does not exist. Creating new user.`);
-            
             try {
                 const username = getDefaultUsername(uid);
                 await serviceRepo.userService.createUser({
@@ -65,7 +62,6 @@ export async function POST(request) {
                     profile_pic: "",
                 });
             } catch (error) {
-                console.error('Error creating user:', error);
                 return new Response(JSON.stringify({ error: 'Failed to create user' }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' },

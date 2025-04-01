@@ -26,7 +26,7 @@ export default function Header() {
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    const [showPopup, setShowPopup] = useState(true);
+    const [showPopup, setShowPopup] = useState(false);
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -176,6 +176,12 @@ export default function Header() {
             if (!userResponse.ok) {
                 const errorData = await userResponse.json();
                 throw new Error(errorData.error || "Failed to check if user exists.");
+            }
+
+            const doesExist = { exists } = await userResponse.json();
+
+            if (!doesExist) {
+                setShowPopup(true);
             }
 
             setConnectionStatus("success");
@@ -470,6 +476,12 @@ export default function Header() {
             if (!userResponse.ok) {
                 const errorData = await userResponse.json();
                 throw new Error(errorData.error || "Failed to check if user exists.");
+            }
+
+            const doesExist = { exists } = await userResponse.json();
+
+            if (!doesExist) {
+                setShowPopup(true);
             }
 
             setConnectionStatus("success");
