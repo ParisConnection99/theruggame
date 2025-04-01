@@ -20,6 +20,11 @@ function DisconnectHandler() {
                 }
 
                 localStorage.removeItem('session_id');
+
+                window.dispatchEvent(new CustomEvent('disconnect-event', {
+                    detail: { disconnect: 'true' }
+                }));
+
                 setTimeout(() => {
                     router.push('/');
                 }, 200);
