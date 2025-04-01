@@ -30,7 +30,7 @@ export const showToast = (message, type = 'default') => {
   
   const toastOptions = {
     position: "top-right",
-    autoClose: 500,
+    autoClose: 1000,
     hideProgressBar: false,
     closeOnClick: true,
     pauseOnHover: true,
