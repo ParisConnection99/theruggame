@@ -47,6 +47,11 @@ export default function Home() {
         const res = await fetch('/api/check-maintenance');
         const { isMaintenance, endTimestamp } = await res.json();
 
+        logInfo('Maintenance mode', {
+          isMain: isMaintenance,
+          time: endTimestamp
+        });
+
         setIsMaintenance(isMaintenance);
 
         if (isMaintenance === true) {
