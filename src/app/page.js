@@ -57,7 +57,7 @@ export default function Home() {
 
         setIsMaintenance(isMaintenance);
 
-        if (isMaintenance && endTimestamp) {
+        if (isMaintenance && endTimestamp != null) {
           setEndTime(new Date(endTimestamp));
           startCountdown(new Date(endTimestamp));
           return; // Skip market fetch if in maintenance
