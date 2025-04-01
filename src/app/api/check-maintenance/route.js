@@ -2,6 +2,7 @@
 import { get } from '@vercel/edge-config';
 
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic'; // Disable all caching
 
 export async function GET() {
   try {
