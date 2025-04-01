@@ -91,7 +91,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
           </div>
 
           <div className="mt-8">
-            <div className={`text-7xl font-bold ${bet.status === 'WON' ? 'text-green-400' : 'text-red-400'
+            <div className={`text-5xl font-bold ${bet.status === 'WON' ? 'text-green-400' : 'text-red-400'
               }`}>
               {calculateGainPercentage(bet)}%
             </div>
