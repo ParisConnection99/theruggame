@@ -16,6 +16,7 @@ import { get } from '@vercel/edge-config';
 export default function Home() {
   const [markets, setMarkets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMaintenance, setIsMaintenance] = useState(false);
   const [featuredMarket, setFeaturedMarket] = useState(null);
   const router = useRouter();
   const analytics = useAnalytics();
@@ -37,21 +38,20 @@ export default function Home() {
     setFeaturedMarket(newFeaturedMarket);
   };
 
-  useEffect(async () => {
-    const isMaintenance = await get('isInMaintenanceMode');
-
-    if (isMaintenance) {
-      logInfo('Maintenance mode.');
-    } else {
-      logInfo('Normal mode.');
-    }
-  }, []);
-
-
   // Fetching the active markets
   useEffect(() => {
     const fetchMarketsData = async () => {
       try {
+        const maintenanceRes = await fetch('/api/check-maintenance');
+        const { isMaintenance } = await maintenanceRes.json();
+        setIsMaintenance(isMaintenance);
+
+        logInfo('Is Maintenance mode', {
+          isMaintenance: isMaintenance
+        });
+        
+        if (isMaintenance) return; // Skip market fetch if in maintenance
+
         setLoading(true);
 
         const marketsResponse = await fetch('/api/markets');
