@@ -46,7 +46,7 @@ export default function Header() {
         };
 
         if (isMobileDevice) {
-            const user = firebase.auth().currentUser;
+            const user = auth.currentUser;
             if (user) {
                 logInfo("Current user:", {
                     user: user.uid
