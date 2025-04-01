@@ -201,7 +201,7 @@ export default function Home() {
 
   if (isMaintenance) {
     return (
-      <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
         <img src="/images/logo1.png" alt="Logo" className="h-20 w-20 mb-6" />
         <h1 className="text-3xl font-bold text-purple-400 mb-2">
           THE RUG GAME
@@ -213,7 +213,7 @@ export default function Home() {
       </div>
     );
   }
-  
+
   return (
     <div>
       <main>
