@@ -21,13 +21,14 @@ export default function WelcomePopup({ onClose }) {
                     <span className="text-blue-400">anyone</span>
                     <span> to predict wether a coin with Pump (go up) </span>
                     <span className="text-green-400">Or Rug (go down) within a designated time</span>
-                    <span>, usually 10-30 mins if you predict correct you win.</span>
+                    <span>, usually 10-30 mins.</span>
                 </p>
 
                 <div className="space-y-2 mb-6">
-                    <p className="text-center"><span className="font-medium">step 1:</span> pick a market that you like</p>
+                    <p className="text-center"><span className="font-medium">step 1:</span> pick a market</p>
                     <p className="text-center"><span className="font-medium">step 2:</span> select if you think it will pump or rug</p>
-                    <p className="text-center"><span className="font-medium">step 3:</span> collect your winnings if you predict correct </p>
+                    <p className="text-center"><span className="font-medium">step 3:</span> decide how much you want to bet </p>
+                    <p className="text-center"><span className="font-medium">step 4:</span> wait for market resolution and collect your winnings if correct</p>
                 </div>
 
                 <p className="text-center text-sm mb-6">
