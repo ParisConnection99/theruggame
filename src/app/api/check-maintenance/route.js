@@ -1,4 +1,4 @@
-// app/api/maintenance-status/route.js
+// app/api/check-maintenance/route.js
 import { get } from '@vercel/edge-config';
 
 export const runtime = 'edge';
