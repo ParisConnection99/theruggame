@@ -5,7 +5,6 @@ import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom';
 import { clusterApiUrl } from '@solana/web3.js';
-import { logInfo } from '@/utils/logger';
 
 export const WalletProviderComponent = ({ children }) => {
     // Set up network
@@ -14,13 +13,6 @@ export const WalletProviderComponent = ({ children }) => {
     // Initialize Phantom adapter with required config
     const phantomWallet = useMemo(() => {
         const wallet = new PhantomWalletAdapter();
-        
-        // Log initialization
-      logInfo('Phantom adapter initialized', {
-        component: 'Wallet Provider',
-            phantomAdapter: wallet
-        });
-
         return wallet;
     }, []);
   

@@ -13,7 +13,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
     if (bet.status === 'WON') {
       // Calculate percentage gain based on potential_payout vs matched_amount
       const gain = (bet.potential_payout / bet.matched_amount - 1) * 100;
-      return gain.toFixed(2);
+      return `+${gain.toFixed(2)}`;
     } else if (bet.status === 'LOST') {
       return -100; // Lost the entire matched amount
     }
@@ -23,7 +23,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
   // Format the market name as in MarketCard
   const tokenNameNoSpaces = bet.token_name ? bet.token_name.replace(/\s+/g, "") : "";
   const questionStart = "Will ";
-  const questionEnd = " Pump or Rug in 10 mins?";
+  const questionEnd = " Pump or Rug in 20 mins?";
 
   const generateImage = async () => {
     if (!cardRef.current) return;
