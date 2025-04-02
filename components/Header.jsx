@@ -105,7 +105,8 @@ export default function Header() {
         const handleAsyncEffect = async () => {
             try {
                 if (connected && publicKey && auth) {
-                    await handleDesktopUserConnection();
+                    //await handleDesktopUserConnection();
+                    await connectDesktopUser(publicKey)
                     setIsEffectivelyConnected(true);
                 }
             } catch (error) {
@@ -119,16 +120,16 @@ export default function Header() {
         handleAsyncEffect();
     }, [connected, publicKey, auth]);
 
-    const handleDesktopUserConnection = async () => {
-        try {
-            await connectDesktopUser(publicKey);
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'Connecting user'
-            });
-        }
-    };
+    // const handleDesktopUserConnection = async () => {
+    //     try {
+    //         await connectDesktopUser(publicKey);
+    //     } catch (error) {
+    //         logError(error, {
+    //             component: 'Header',
+    //             action: 'Connecting user'
+    //         });
+    //     }
+    // };
 
     const connectDesktopUser = async (publicKey) => {
         try {
@@ -214,11 +215,7 @@ export default function Header() {
             // Signout
             setIsEffectivelyConnected(false);
 
-            if (error.message?.includes("Firebase")) {
-                showConnectionError("Connection failed, please try again");
-            } else if (error.message?.includes("token")) {
-                showConnectionError("Connection failed, please try again");
-            } else if (error.message?.incudes("Firebase: Error (auth/user-disabled).")) {
+            if (error.message?.incudes("Firebase: Error (auth/user-disabled).")) {
                 showToast("This account has been disabled.", "error");
             } else {
                 showConnectionError("Connection failed, please try again");
