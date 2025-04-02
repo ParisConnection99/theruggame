@@ -377,7 +377,13 @@ export default function Header() {
 
             } catch (error) {
                 setConnectionStatus('error');
-                showConnectionError("Connection failed, please try again");
+                if (error.message?.includes("Firebase: Error (auth/user-disabled).")) {
+                    showToast("This account has been disabled.", "error");
+                } else {
+                    showConnectionError("Connection failed, please try again");
+                }
+    
+                //showConnectionError("Connection failed, please try again");
             }
         };
 
