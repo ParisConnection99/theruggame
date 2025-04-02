@@ -24,66 +24,62 @@ const getDefaultUsername = (uid) => {
 };
 
 export async function POST(request) {
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-    });
-    // try {
-    //     // Validate Authorization header
-    //     const authHeader = request.headers.get('Authorization');
-    //     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    //         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-    //             status: 401,
-    //             headers: { 'Content-Type': 'application/json' },
-    //         });
-    //     }
+    try {
+        // Validate Authorization header
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
-    //     // Extract and verify the token
-    //     const token = authHeader.split(' ')[1];
-    //     let decodedToken;
-    //     try {
-    //         decodedToken = await admin.auth().verifyIdToken(token);
-    //     } catch (error) {
-    //         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-    //             status: 401,
-    //             headers: { 'Content-Type': 'application/json' },
-    //         });
-    //     }
+        // Extract and verify the token
+        const token = authHeader.split(' ')[1];
+        let decodedToken;
+        try {
+            decodedToken = await admin.auth().verifyIdToken(token);
+        } catch (error) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
 
-    //     // Extract UID from the token
-    //     const uid = decodedToken.uid;
+        // Extract UID from the token
+        const uid = decodedToken.uid;
 
-    //     // Fetch user data securely
-    //     const user = await serviceRepo.userService.getUserByWallet(uid);
-    //     const doesUserExist = user != null;
+        // Fetch user data securely
+        const user = await serviceRepo.userService.getUserByWallet(uid);
+        const doesUserExist = user != null;
 
-    //     if (!doesUserExist) {
-    //         try {
-    //             const username = getDefaultUsername(uid);
-    //             await serviceRepo.userService.createUser({
-    //                 uid,
-    //                 username,
-    //                 profile_pic: "",
-    //             });
-    //         } catch (error) {
-    //             return new Response(JSON.stringify({ error: 'Failed to create user' }), {
-    //                 status: 500,
-    //                 headers: { 'Content-Type': 'application/json' },
-    //             });
-    //         }
-    //     }
+        if (!doesUserExist) {
+            try {
+                const username = getDefaultUsername(uid);
+                await serviceRepo.userService.createUser({
+                    uid,
+                    username,
+                    profile_pic: "",
+                });
+            } catch (error) {
+                return new Response(JSON.stringify({ error: 'Failed to create user' }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+        }
 
-    //     // Return a structured response
-    //     return new Response(JSON.stringify({ exists: doesUserExist, created: !doesUserExist }), {
-    //         status: 200,
-    //         headers: { 'Content-Type': 'application/json' },
-    //     });
+        // Return a structured response
+        return new Response(JSON.stringify({ exists: doesUserExist, created: !doesUserExist }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+        });
 
-    // } catch (error) {
-    //     console.error('Error in GET /api/users/check:', error);
-    //     return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
-    //         status: 500,
-    //         headers: { 'Content-Type': 'application/json' },
-    //     });
-    // }
+    } catch (error) {
+        console.error('Error in GET /api/users/check:', error);
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
 }
