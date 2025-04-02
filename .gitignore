@@ -43,4 +43,4 @@ _
 *.tsbuildinfo
 next-env.d.ts
 
-app/api/war_room/route.js
+app/api/admin_room/route.js
