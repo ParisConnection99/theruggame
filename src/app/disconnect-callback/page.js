@@ -20,6 +20,7 @@ function DisconnectHandler() {
                 }
 
                 localStorage.removeItem('session_id');
+                localStorage.removeItem('welcome_popup');
 
                 window.dispatchEvent(new CustomEvent('disconnect-event', {
                     detail: { disconnect: 'true' }

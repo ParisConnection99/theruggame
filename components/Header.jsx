@@ -9,7 +9,6 @@ import { useAuth } from './FirebaseProvider';
 import { signOut } from 'firebase/auth';
 import { signInWithCustomToken } from 'firebase/auth';
 import { logInfo, logError } from '@/utils/logger';
-import WelcomePopup from '@/components/WelcomePopup';
 import { handlePhantomConnect, handlePhantomDisconnection, handleCleanup } from '@/utils/PhantomConnectAction';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
@@ -19,14 +18,12 @@ export default function Header() {
     const { publicKey, connected, connect, disconnect, select, wallet, connecting } = useWallet();
     const { auth } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [showWalletConnectionModal, setShowWalletConnectionModal] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('idle'); // idle, connecting, success, error, disconnected
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorToast, setShowErrorToast] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [returningFromWalletApp, setReturningFromWalletApp] = useState(false);
     const [isEffectivelyConnected, setIsEffectivelyConnected] = useState(false);
-    const [showPopup, setShowPopup] = useState(false);
 
     // Detect if user is on mobile device
     useEffect(() => {
@@ -511,11 +508,6 @@ export default function Header() {
         setIsMenuOpen(false);
     };
 
-    const onWelcomePopupClose = () => {
-        localStorage.saveItem('welcome_popup', true);
-        setShowPopup(false);
-    }
-
     // Function to show error toast with message
     const showConnectionError = (message) => {
         setErrorMessage(message);
@@ -676,10 +668,6 @@ export default function Header() {
                 onClose={() => setShowWalletConnectionModal(false)}
                 onError={showConnectionError}
             /> */}
-
-            {showPopup && <WelcomePopup onClose={onWelcomePopupClose} />}
-
-
             {/* Mobile-specific instructions for wallet connection
             {isMobile && isEffectivelyConnected && connectionStatus === 'connecting' && (
                 <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm py-2 px-4 rounded-md shadow-lg z-50 max-w-xs text-center">
