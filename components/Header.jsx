@@ -89,7 +89,7 @@ export default function Header() {
             if (connected) {
                 await disconnect();
                 setIsEffectivelyConnected(false);
-                localStorage.removeItem('welcome_popup');
+                //localStorage.removeItem('welcome_popup');
             }
         } catch (error) {
             await errorLog("PHANTOM_DESKTOP_DISCONNECTION_ERROR",
