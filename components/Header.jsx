@@ -47,7 +47,7 @@ export default function Header() {
 
         if (isMobileDevice &&
             auth && localStorage.getItem('session_id')
-            && !isEffectivelyConnected && connectionStatus != 'error') {
+            && !isEffectivelyConnected) {
             setIsEffectivelyConnected(true);
         }
     }, [auth]);
@@ -488,6 +488,8 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
+
+            setIsEffectivelyConnected(false);
         
             throw error;
         }
