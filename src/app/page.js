@@ -10,7 +10,7 @@ import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { useAuth } from '@/components/FirebaseProvider';
 import { errorLog } from '@/utils/ErrorLog';
-import { showToast } from '@/components/CustomToast';
+import WelcomePopup from '@/components/WelcomePopup';
 import { logInfo, logError } from '@/utils/logger';
 
 
