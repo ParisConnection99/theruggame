@@ -105,7 +105,6 @@ export default function Header() {
         const handleAsyncEffect = async () => {
             try {
                 if (connected && publicKey && auth) {
-                    //await handleDesktopUserConnection();
                     await connectDesktopUser(publicKey)
                     setIsEffectivelyConnected(true);
                 }
@@ -119,17 +118,6 @@ export default function Header() {
 
         handleAsyncEffect();
     }, [connected, publicKey, auth]);
-
-    // const handleDesktopUserConnection = async () => {
-    //     try {
-    //         await connectDesktopUser(publicKey);
-    //     } catch (error) {
-    //         logError(error, {
-    //             component: 'Header',
-    //             action: 'Connecting user'
-    //         });
-    //     }
-    // };
 
     const connectDesktopUser = async (publicKey) => {
         try {
@@ -271,6 +259,8 @@ export default function Header() {
                 "HEADER",
                 "SERIOUS",
                 uid || "");
+
+            throw error;
         }
     }
 
@@ -341,6 +331,8 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
+
+            throw error;
         }
     };
 
