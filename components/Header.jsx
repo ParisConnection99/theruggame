@@ -199,10 +199,27 @@ export default function Header() {
                 "SERIOUS");
             setConnectionStatus("error");
 
+            if (auth) {
+                try {
+                    await signOut(auth);
+                } catch (error) {
+                    await errorLog("MOBILE_AUTH_SIGNOUT_ERROR",
+                        error.message || 'Error object with empty message',
+                        error.stack || "no stack trace available",
+                        "HEADER",
+                        "SERIOUS");
+                }
+            }
+
+            // Signout
+            setIsEffectivelyConnected(false);
+
             if (error.message?.includes("Firebase")) {
                 showConnectionError("Connection failed, please try again");
             } else if (error.message?.includes("token")) {
                 showConnectionError("Connection failed, please try again");
+            } else if (error.message?.incudes("Firebase: Error (auth/user-disabled).")) {
+                showToast("This account has been disabled.", "error");
             } else {
                 showConnectionError("Connection failed, please try again");
             }
