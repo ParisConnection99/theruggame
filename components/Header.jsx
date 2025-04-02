@@ -215,7 +215,7 @@ export default function Header() {
             // Signout
             setIsEffectivelyConnected(false);
 
-            if (error.message?.incudes("Firebase: Error (auth/user-disabled).")) {
+            if (error.message?.includes("Firebase: Error (auth/user-disabled).")) {
                 showToast("This account has been disabled.", "error");
             } else {
                 showConnectionError("Connection failed, please try again");
