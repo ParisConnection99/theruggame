@@ -489,8 +489,21 @@ export default function Header() {
                 "HEADER",
                 "SERIOUS");
 
+            if (auth) {
+                try {
+                    await signOut(auth);
+                } catch (error) {
+                    await errorLog("MOBILE_AUTH_SIGNOUT_ERROR",
+                        error.message || 'Error object with empty message',
+                        error.stack || "no stack trace available",
+                        "HEADER",
+                        "SERIOUS");
+                }
+            }
+
+            // Signout
             setIsEffectivelyConnected(false);
-        
+
             throw error;
         }
     }
