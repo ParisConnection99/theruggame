@@ -1,8 +1,26 @@
-// import { useState } from 'react';
+// import { useState, useEffect } from 'react';
 // import Link from 'next/link';
 
 // export default function WelcomePopup({ onClose }) {
 //     const [isVisible, setIsVisible] = useState(true);
+//     const [isPrivateBrowsing, setIsPrivateBrowsing] = useState(false);
+
+//     useEffect(() => {
+//         // Check for private browsing mode
+//         const detectPrivateMode = async () => {
+//             try {
+//                 // Try to use localStorage as a test
+//                 localStorage.setItem('__test__', 'test');
+//                 localStorage.removeItem('__test__');
+//                 setIsPrivateBrowsing(false);
+//             } catch (e) {
+//                 // If localStorage is unavailable, might be private browsing
+//                 setIsPrivateBrowsing(true);
+//             }
+//         };
+
+//         detectPrivateMode();
+//     }, []);
 
 //     const handleReadyClick = () => {
 //         setIsVisible(false);
@@ -27,6 +45,12 @@
 //                     <p className="text-center"><span className="font-medium">Step 4:</span> Wait for the results and collect if you're right</p>
 //                 </div>
 
+//                 {isPrivateBrowsing && (
+//                     <div className="bg-yellow-500 text-black p-3 rounded mb-6 text-sm">
+//                         ⚠️ You're using a private browsing mode, which may cause some features to not work properly. For the best experience, please use a standard browsing window.
+//                     </div>
+//                 )}
+
 //                 <p className="text-center text-sm mb-6">
 //                     Markets typically resolve in 10-30 minutes, so you'll know quickly if you've won!
 //                 </p>
@@ -39,27 +63,15 @@
 //                 </button>
 
 //                 <div className="text-center text-sm text-gray-500 mt-4">
-//                     <Link 
-//                         href="/docs/privacy-policy" 
-//                         className="hover:text-gray-300"
-//                         target="_blank"
-//                     >
+//                     <Link href="/docs/privacy-policy" className="hover:text-gray-300">
 //                         Privacy Policy
 //                     </Link>
 //                     <span className="mx-2">|</span>
-//                     <Link 
-//                         href="/docs/terms-of-service" 
-//                         className="hover:text-gray-300"
-//                         target="_blank"
-//                     >
+//                     <Link href="/docs/terms-of-service" className="hover:text-gray-300">
 //                         Terms of Service
 //                     </Link>
 //                     <span className="mx-2">|</span>
-//                     <Link 
-//                         href="/how-it-works" 
-//                         className="hover:text-gray-300"
-//                         target="_blank"
-//                     >
+//                     <Link href="/how-it-works" className="hover:text-gray-300">
 //                         How It Works
 //                     </Link>
 //                 </div>
@@ -69,9 +81,11 @@
 // }
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import LogoTipPopup from '@/components/LogoTipPopup'; // Import the new component
 
 export default function WelcomePopup({ onClose }) {
     const [isVisible, setIsVisible] = useState(true);
+    const [showLogoTip, setShowLogoTip] = useState(false);
     const [isPrivateBrowsing, setIsPrivateBrowsing] = useState(false);
 
     useEffect(() => {
@@ -93,10 +107,33 @@ export default function WelcomePopup({ onClose }) {
 
     const handleReadyClick = () => {
         setIsVisible(false);
+        
+        // Check if we should show the logo tip
+        let shouldShowLogoTip = true;
+        try {
+            const logoTipShown = localStorage.getItem('logo_tip_shown');
+            shouldShowLogoTip = logoTipShown !== 'true';
+        } catch (e) {
+            // If localStorage fails, we'll still show the tip
+        }
+        
+        if (shouldShowLogoTip) {
+            setShowLogoTip(true);
+        } else if (onClose) {
+            onClose();
+        }
+    };
+    
+    const handleLogoTipClose = () => {
+        setShowLogoTip(false);
         if (onClose) onClose();
     };
 
-    if (!isVisible) return null;
+    if (!isVisible && !showLogoTip) return null;
+
+    if (showLogoTip) {
+        return <LogoTipPopup onClose={handleLogoTipClose} />;
+    }
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
