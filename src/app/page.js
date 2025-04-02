@@ -10,6 +10,7 @@ import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { useAuth } from '@/components/FirebaseProvider';
 import { errorLog } from '@/utils/ErrorLog';
+import { showToast } from '@/components/CustomToast';
 import { logInfo, logError } from '@/utils/logger';
 
 
@@ -20,6 +21,7 @@ export default function Home() {
   const [endTime, setEndTime] = useState(null);
   const [isMaintenance, setIsMaintenance] = useState(false);
   const [featuredMarket, setFeaturedMarket] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
   const router = useRouter();
   const analytics = useAnalytics();
   const { auth } = useAuth();
@@ -39,6 +41,18 @@ export default function Home() {
 
     setFeaturedMarket(newFeaturedMarket);
   };
+
+  useEffect(() => {
+    const welcomePopup = localStorage.getItem('welcome_popup');
+
+    // If the popup has never been shown before (welcome_popup doesn't exist)
+    if (welcomePopup === null) {
+      setShowPopup(true);
+      // And then set it so it won't show again
+      localStorage.setItem('welcome_popup', 'true');
+    }
+
+  }, []);
 
   // Fetching the active markets
   useEffect(() => {
@@ -205,33 +219,38 @@ export default function Home() {
     setVisibleMarkets((prev) => prev + 6); // Load 6 more markets
   };
 
+  const onWelcomePopupClose = () => {
+    localStorage.saveItem('welcome_popup', true);
+    setShowPopup(false);
+  }
+
   let interval;
 
   const startCountdown = (endDate) => {
     clearInterval(interval); // Clear any existing timer
-    
+
     const updateTimer = () => {
       const now = new Date();
       const diff = endDate - now;
-      
+
       if (diff <= 0) {
         clearInterval(interval);
         setTimeLeft('00:00:00');
         return;
       }
-      
+
       // Calculate hours, minutes, seconds
       const hours = Math.floor(diff / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
+
       setTimeLeft(
         `${hours.toString().padStart(2, '0')}:` +
         `${minutes.toString().padStart(2, '0')}:` +
         `${seconds.toString().padStart(2, '0')}`
       );
     };
-    
+
     updateTimer(); // Immediate update
     interval = setInterval(updateTimer, 1000); // Update every second
   };
@@ -244,7 +263,7 @@ export default function Home() {
           THE RUG GAME
         </h1>
         <p className="text-xl text-white mb-6">IS NOW CLOSED</p>
-        
+
         {/* Countdown Timer */}
         <div className="bg-black rounded-lg p-6 mb-6">
           <p className="text-gray-300 mb-2">WE WILL BE BACK IN</p>
@@ -259,6 +278,8 @@ export default function Home() {
   return (
     <div>
       <main>
+        {showPopup && <WelcomePopup onClose={onWelcomePopupClose} />}
+
         {/* Featured Market Component */}
         {featuredMarket && (
           <FeaturedMarket
