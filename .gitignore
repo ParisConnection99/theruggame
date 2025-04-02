@@ -43,5 +43,5 @@ _
 *.tsbuildinfo
 next-env.d.ts
 
-/app/api/admin_room/**
-/app/admin_room/**
+src/app/api/admin_room/**
+src/app/admin_room/**

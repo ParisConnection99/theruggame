@@ -127,6 +127,21 @@ class UserService {
         return data[0];
     }
 
+    async updateStatusWithWalletCA(ca, status) {
+        if (!['active', 'suspended', 'banned'].includes(status)) {
+            throw new Error('Invalid status value');
+        }
+
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .update({ status })
+            .eq('wallet_ca', ca)
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    }
+
     /**
      * Check if username is available
      * @param {string} username - Username to check
