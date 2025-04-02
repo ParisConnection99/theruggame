@@ -42,3 +42,5 @@ _
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+app/api/war_room/route.js
