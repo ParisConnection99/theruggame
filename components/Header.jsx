@@ -52,7 +52,7 @@ export default function Header() {
     // Monitor connection states
     useEffect(() => {
         if (connected) {
-            setConnectionStatus('success');
+            //setConnectionStatus('success');
         }
     }, [connected, publicKey]);
 
