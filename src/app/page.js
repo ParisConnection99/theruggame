@@ -46,11 +46,11 @@ export default function Home() {
     const welcomePopup = localStorage.getItem('welcome_popup');
 
     // If the popup has never been shown before (welcome_popup doesn't exist)
-    //if (welcomePopup === null) {
+    if (welcomePopup === null) {
       setShowPopup(true);
       // And then set it so it won't show again
-      //localStorage.setItem('welcome_popup', 'true');
-    //}
+      localStorage.setItem('welcome_popup', 'true');
+    }
 
   }, []);
 
