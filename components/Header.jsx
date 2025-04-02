@@ -46,7 +46,7 @@ export default function Header() {
         );
 
         if (isMobileDevice &&
-            auth && localStorage.getItem('session_id')
+            auth.currentUser && localStorage.getItem('session_id')
             && !isEffectivelyConnected) {
             setIsEffectivelyConnected(true);
         }
