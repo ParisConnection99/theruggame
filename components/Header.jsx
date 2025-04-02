@@ -184,9 +184,9 @@ export default function Header() {
                 exists
             });
 
-            //if (!exists) {
+            if (!exists) {
                 setShowPopup(true);
-            //}
+            }
 
             setConnectionStatus("success");
 
@@ -357,17 +357,17 @@ export default function Header() {
         }
     };
 
-    // Function to handle wallet connection from callback data
-    const handleWalletCallbackConnection = async (walletData) => {
-        try {
-            await connectMobileUser(walletData.publicKey);
-        } catch (error) {
-            logError(error, {
-                component: 'Header',
-                action: 'Connecting user'
-            })
-        }
-    };
+    // // Function to handle wallet connection from callback data
+    // const handleWalletCallbackConnection = async (walletData) => {
+    //     try {
+    //         await connectMobileUser(walletData.publicKey);
+    //     } catch (error) {
+    //         logError(error, {
+    //             component: 'Header',
+    //             action: 'Connecting user'
+    //         })
+    //     }
+    // };
 
     // Handle mobile wallet callback
     useEffect(() => {
@@ -377,17 +377,13 @@ export default function Header() {
 
                 // Process the connection with the received data
                 if (event.detail.publicKey) {
-                    await handleWalletCallbackConnection({
-                        publicKey: event.detail.publicKey
-                    });
-
-                    setConnectionStatus('success');
+                    await connectMobileUser(event.detail.publicKey);
                     setIsEffectivelyConnected(true);
                 }
 
             } catch (error) {
                 setConnectionStatus('error');
-                showConnectionError('Connection failed, please try again');
+                showConnectionError("Connection failed, please try again");
             }
         };
 
@@ -482,18 +478,9 @@ export default function Header() {
                 throw new Error(errorData.error || "Failed to check if user exists.");
             }
 
-            const { exists } = await userResponse.json();
-
-            logInfo('Does user exist', {
-                exists
-            });
-
-            if (!exists) {
-                setShowPopup(true);
-            }
-
             setConnectionStatus("success");
             showToast('Connected successfully', 'success');
+
             await logActivity('user_login', auth);
         } catch (error) {
             await errorLog("MOBILE_AUTH_CONNECTION_ERROR",
@@ -501,15 +488,8 @@ export default function Header() {
                 error.stack || "no stack trace available",
                 "HEADER",
                 "SERIOUS");
-            setConnectionStatus("error");
-
-            if (error.message?.includes("Firebase")) {
-                showConnectionError("Connection failed, please try again");
-            } else if (error.message?.includes("token")) {
-                showConnectionError("Connection failed, please try again");
-            } else {
-                showConnectionError("Connection failed, please try again");
-            }
+        
+            throw error;
         }
     }
 
@@ -520,6 +500,11 @@ export default function Header() {
     const closeMenu = () => {
         setIsMenuOpen(false);
     };
+
+    const onWelcomePopupClose = () => {
+        localStorage.saveItem('welcome_popup', true);
+        setShowPopup(false);
+    }
 
     // Function to show error toast with message
     const showConnectionError = (message) => {
@@ -682,15 +667,15 @@ export default function Header() {
                 onError={showConnectionError}
             /> */}
 
-            {showPopup && <WelcomePopup onClose={() => setShowPopup(false)} />}
+            {showPopup && <WelcomePopup onClose={onWelcomePopupClose} />}
 
 
-            {/* Mobile-specific instructions for wallet connection */}
+            {/* Mobile-specific instructions for wallet connection
             {isMobile && isEffectivelyConnected && connectionStatus === 'connecting' && (
                 <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm py-2 px-4 rounded-md shadow-lg z-50 max-w-xs text-center">
                     <p>After approving in your wallet app, return to this browser</p>
                 </div>
-            )}
+            )} */}
 
             {/* Global error toast for connection issues */}
             {showErrorToast && (
