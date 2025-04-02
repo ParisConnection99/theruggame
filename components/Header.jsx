@@ -357,18 +357,6 @@ export default function Header() {
         }
     };
 
-    // // Function to handle wallet connection from callback data
-    // const handleWalletCallbackConnection = async (walletData) => {
-    //     try {
-    //         await connectMobileUser(walletData.publicKey);
-    //     } catch (error) {
-    //         logError(error, {
-    //             component: 'Header',
-    //             action: 'Connecting user'
-    //         })
-    //     }
-    // };
-
     // Handle mobile wallet callback
     useEffect(() => {
         const handleWalletCallbackEvent = async (event) => {
