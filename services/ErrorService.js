@@ -22,6 +22,16 @@ class ErrorService {
         if (error) throw error; 
     }
 
+    async fetchErrorsWithWalletCA(wallet_ca) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .select('*')
+            .eq('wallet_ca', wallet_ca)
+
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+    }
+
 }
 
 module.exports = ErrorService;

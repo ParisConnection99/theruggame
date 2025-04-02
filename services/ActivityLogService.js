@@ -18,6 +18,16 @@ class ActivityLogService {
 
         if (error) throw error;
     }
+
+    async fetchLogsWithUserId(userId) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .select('*')
+            .eq('user_id', userId)
+
+        if (error && error.code !== 'PGRST116') throw error;
+        return data;
+    }
 }
 
 module.exports = ActivityLogService;
