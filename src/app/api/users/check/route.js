@@ -24,7 +24,7 @@ const getDefaultUsername = (uid) => {
 };
 
 export async function POST(request) {
-    return new Response(JSON.stringify({ error: 'Failed to create user' }), {
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
     });
