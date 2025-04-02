@@ -47,13 +47,6 @@ export default function Header() {
             && !isEffectivelyConnected) {
             setIsEffectivelyConnected(true);
         }
-
-        if (auth.currentUser) {
-            logInfo('Current user is active', {
-            });
-        } else {
-            logInfo('Current user is not active', {});
-        }
     }, [auth]);
 
     // Monitor connection states
