@@ -220,6 +220,8 @@ export default function Header() {
             } else {
                 showConnectionError("Connection failed, please try again");
             }
+
+            throw error;
         }
     }
 
