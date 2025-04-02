@@ -40,17 +40,17 @@ export default function Header() {
         checkMobile();
     }, []);
 
-    useEffect(() => {
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-            navigator.userAgent
-        );
+    // useEffect(() => {
+    //     const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    //         navigator.userAgent
+    //     );
 
-        if (isMobileDevice &&
-            auth && localStorage.getItem('session_id')
-            && !isEffectivelyConnected) {
-            setIsEffectivelyConnected(true);
-        }
-    }, [auth]);
+    //     if (isMobileDevice &&
+    //         auth && localStorage.getItem('session_id')
+    //         && !isEffectivelyConnected) {
+    //         setIsEffectivelyConnected(true);
+    //     }
+    // }, [auth]);
 
     // Monitor connection states
     useEffect(() => {
