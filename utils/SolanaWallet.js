@@ -68,10 +68,13 @@ export async function checkBalance(publicKey, amount) {
       throw new Error(result.error || 'Failed to check balance');
     }
 
-    const { isEnough, solBalance, requiredAmount } = result;
+    const { success, balanceInfo } = result;
 
-    return { isEnough: isEnough, solBalance: solBalance };
-
+    if (success) {
+      return { isEnough: balanceInfo.isEnough, solBalance: balanceInfo.solBalance };
+    } else {
+      throw new Error(result.error);
+    }
   } catch (err) {
     logInfo('Checking balance error', {
       data: err
@@ -219,8 +222,8 @@ export async function placeBet(
     // Check balance (works for both mobile and web)
     let hasEnough;
 
-    console.log('Amount to add', {
-      compoenent: 'Solana wallet',
+    logInfo('Amount to add', {
+      component: 'Solana wallet',
       amount: amountToAdd
     });
 
