@@ -22,6 +22,8 @@ if (!admin.apps.length) {
 
 export async function POST(request) {
     try {
+        console.log('Entered confirm.');
+
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
             return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
@@ -42,10 +44,14 @@ export async function POST(request) {
             });
         }
 
+        console.log('Before fetching the body');
+
         const uid = decodedToken.uid;
         const body = await request.json();
 
         const { signature } = body;
+
+        console.log(`Signature: ${signature}`);
 
         if (!signature) {
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
