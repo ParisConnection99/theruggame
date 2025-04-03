@@ -49,9 +49,6 @@ class PostgresDatabase {
                 throw error;
             }
 
-            // Log the database error for debugging
-            console.error('Database error when fetching bet:', error);
-
             // Throw a generic error to avoid exposing database details
             throw new Error('Failed to retrieve bet');
         }
@@ -66,8 +63,6 @@ class PostgresDatabase {
             // Format amount as numeric string to maintain precision
             const amount = unit.amount.toFixed(8);
 
-            console.log('Bet unit creation betId: ', betId, 'marketId: ', marketId, 'amount:', amount);
-
             const { rows } = await this.pool.query(`
                 INSERT INTO bet_units (bet_id, market_id, amount, status)
                 VALUES ($1::bigint, $2::bigint, $3::numeric(20,8), $4)
@@ -80,7 +75,6 @@ class PostgresDatabase {
 
             return this.mapToBetUnit(rows[0]);
         } catch (error) {
-            console.error('Error creating bet unit:', error);
             if (error.code === '23514') { // Check constraint violation
                 throw new Error(`Amount ${unit.amount} is below minimum allowed amount of 0.05`);
             }
@@ -119,7 +113,6 @@ class PostgresDatabase {
                 result = await this.pool.query(query, [marketId, betType, excludeBetId]);
             } catch (dbError) {
                 // Log the original database error
-                console.error('Database query error:', dbError);
                 throw new Error(`Failed to retrieve unmatched units: ${dbError.message}`);
             }
 
@@ -132,12 +125,10 @@ class PostgresDatabase {
             try {
                 return result.rows.map(this.mapToBetUnit);
             } catch (mappingError) {
-                console.error('Error mapping bet units:', mappingError);
                 throw new Error(`Failed to map bet units: ${mappingError.message}`);
             }
         } catch (error) {
             // Central error handling
-            console.error('Error in getUnmatchedUnitsWithLock:', error);
             throw error; // Re-throw to allow caller to handle or log
         }
     }
@@ -182,7 +173,6 @@ class PostgresDatabase {
             try {
                 result = await this.pool.query(query, [limit]);
             } catch (dbError) {
-                console.error('Database query error:', dbError);
                 throw new Error(`Failed to retrieve unmatched units: ${dbError.message}`);
             }
 
@@ -197,11 +187,9 @@ class PostgresDatabase {
                     units: row.units.map(unit => this.mapToBetUnit(unit))
                 }));
             } catch (mappingError) {
-                console.error('Error mapping bets and units:', mappingError);
                 throw new Error(`Failed to map bets and units: ${mappingError.message}`);
             }
         } catch (error) {
-            console.error('Error in getUnmatchedUnits:', error);
             throw error;
         }
     }
@@ -229,12 +217,6 @@ class PostgresDatabase {
             throw new Error('Status is required');
         }
 
-        // Validate status is one of allowed values
-        // const validStatuses = ['PENDING', 'MATCHED', 'CANCELLED', 'SETTLED']; // add your valid statuses
-        // if (!validStatuses.includes(status)) {
-        //     throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`);
-        // }
-
         // Validate matchedAmount if status is MATCHED
         if (status === 'MATCHED') {
             if (matchedAmount === undefined || matchedAmount === null) {
@@ -254,9 +236,6 @@ class PostgresDatabase {
 
                 // Fetch current bet (will throw if not found)
                 const bet = await this.getBet(betId);
-
-                // Validate state transition
-                //this.validateStatusTransition(bet.status, status);
 
                 // Insert status history
                 await this.insertStatusHistory({
@@ -296,9 +275,6 @@ class PostgresDatabase {
             }
 
         } catch (error) {
-            // Log the error for debugging
-            console.error('Error updating bet status:', error);
-
             // Rethrow specific errors
             if (error.message.includes('not found') ||
                 error.message.includes('Invalid status') ||
@@ -356,7 +332,6 @@ class PostgresDatabase {
             return result;
 
         } catch (error) {
-            console.error('Error checking/updating bet status:', error);
             return {
                 success: false,
                 updated: false,
@@ -398,7 +373,6 @@ class PostgresDatabase {
     }
 
     async updateUnitStatus(unitId, status, matchedWithUnitId) {
-        console.log('<-- Update unit status --> unitId: ', unitId, 'status: ', status, 'matchedWithUnitId:', matchedWithUnitId);
         try {
             // Validate Inputs
             if (!unitId) throw new Error('Unit ID is required');
@@ -422,7 +396,6 @@ class PostgresDatabase {
             }
 
         } catch (error) {
-            console.error(`❌ Error updating unit status for ID ${unitId}:`, error);
             throw new Error(`Failed to update unit status: ${error.message}`);
         }
     }
@@ -459,7 +432,6 @@ class PostgresDatabase {
             };
 
         } catch (error) {
-            console.error('Error updating unit statuses:', error);
             return {
                 success: false,
                 updatedCount: 0,
@@ -470,7 +442,6 @@ class PostgresDatabase {
     }
 
     async splitUnits(unit, matchAmount) {
-        console.log(`Unit amount before splitting: unitAmount: ${unit.amount} match amount: ${matchAmount}`);
 
         return await this.runInTransaction(async () => {
             try {
@@ -518,14 +489,12 @@ class PostgresDatabase {
                 return [updatedOriginalUnit, newUnit];
 
             } catch (error) {
-                console.error('Error splitting unit', error);
                 throw error;
             }
         });
     }
 
     async updateBetStatus(betId, status, matchedAmount) {
-        console.log('I am updating the bet with the status: ', status);
         try {
             const result = await this.pool.query(`
                 UPDATE bets 
@@ -538,17 +507,8 @@ class PostgresDatabase {
                 throw new Error(`No bet found with ID: ${betId}`);
             }
 
-            console.log('Bet status updated successfully in the bet database!');
             return result;
         } catch (error) {
-            // Log the full error for debugging
-            console.error(`Error updating bet status: ${error.message}`, {
-                betId,
-                status,
-                matchedAmount,
-                errorStack: error.stack
-            });
-
             // Differentiate between different types of database errors
             if (error.code === '22P02') {
                 throw new Error('Invalid data type in bet status update');
@@ -586,7 +546,6 @@ class PostgresDatabase {
                 RETURNING markets.*;
             `, [newPhase, marketId]);
 
-            console.log(`Result: ${JSON.stringify(result.rows)}`);
 
             if (!result.rows || result.rows.length === 0) {
                 throw new Error(`No rows updated for market ID ${marketId}. It may be locked by another process.`);
@@ -612,15 +571,12 @@ class PostgresDatabase {
                 const result = await operation(this.createTransactionDatabase(client));
     
                 await client.query('COMMIT');
-                console.log(`Transaction committed successfully. Context: ${JSON.stringify(context)}`);
                 return result;
     
             } catch (error) {
                 await client.query('ROLLBACK');
-                console.error(`Transaction failed. Context: ${JSON.stringify(context)}. Rolling back...`, error);
     
                 if (error.code === '23505') {
-                    console.error('Unique constraint violation:', error.detail);
                     throw new Error('Duplicate entry detected');
                 }
                 
@@ -630,62 +586,17 @@ class PostgresDatabase {
                     continue;
                 }
     
-                console.error(`Transaction permanently failed: ${error.message}. Context: ${JSON.stringify(context)}`, error.stack);
                 throw error;
     
             } finally {
                 try {
                     client.release(true);
-                    console.log(`Database connection released. Context: ${JSON.stringify(context)}`);
                 } catch (releaseError) {
                     console.error(`Error releasing database connection: ${releaseError.message}. Context: ${JSON.stringify(context)}`, releaseError.stack);
                 }
             }
         }
     }
-
-    // async runInTransaction(operation) {
-    //     const client = await this.pool.connect();
-    //     let retries = 3;
-
-    //     while (retries > 0) {
-    //         try {
-    //             console.log(`Starting transaction... Retries left: ${retries}`);
-
-    //             await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
-
-    //             const result = await operation(this.createTransactionDatabase(client));
-
-    //             await client.query('COMMIT');
-    //             console.log(`Transaction committed successfully.`);
-    //             return result;
-
-    //         } catch (error) {
-    //             await client.query('ROLLBACK');
-    //             console.error(`Transaction failed. Rolling back...`, error);
-
-    //             // Retry if serialization failure (40001) or deadlock (40P01)
-    //             if ((error.code === '40001' || error.code === '40P01') && retries > 1) {
-    //                 retries--;
-    //                 console.warn(`Retrying transaction due to serialization failure/deadlock...`);
-    //                 continue;
-    //             }
-
-    //             // If it's a different error, log and throw
-    //             console.error(`Transaction permanently failed: ${error.message}`, error.stack);
-    //             throw error;
-
-    //         } finally {
-    //             try {
-    //                 client.release(true); // Ensure client is released
-    //                 console.log(`Database connection released.`);
-    //             } catch (releaseError) {
-    //                 console.error(`Error releasing database connection: ${releaseError.message}`, releaseError.stack);
-    //             }
-    //         }
-    //     }
-    // }
-
 
     setPool(pool) {
         this.pool = pool;
@@ -783,7 +694,6 @@ class PostgresDatabase {
      * @param {object} metadata - Additional metadata as a JSON object (optional).
      */
     async insertStatusHistory(params) {
-        console.log('<--- inserting into status history database --->');
         try {
             const {
                 betId,
@@ -837,12 +747,6 @@ class PostgresDatabase {
 
             return result.rows[0];
         } catch (error) {
-            // Log the full error for debugging
-            console.error(`Error inserting status history: ${error.message}`, {
-                params,
-                errorStack: error.stack
-            });
-
             // Handle specific PostgreSQL error codes
             if (error.code === '23503') {
                 throw new Error(`Foreign key constraint violation: ${error.message}`);
