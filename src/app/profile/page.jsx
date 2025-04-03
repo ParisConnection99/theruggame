@@ -557,7 +557,7 @@ export default function ProfilePage() {
                             </div>
                         )}
                     </div> */}
-                    <div className="mt-6 w-full max-w-md">
+     <div className="mt-6 w-full max-w-md">
     <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
     {betsLoading ? (
         <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
@@ -570,12 +570,12 @@ export default function ProfilePage() {
             <table className="w-full table-fixed">
                 <thead>
                     <tr className="text-sm text-gray-400">
-                        <th className="w-[20%] p-1 text-left">Date</th>
-                        <th className="w-[20%] p-1 text-left">Name</th>
-                        <th className="w-[10%] p-1 text-left">Amount</th>
-                        <th className="w-[15%] p-1 text-left">Result</th>
-                        <th className="w-[20%] p-1 text-left">Profit</th>
-                        <th className="w-[15%] p-1 text-center">Share</th>
+                        <th className="w-[20%] p-1 text-left" title="Date">📅</th>
+                        <th className="w-[20%] p-1 text-left" title="Name">🏷️</th>
+                        <th className="w-[10%] p-1 text-left" title="Amount">💰</th>
+                        <th className="w-[15%] p-1 text-left" title="Result">🎯</th>
+                        <th className="w-[20%] p-1 text-left" title="Profit">📈</th>
+                        <th className="w-[15%] p-1 text-center" title="Share">📤</th>
                     </tr>
                 </thead>
                 <tbody>
