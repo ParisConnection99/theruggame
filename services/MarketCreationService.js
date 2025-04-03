@@ -12,7 +12,7 @@ class MarketCreationService {
         this.activeMarkets = [];
         //this.TOTAL_MARKET_CAPACITY = 15;
         this.MAXIMUM_ATTEMPTS = 5;
-        this.ACTIVE_MARKETS_LIMIT = 5;
+        this.ACTIVE_MARKETS_LIMIT = 10;
         this.MARKET_DURATION = 20;
     }
 
@@ -317,22 +317,6 @@ class MarketCreationService {
     async filterTokens(tokens) {
         try {
             const now = Date.now();
-
-            // tokens.forEach(token => {
-
-            //     // 1. Liquidity
-            //     const liquidityUsd = parseFloat(token.liquidity || 0);
-
-            //     // 2. Market Cap (Optional)
-            //     const marketCap = parseFloat(token.marketCap || 0);
-
-            //     // 3. Volume
-            //     const volume24h = parseFloat(token.volume24h || 0);
-
-            //     // 4. Age
-            //     const tokenAge = now - token.createdAt;
-            //     const ageInDays = tokenAge / (24 * 60 * 60 * 1000);
-            // });
 
             const filteredTokens = tokens.filter(token => {
                 const liquidityUsd = parseFloat(token.liquidity || 0);

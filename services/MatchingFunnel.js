@@ -28,21 +28,15 @@ class MatchingFunnel {
                 try {
                     const bets = await this.db.getUnmatchedBets(this.BATCH_SIZE);
                     
-                    console.log('intake units fetch unmatched bets: ', bets);
-                
                     matchableBets = await Promise.all(
                         bets.filter(async bet => await this.isMatchingAllowed(bet))
                     );
                     
-                    //matchBets(matchableBets);
                 } catch (innerError) {
-                    console.error('Error inside transaction:', innerError);
                     throw innerError; // Re-throw to trigger transaction rollback
                 }
             });
         } catch (error) {
-            console.error('Transaction failed:', error);
-            // Handle or re-throw based on your error handling needs
             throw error;
         }
         return matchableBets;
@@ -87,8 +81,6 @@ class MatchingFunnel {
             }
         }
     
-        console.log('Matching bets complete!')
-        // Final step: apply status changes to database
         await this.applyStatusChanges(statusChanges);
     
         return statusChanges;
@@ -136,8 +128,6 @@ class MatchingFunnel {
                 betId: unit2.betId  // Add betId here
             });
     
-            console.log('Successfully matched units: ', unit1.id, ' and ', unit2.id);
-    
             return {
                 success: true,
                 unit1Id: unit1.id,
@@ -145,7 +135,6 @@ class MatchingFunnel {
                 matchedAt: new Date()
             };
         } catch (error) {
-            console.log(`Failed to match units: ${error.message}`);
             throw new Error(`Unit matching failed: ${error.message}`);
         }
     }
@@ -234,7 +223,7 @@ class MatchingFunnel {
                 );
 
             } catch (error) {
-                console.error(`Failed to update status for bet ${betId}:`, error);
+                console.error(`Failed to update status for bet ${betId}:`);
                 // Don't throw here - continue processing other bets
             }
         }
@@ -248,7 +237,6 @@ class MatchingFunnel {
         const market = await this.marketService.getMarket(bet.marketId);
     
         if (!market) {
-            console.error(`Market with ID ${bet.marketId} not found.`);
             return false;
         }
     
@@ -268,12 +256,6 @@ class MatchingFunnel {
         const marketDurationMin = marketDurationMs / 60000;
         const timeElapsedMin = (currentTime - marketStartTime) / 60000;
         const halfTimeMarkMin = (halfTimeMark - marketStartTime) / 60000;
-    
-        // Logging
-        // console.log(`Market Duration: ${marketDurationMin.toFixed(2)} min`);
-        // console.log(`Time Elapsed: ${timeElapsedMin.toFixed(2)} min`);
-        // console.log(`Half Time Mark (Cut-off): ${halfTimeMarkMin.toFixed(2)} min`);
-        // console.log(`Within First 50% of Market: ${isWithinFirstHalf}`);
     
         return isWithinFirstHalf;
     }
