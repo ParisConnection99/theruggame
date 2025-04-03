@@ -89,7 +89,7 @@ export async function POST(request) {
 
         // Call your existing confirm_transaction API if needed
         try {
-            const confirmResponse = await fetch('/api/confirm_transaction', {
+            const confirmResponse = await fetch('https://theruggame.fun/api/confirm_transaction', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
