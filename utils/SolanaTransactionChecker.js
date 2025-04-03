@@ -1,3 +1,4 @@
+"use server";
 import { Connection, clusterApiUrl, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { serviceRepo } from '@/services/ServiceRepository';
 
