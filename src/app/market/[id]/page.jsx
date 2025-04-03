@@ -196,9 +196,7 @@ export default function MarketPage() {
           if (updatedMarket.payload.id === market.id) {
             // Validate the outcome is one of the expected values
             if (
-              updatedMarket.payload.outcome === 'PUMP' ||
-              updatedMarket.payload.outcome === 'RUG' ||
-              updatedMarket.payload.outcome === 'HOUSE'
+              updatedMarket.payload.outcome === 'PUMP' || updatedMarket.payload.outcome === 'RUG'
             ) {
               setMarketOutcome(updatedMarket.payload.outcome);
               // Update other relevant states
