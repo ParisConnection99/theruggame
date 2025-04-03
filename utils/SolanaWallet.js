@@ -68,11 +68,8 @@ export async function checkBalance(publicKey, amount) {
     return { isEnough: isEnough, solBalance: solBalance };
 
   } catch (err) {
-    setError(err.message);
-    console.error('Error checking balance:', err);
-  } finally {
-    setLoading(false);
-  }
+    throw new Error('Error checking balance:', err);
+  } 
 }
 
 /**
