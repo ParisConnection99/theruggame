@@ -45,7 +45,6 @@ class CashoutService {
 
             return cashout;
         } catch (error) {
-            console.error('Error creating cashout:', error);
             throw error;
         }
     }

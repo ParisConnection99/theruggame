@@ -34,8 +34,6 @@ class BettingService {
       const netAmount = amount - fee;
       const potentialPayout = netAmount * odds;
 
-      console.log(`Full Bet: ${amount + fee}`);
-
       // Create the bet
       const bet = await this.marketService.placeBetFromTransfer(marketId, {
         userId,

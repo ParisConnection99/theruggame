@@ -45,14 +45,11 @@ class BetUnitService {
         this.validateBet(bet);
 
         const roundedAmount = this._roundAmount(Number(bet.amount));
-        console.log('Bet amount:', bet.amount, 'Rounded amount:', roundedAmount);
 
         // Calculate net amount after fee
         const fee = this._roundAmount(roundedAmount * this.PLATFORM_FEE); // 2% fee
-        console.log('Platform fee:', this.PLATFORM_FEE, 'Calculated fee:', fee);
 
         const netAmount = this._roundAmount(roundedAmount - fee);
-        console.log('Net amount after fee:', netAmount);
         
         let retryCount = 0;
         let lastError = null;
@@ -141,7 +138,6 @@ class BetUnitService {
      */
     async _executeUnitCreation(bet, netAmount) {
 
-        console.log(`Execute unit creation: ${JSON.stringify(bet, null, 2)}, netAmount: ${netAmount}`);
         return await this.db.runInTransaction(async (db) => {
             const units = [];
             let remainingAmount = netAmount;

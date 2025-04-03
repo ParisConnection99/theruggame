@@ -20,24 +20,15 @@ class MarketCreationService {
     async fetchMarkets() {
         try {
 
-            // const canFetchWithLock = await this.canStartFetchingAndLock();
-            // if (!canFetchWithLock) {
-            //     console.log('Another process is already fetching markets. Exiting');
-            //     return;
-            // }
-
             this.activeMarkets = await this.marketService.fetchActiveMarketsForCreation();
 
             const activeMarketCount = this.activeMarkets.length;
-
-            console.log(`Current counts - Active Markets: ${activeMarketCount}`);
 
             let token = null;
 
             if (activeMarketCount < this.ACTIVE_MARKETS_LIMIT) {
                 // 4️⃣ Need to fetch more tokens
                 const tokensNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
-                console.log(`Need ${tokensNeeded} more tokens`);
 
                 // // Fetch tokens (LOCKED)
                 const fetchedTokens = await this.startTokenFetchCycle(activeMarketCount);
@@ -52,16 +43,9 @@ class MarketCreationService {
                 console.log('We have enough active markets.');
             }
 
-            // 6️⃣ Unlock fetching process
-            // await this.finishedFetching();
-
             return token;
 
         } catch (error) {
-            console.error('Error in fetchMarket:', error);
-
-            // 7️⃣ Ensure we always unlock on failure
-            //await this.finishedFetching();
             throw error;
         }
     }
@@ -91,12 +75,8 @@ class MarketCreationService {
     async getMarketAndReserveCounts() {
         try {
             const activeMarketCount = await this.marketService.getMarketCount();
-            //const reserveCount = await this.tokenService.getReserveCount();
-            //const totalCount = activeMarketCount + reserveCount;
-
             return { activeMarketCount };
         } catch (error) {
-            console.error('Error fetching market and reserve counts:', error);
             throw error;
         }
     }
@@ -105,12 +85,8 @@ class MarketCreationService {
         try {
             // Calculate how many markets need to be created
             const marketsNeeded = this.ACTIVE_MARKETS_LIMIT - activeMarketCount;
-
             // Filter out any undefined or null tokens from the array
             const validTokens = tokens.filter(t => t !== undefined && t !== null);
-            console.log(`Filtered tokens array: ${validTokens.length} valid tokens out of ${tokens.length} total`);
-
-            console.log(`Active Market count: ${activeMarketCount}, markets needed: ${marketsNeeded}, token: ${tokens.length} `);
             // Track any tokens that weren't used for market creation
             const unusedTokens = [...validTokens]; // Create a copy to avoid modifying the original
 
@@ -123,45 +99,28 @@ class MarketCreationService {
                 } else if (unusedTokens.length > 0) {
                     currentToken = unusedTokens.shift();
                 } else {
-                    console.log('No more tokens available for market creation');
                     break;
                 }
 
                 // Validate token before attempting to create market
                 if (!currentToken || !currentToken.address) {
-                    console.log(`Invalid token at position ${i}, skipping market creation`);
                     continue;
                 }
 
                 try {
                     await this.createMarket(currentToken);
-                    console.log(`Market created successfully with token:`,
-                        currentToken.id ?
-                            `ID: ${currentToken.id}, Address: ${currentToken.address}` :
-                            `Address: ${currentToken.address}`
-                    );
                 } catch (error) {
-                    console.error(`Error creating market with token:`,
-                        currentToken.id ?
-                            `ID: ${currentToken.id}, Address: ${currentToken.address}` :
-                            `Address: ${currentToken.address}`,
-                        error
-                    );
-                    // Consider adding the token back to unusedTokens if creation fails
-                    // uncommenting the following line would allow retry of failed tokens
-                    // unusedTokens.push(currentToken);
+                    throw error;
                 }
             }
 
         } catch (error) {
-            console.error('Error in market creation process:', error);
             throw error; // Re-throw to allow caller to handle the error
         }
     }
 
     // Purpose: Create a new Market
     async createMarket(token) {
-        console.log(`Token about to be created: ${JSON.stringify(token, null, 2)}`);
         if (!token.address || !token.priceUsd || !token.marketCap || !token.liquidity ||
             !token.transactions.h24?.buys || !token.transactions.h24?.sells) {
             throw new Error('Error processing Token.');
@@ -328,10 +287,8 @@ class MarketCreationService {
             { key_param: 'reserve_fetch_status' }
         );
 
-        console.log(`System flags data: ${JSON.stringify(data, null, 2)}`);
 
         if (error) {
-            console.error("Error checking fetch status:", error);
             return false;
         }
 
@@ -345,7 +302,7 @@ class MarketCreationService {
         );
 
         if (error) {
-            console.error('Error releasing fetch lock:', error);
+            throw error;
         }
     }
 
@@ -358,38 +315,30 @@ class MarketCreationService {
     }
 
     async filterTokens(tokens) {
-        console.log('filter tokens: ', tokens);
         try {
             const now = Date.now();
 
-            tokens.forEach(token => {
-                console.log('\nAnalyzing token:', token.symbol);
+            // tokens.forEach(token => {
 
-                // 1. Liquidity
-                const liquidityUsd = parseFloat(token.liquidity || 0);
-                console.log('Liquidity:', liquidityUsd, liquidityUsd >= 50000 ? '✅' : '❌');
+            //     // 1. Liquidity
+            //     const liquidityUsd = parseFloat(token.liquidity || 0);
 
-                // 2. Market Cap (Optional)
-                const marketCap = parseFloat(token.marketCap || 0);
-                console.log('Market Cap:', marketCap);
+            //     // 2. Market Cap (Optional)
+            //     const marketCap = parseFloat(token.marketCap || 0);
 
-                // 3. Volume
-                const volume24h = parseFloat(token.volume24h || 0);
-                console.log('24h Volume:', volume24h, volume24h >= 100000 ? '✅' : '❌');
+            //     // 3. Volume
+            //     const volume24h = parseFloat(token.volume24h || 0);
 
-                // 4. Age
-                const tokenAge = now - token.createdAt;
-                const ageInDays = tokenAge / (24 * 60 * 60 * 1000);
-                console.log('Age in days:', ageInDays, ageInDays < 7 ? '✅' : '❌');
-            });
+            //     // 4. Age
+            //     const tokenAge = now - token.createdAt;
+            //     const ageInDays = tokenAge / (24 * 60 * 60 * 1000);
+            // });
 
             const filteredTokens = tokens.filter(token => {
                 const liquidityUsd = parseFloat(token.liquidity || 0);
                 const volume24h = parseFloat(token.volume24h || 0);
                 const tokenAge = now - token.createdAt;
                 const ageInDays = tokenAge / (24 * 60 * 60 * 1000);
-
-                console.log(`Filtered token liquidity: ${liquidityUsd}, volume: ${volume24h}, ageInDays: ${ageInDays}`);
 
                 return (
                     liquidityUsd >= 8000 &&
@@ -401,7 +350,6 @@ class MarketCreationService {
             return filteredTokens;
 
         } catch (error) {
-            console.error('Error in filter function:', error);
             return [];
         }
     }

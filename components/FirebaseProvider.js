@@ -45,7 +45,7 @@ export const FirebaseProvider = ({ children }) => {
                     console.log("Firebase Analytics initialized");
                 }
             } catch (error) {
-                console.error("Failed to initialize analytics:", error);
+                console.error("Failed to initialize analytics:");
             }
         };
 
