@@ -572,10 +572,10 @@ export default function ProfilePage() {
                     <tr className="text-sm text-gray-400">
                         <th className="w-[20%] p-1 text-left" title="Date">📅</th>
                         <th className="w-[20%] p-1 text-left" title="Name">🏷️</th>
-                        <th className="w-[10%] p-1 text-left" title="Amount">💰</th>
+                        <th className="w-[15%] p-1 text-left" title="Amount">💰</th>
                         <th className="w-[15%] p-1 text-left" title="Result">🎯</th>
                         <th className="w-[20%] p-1 text-left" title="Profit">📈</th>
-                        <th className="w-[15%] p-1 text-center" title="Share">📤</th>
+                        <th className="w-[10%] p-1 text-center" title="Share">📤</th>
                     </tr>
                 </thead>
                 <tbody>
