@@ -93,7 +93,7 @@ export async function POST(request) {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": request.headers.get('authorization')
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     signature
