@@ -19,6 +19,7 @@ import { logEvent } from 'firebase/analytics';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
 import { showToast } from '@/components/CustomToast';
+import { logInfo, logError } from '@/utils/logger';
 
 const marketPageService = new MarketPageService(supabase);
 const oddsService = new OddsService(supabase);
@@ -555,6 +556,10 @@ export default function MarketPage() {
         }
 
         const amountToAdd = Math.max(0, betWithFees - balance);
+
+        logInfo('Amount to Add', {
+          amount: amountToAdd
+        });
 
         if (solanaBalance < amountToAdd) {
           showToast("You don't have enough SOL to place this bet.", 'error');
