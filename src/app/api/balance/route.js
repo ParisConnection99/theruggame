@@ -50,6 +50,8 @@ async function checkSufficientBalance(walletAddress, amount) {
     }
 
     const solBalance = lamports / LAMPORTS_PER_SOL;
+
+    console.log(`Sol balance: ${solBalance}`);
     
     // Add small buffer for transaction fees
     const requiredAmount = amount ? Number(amount) + 0.000005 : 0;
@@ -71,6 +73,8 @@ export async function POST(request) {
     // Parse the request body
     const body = await request.json();
     const { walletAddress, amount } = body;
+
+    console.log(`Walletad: ${walletAddress}, amount: ${amount}`);
     
     if (!walletAddress) {
       return NextResponse.json(
@@ -80,6 +84,8 @@ export async function POST(request) {
     }
 
     const balanceInfo = await checkSufficientBalance(walletAddress, amount);
+
+    console.log('Balance info: ', balanceInfo);
     
     return NextResponse.json({
       success: true,

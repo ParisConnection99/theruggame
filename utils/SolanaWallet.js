@@ -6,7 +6,7 @@ import { createMemoInstruction } from '@solana/spl-memo';
 //const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
-
+import { logInfo, logError } from '@/utils/logger';
 /**
  * Checks if a user has sufficient SOL balance for a transaction
  * @param {PublicKey} publicKey - The user's wallet public key
@@ -45,6 +45,11 @@ export async function checkBalance(publicKey, amount) {
     throw new Error('Wallet not connected');
   }
 
+  logInfo('Checking balance', {
+    component: 'Solana Wallet',
+    publickKey: publicKey
+  });
+
   try {
     const response = await fetch('/api/balance', {
       method: 'POST',
@@ -68,6 +73,9 @@ export async function checkBalance(publicKey, amount) {
     return { isEnough: isEnough, solBalance: solBalance };
 
   } catch (err) {
+    logInfo('Checking balance error', {
+      data: err
+    });
     throw new Error('Error checking balance:', err);
   } 
 }
