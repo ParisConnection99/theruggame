@@ -17,8 +17,6 @@ class OddsService {
         .eq('id', marketId)
         .single();
   
-      console.log(`Market: ${market}`);
-  
       if(!market) {
         throw new Error('Error processing Market.');
       }

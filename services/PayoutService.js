@@ -21,7 +21,6 @@ class PayoutService {
         }
 
         if (!bets || bets.length === 0) {
-            console.log(`Bets not found with ID: ${marketId}`);
             return;
         }
 
@@ -35,7 +34,7 @@ class PayoutService {
 
                 await this.handleUserBalanceUpdates(winners);
             } catch (error) {
-                console.error('Error processing Resolution');
+                //console.error('Error processing Resolution');
             }
 
         } else {
@@ -44,7 +43,6 @@ class PayoutService {
             try {
                 await this.updateBetStatus(bets, 'LOST');
             } catch (error) {
-                console.error('Error processing Resolution');
                 throw new Error('Error processing Resolution in the payout service');
             }
         }
@@ -69,9 +67,9 @@ class PayoutService {
                 .eq('id', bet.id)
 
             if (error) {
-                console.log(`Error updating bet status: ${bet.id}, error: ${error.message}`);
+               // console.log(`Error updating bet status: ${bet.id}, error: ${error.message}`);
             } else {
-                console.log(`${bet.id} status was successfully updated to ${result}`);
+               // console.log(`${bet.id} status was successfully updated to ${result}`);
             }
 
         });
@@ -86,7 +84,7 @@ class PayoutService {
                 const winAmount = bet.matchedAmount * bet.oddsLocked;
                 await this.userService.updateBalance(bet.userId, winAmount);
             } catch (error) {
-                console.log(`Error updating balance for user: ${bet.user_id || bet.userId}, error: ${error.message}`);
+                //console.log(`Error updating balance for user: ${bet.user_id || bet.userId}, error: ${error.message}`);
             }
         }
     }

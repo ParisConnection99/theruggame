@@ -15,7 +15,7 @@ if (!admin.apps.length) {
     });
     console.log("Firebase Admin initialized successfully");
   } catch (error) {
-    console.error("Firebase Admin initialization error:", error);
+    console.error("Firebase Admin initialization error:");
   }
 }
 
@@ -24,7 +24,6 @@ export const config = {
 };
 
 export async function POST(request) {
-  console.log(`Just entered the place bet route.`);
   try {
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) {

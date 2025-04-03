@@ -15,7 +15,7 @@ if (!admin.apps.length) {
     });
     console.log("Firebase Admin initialized successfully");
   } catch (error) {
-    console.error("Firebase Admin initialization error:", error);
+    console.error("Firebase Admin initialization error:");
   }
 }
 
@@ -56,8 +56,6 @@ export async function GET(request, { params }) {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error(`Error fetching cashouts for user ${userId}:`, error);
-
     return new Response(JSON.stringify({ error: error.message || 'An error occurred fetching cashouts' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

@@ -16,7 +16,7 @@ if (!admin.apps.length) {
     });
     console.log("Firebase Admin initialized successfully");
   } catch (error) {
-    console.error("Firebase Admin initialization error:", error);
+    console.error("Firebase Admin initialization error:");
   }
 }
 
@@ -106,11 +106,6 @@ export async function POST(request) {
       const forwarded = request.headers.get('x-forwarded-for');
       const realIp = request.headers.get('x-real-ip');
       const geoData = geolocation(request);
-
-      console.log('Headers x-forwarded-for:', forwarded);
-      console.log('Headers x-real-ip:', realIp);
-      console.log('Geolocation data:', geoData);
-
       const ip =
           forwarded?.split(',')[0] ||
           realIp ||
@@ -137,8 +132,6 @@ export async function POST(request) {
           headers: { 'Content-Type': 'application/json' },
       });
   } catch (error) {
-      console.error('Error processing cashout request:', error);
-
       const status =
           error.message === 'User not found' || error.message === 'Insufficient balance'
               ? 400

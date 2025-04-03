@@ -16,7 +16,7 @@ if (!admin.apps.length) {
         });
         console.log("Firebase Admin initialized successfully");
     } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
+        console.error("Firebase Admin initialization error:");
     }
 }
 
@@ -25,7 +25,6 @@ export const config = {
 };
 
 export async function POST(request) {
-    console.log('Starting activity log route.');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -56,14 +55,8 @@ export async function POST(request) {
         const uid = decodedToken.uid;
         const body = await request.json();
 
-        console.log('After auth check.');
-
         const { action_type, device_info, additional_metadata } = body;
 
-        // Check if the action type is allowed
-        // if (!isAllowedActionType(action_type)) {
-        //     throw new Error('Action type not allowed.');
-        // }
 
         if (!action_type || typeof action_type !== 'string') {
             return new Response(JSON.stringify({ error: 'Invalid or missing action_type.' }), {
@@ -119,39 +112,15 @@ export async function POST(request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         } catch (error) {
-            console.error('Error logging activity:', error);
             return new Response(JSON.stringify({ error: 'Failed to log activity.' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
     } catch (error) {
-        console.error('Error in activity log route:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
-    }
-}
-
-function isAllowedActionType(action_type) {
-    switch (action_type) {
-        case 'user_login':
-        case 'user_logout':
-        case 'bet_placed':
-        case 'username_changed':
-        case 'cash_out_submitted':
-        case 'market_selected':
-        case 'feature_market_selected':
-        case 'support_selected':
-        case 'how_it_works_selected':
-        case 'pending_bet_created':
-        case 'transfer_started':
-        case 'pending_bet_update':
-        case 'bet_added_successfully':
-            return true;
-
-        default:
-            return false;
     }
 }

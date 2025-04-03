@@ -23,7 +23,7 @@ if (!admin.apps.length) {
         });
         console.log("Firebase Admin initialized successfully");
     } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
+        console.error("Firebase Admin initialization error:");
     }
 }
 
@@ -45,19 +45,9 @@ export async function POST(request) {
         // Fetch the session
         try {
             const session_data = await serviceRepo.sessionDataService.getByWallet_ca(key);
-
-            console.log(`Fetch session: ${session_data}`);
             
             const decryptedSharedSecret = encryptionService.decrypt(session_data.shared_secret);
             const convertedSharedSecret = phantomConnect.getUint8ArrayFromJsonString(decryptedSharedSecret);
-
-            if (convertedSharedSecret instanceof Uint8Array) {
-                console.log('Converted shared secret is a uint array');
-            } else {
-                console.log('is not a uint array');
-            }
-
-            console.log(convertedSharedSecret);
             const signature = phantomConnect.decryptPayload(data, nonce, convertedSharedSecret);
 
             if (!signature) {
@@ -67,8 +57,6 @@ export async function POST(request) {
                 });
             }
 
-            console.log(`Signature: Confirm mobile transaction: ${JSON.stringify(signature, null, 2)}`);
-    
             // Now we got to check the signature
             try {
                 const result = await verifyBetTransaction(signature.signature);
@@ -99,7 +87,6 @@ export async function POST(request) {
         }
 
     } catch (error) {
-        console.error('Error processing mobile bet transaction request:', error);
 
         return new Response(JSON.stringify({ error: error.message }), {
             status,

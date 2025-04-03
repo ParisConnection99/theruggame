@@ -47,7 +47,6 @@ class PendingBetsService {
           .limit(1);
           
         if (error) {
-          console.error('Error fetching pending bet:', error);
           throw error;
         }
         

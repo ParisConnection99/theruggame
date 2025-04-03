@@ -32,16 +32,8 @@ class MarketResolveService {
             throw new Error('Market is not ready to be resolved.');
         }
 
-        console.log(`Resolving market: ${JSON.stringify(market, null, 2)}`);
         // Fetch token details
         const token = await OracleService.fetchTokenDetails([market.token_address]);
-
-        console.log('--- Market Resolution ---');
-        // Debug the market object to see what properties are available
-        console.log('Market object:', JSON.stringify(market, null, 2));
-
-        // Debug the token response
-        console.log('Token response:', JSON.stringify(token, null, 2));
 
         // Use proper property names - they might be snake_case in your database
         const initialData = {
@@ -70,16 +62,10 @@ class MarketResolveService {
 
         // Make sure both objects have valid data before evaluation
         if (initialData.liquidity === undefined || finalData.liquidity === undefined) {
-            console.error('Liquidity data is missing:', {
-                initialLiquidity: market.initial_liquidity,
-                tokenLiquidity: token.liquidity
-            });
             throw new Error('Missing liquidity data for market evaluation');
         }
 
         const result = await this.evaluateMarketOutcome(initialData, finalData);
-
-        console.log(`Final price: ${finalData.price}`);
 
         return { result: result, price: finalData.price };
     }
@@ -164,14 +150,6 @@ class MarketResolveService {
                 // For the neutral zone (between 0.90 and 1.10), determine which side it's closer to
                 result = (adjustedCombinedMovement >= 1) ? 'PUMP' : 'RUG';
             }
-            
-            // Log the result before returning
-            console.log(`Market outcome: ${result}`);
-            console.log(`Liquidity change: ${liquidityChange}`);
-            console.log(`Price change: ${priceChange}%`);
-            console.log(`Combined movement: ${combinedMovement}`);
-            console.log(`Adjusted combined movement: ${adjustedCombinedMovement}`);
-            console.log(`Buy/Sell ratio: ${totalBuys}/${totalSells}`);
             
             return result;
         } catch (error) {

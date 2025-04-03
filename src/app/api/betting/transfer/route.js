@@ -14,7 +14,7 @@ if (!admin.apps.length) {
         });
         console.log("Firebase Admin initialized successfully");
     } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
+        console.error("Firebase Admin initialization error:");
     }
 }
 
@@ -64,7 +64,6 @@ export async function POST(request) {
             headers: { 'Content-Type': 'application/json' },
         });
     } catch (error) {
-        console.error('Error processing transfer and bet:', error);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },

@@ -21,7 +21,6 @@ class SessionDataService {
             });
     
         if (error) {
-            console.error('Error upserting session data:', error);
             throw error;
         }
     
@@ -37,8 +36,6 @@ class SessionDataService {
             .single();
 
         if (error) {
-            console.error(`Error in session data service: ${error}`);
-
             throw error;
         }
 
@@ -56,8 +53,6 @@ class SessionDataService {
         console.log(`Query result: ${data}`);
 
         if (error) {
-            console.error(`Error in session data service: ${error}`);
-
             throw error;
         }
 
@@ -73,8 +68,6 @@ class SessionDataService {
             .single();
     
         if (checkError && checkError.code !== 'PGRST116') {
-            // Handle any unexpected errors during the check
-            console.log('Error checking existing session:', checkError);
             throw checkError;
         }
     
@@ -86,7 +79,6 @@ class SessionDataService {
                 .eq('wallet_ca', updateData.wallet_ca);
     
             if (deleteError) {
-                console.log('Error deleting existing session:', deleteError);
                 throw deleteError;
             }
         }
@@ -114,12 +106,8 @@ class SessionDataService {
             .eq('wallet_ca', wallet_ca);
     
         if (error) {
-            console.error(`Error deleting session with wallet_ca ${wallet_ca}:`, error);
             throw error;
         }
-
-        console.log(`Deleted session with wallet_ca: ${wallet_ca}`);
-         // Return the deleted row(s) for confirmation
     }
 }
 

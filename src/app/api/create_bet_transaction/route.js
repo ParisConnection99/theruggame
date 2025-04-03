@@ -18,7 +18,7 @@ if (!admin.apps.length) {
         });
         console.log("Firebase Admin initialized successfully");
     } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
+        console.error("Firebase Admin initialization error:");
     }
 }
 
@@ -27,7 +27,6 @@ export const config = {
 };
 
 export async function POST(request) {
-    console.log('Creation pending bet transaction...');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -59,7 +58,6 @@ export async function POST(request) {
         if (marketId === undefined || marketId === null ||
             betType === undefined || betType === null ||
             tokenName === undefined || tokenName === null) {
-            console.log('Required string parameters are missing.');
             return new Response(JSON.stringify({ error: 'Missing required parameters' }), {
                 status: 400, // Using 400 Bad Request which is more appropriate than 404
                 headers: { 'Content-Type': 'application/json' },
@@ -68,7 +66,6 @@ export async function POST(request) {
 
         // Check numerical parameters
         if ((amount !== undefined && amount < 0) || (amountToAdd !== undefined && amountToAdd < 0)) {
-            console.log('Numerical parameters have invalid values.');
             return new Response(JSON.stringify({ error: 'Invalid parameter values: amounts cannot be negative' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
@@ -79,7 +76,6 @@ export async function POST(request) {
         const user = await serviceRepo.userService.getUserByWallet(uid);
 
         if (!user) {
-            console.log('User not found.');
             return new Response(JSON.stringify({ error: 'User not found.' }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -102,7 +98,6 @@ export async function POST(request) {
             status: 'pending'
         };
 
-        console.log('Creating pending bet:', betData);
 
         // Add some logs
 
@@ -120,7 +115,6 @@ export async function POST(request) {
         // If mobile handle call phantom connect and fetch the url
 
         if (!isMobile) {
-            console.log('It is not mobile');
             return new Response(JSON.stringify({
                 key: encodedNonce
             }), {
@@ -137,13 +131,10 @@ export async function POST(request) {
                     headers: { 'Content-Type': 'application/json' },
                 });
             } catch (error) {
-                console.log(`Error making mobile transaction. ${error}`);
                 throw error;
             }
         }
     } catch (error) {
-        console.error('Error processing bet transaction request:', error);
-
         const status =
             error.message === 'User not found' || error.message === 'Insufficient balance'
                 ? 400

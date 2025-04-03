@@ -88,17 +88,14 @@ export async function POST(request) {
             severity: severity
         };
 
-        console.log('Errordata: ', errorData);
         try {
 
             await serviceRepo.errorService.createError(errorData);
-            console.log('Error successfully logged.');
             return new Response(JSON.stringify({ success: true, message: 'Error logged successfully.' }), {
                 status: 201,
                 headers: { 'Content-Type': 'application/json' },
             });
         } catch (error) {
-            console.error(`Error logging errors: ${error}`);
             return new Response(JSON.stringify({ error: 'Failed to log errors.' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },

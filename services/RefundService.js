@@ -85,7 +85,6 @@ class RefundService {
     
             return refund;
         } catch (error) {
-            console.error('Error creating refund:', error);
             throw error;
         }
     }
@@ -224,7 +223,6 @@ class RefundService {
 
             return data;
         } catch (error) {
-            console.error('Error fetching refunds:', error);
             throw error;
         }
     }
@@ -248,7 +246,6 @@ class RefundService {
                 failedCount: data.filter(r => r.status === 'FAILED').length
             };
         } catch (error) {
-            console.error('Error getting refund stats:', error);
             throw error;
         }
     }
