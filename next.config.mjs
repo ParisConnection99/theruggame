@@ -2,6 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  compiler: {
+    // Remove all console.* calls with no exceptions
+    removeConsole: true,
+  },
+
   // Enable Edge Runtime for middleware and API routes
   experimental: {
     runtime: 'experimental-edge',
