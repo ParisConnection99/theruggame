@@ -68,7 +68,13 @@ export async function checkBalance(publicKey, amount) {
       throw new Error(result.error || 'Failed to check balance');
     }
 
-    const { success, balanceInfo } = result;
+    const success = result.success;
+    const balanceInfo = result.data;
+
+    logInfo('Result', {
+      s: success,
+      info: balanceInfo
+    });
 
     if (success) {
       return { isEnough: balanceInfo.isEnough, solBalance: balanceInfo.solBalance };
