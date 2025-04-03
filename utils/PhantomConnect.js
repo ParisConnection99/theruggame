@@ -9,8 +9,11 @@ import EncryptionService from '@/lib/EncryptionService';
 import { createMemoInstruction } from '@solana/spl-memo';
 
 global.Buffer = global.Buffer || Buffer;
-const RPC_ENDPOINT = clusterApiUrl('devnet');
-const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
+// const RPC_ENDPOINT = clusterApiUrl('devnet');
+// const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
+const QUICKNODE_RPC_ENDPOINT = process.env.QUICKNODE_RPC_ENDPOINT || 
+  "https://few-dry-firefly.solana-mainnet.quiknode.pro/b33411d44f2ef89fb9aa9e2f929b6541debb9fc6/";
+
 const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
 const APP_URL = "https://theruggame.fun";
 
@@ -105,8 +108,8 @@ class PhantomConnect {
 
         const params = new URLSearchParams({
             dapp_encryption_public_key: bs58.encode(this.dappKeyPair.publicKey),
-            //cluster: "mainnet-beta",
-            cluster: 'devnet',
+            cluster: "mainnet-beta",
+            //cluster: 'devnet',
             app_url: APP_URL,
             redirect_link: "https://theruggame.fun/wallet-callback",
         });
@@ -227,7 +230,12 @@ class PhantomConnect {
 
         publicKey = new PublicKey(publicKey);
 
-        const connection = new Connection(RPC_ENDPOINT, 'confirmed');
+        //const connection = new Connection(RPC_ENDPOINT, 'confirmed');
+        const connection = new Connection(QUICKNODE_RPC_ENDPOINT, {
+          commitment: "confirmed",
+          confirmTransactionInitialTimeout: 60000, // 60 seconds
+          disableRetryOnRateLimit: false
+        });
 
         let transaction = new Transaction().add(
             SystemProgram.transfer({
