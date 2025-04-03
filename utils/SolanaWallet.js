@@ -68,7 +68,7 @@ export async function checkBalance(publicKey, amount) {
       throw new Error(result.error || 'Failed to check balance');
     }
 
-    const { isEnough, solBalance } = result;
+    const { isEnough, solBalance, requiredAmount } = result;
 
     return { isEnough: isEnough, solBalance: solBalance };
 
@@ -219,10 +219,21 @@ export async function placeBet(
     // Check balance (works for both mobile and web)
     let hasEnough;
 
+    console.log('Amount to add', {
+      compoenent: 'Solana wallet',
+      amount: amountToAdd
+    });
+
     try {
       //const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
-      const { isEnough } = await checkBalance(publicKeyToCheck, amountToAdd);
+      const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd);
       hasEnough = isEnough;
+
+      logInfo('Placing bet', {
+        component: 'Solana Wallet',
+        enough: isEnough,
+        bal: solBalance
+      });
     } catch (error) {
       throw new Error('Failed to fetch wallet balance');
     }
@@ -230,6 +241,10 @@ export async function placeBet(
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
     }
+
+    logInfo('Ready to transfer sol', {
+      component: 'Solana wallet'
+    });
 
     const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
 
