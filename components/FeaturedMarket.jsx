@@ -145,7 +145,7 @@ const FeaturedMarket = ({
         <div className="flex gap-6 items-center">
           <Image
             src={imageSrc}
-            alt="Featured Market"
+            alt=""
             width={60}
             height={60}
             className="rounded-md"
