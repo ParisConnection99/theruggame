@@ -558,7 +558,8 @@ export default function MarketPage() {
         const amountToAdd = Math.max(0, betWithFees - balance);
 
         logInfo('Amount to Add', {
-          amount: amountToAdd
+          amount: amountToAdd,
+          balance: solanaBalance
         });
 
         if (solanaBalance < amountToAdd) {
