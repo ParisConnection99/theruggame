@@ -70,15 +70,11 @@ class MarketService {
         name
       ]);
 
-      console.log('Market created successfully:', market[0]);
-      console.log(`Market: ${market[0].id}, startTime: ${startTime}, duration: ${duration}`);
-      
       // Create callbacks to monitor market phases
       await this.createMessages(market[0].id, startTime, duration, endTime);
 
       return market[0];
     } catch (error) {
-      console.error('Error creating market:', error);
       throw error;
     }
   }
