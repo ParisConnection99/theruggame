@@ -76,8 +76,6 @@ export async function POST(request) {
     const body = await request.json();
     const { publicKey, amount } = body;
 
-    console.log(`Walletad: ${publicKey}, amount: ${amount}`);
-    
     if (!publicKey) {
       return NextResponse.json(
         { error: 'Wallet address is required' },
@@ -86,16 +84,13 @@ export async function POST(request) {
     }
 
     const balanceInfo = await checkSufficientBalance(publicKey, amount);
-
-    console.log('Balance info: ', balanceInfo);
-    
+ 
     return NextResponse.json({
       success: true,
       data: balanceInfo
     });
     
   } catch (error) {
-    console.error('API route error:', error);
     
     return NextResponse.json(
       { 

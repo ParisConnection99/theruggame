@@ -45,11 +45,6 @@ export async function checkBalance(publicKey, amount) {
     throw new Error('Wallet not connected');
   }
 
-  logInfo('Checking balance', {
-    component: 'Solana Wallet',
-    publickKey: publicKey
-  });
-
   try {
     const response = await fetch('/api/balance', {
       method: 'POST',
@@ -71,20 +66,12 @@ export async function checkBalance(publicKey, amount) {
     const success = result.success;
     const balanceInfo = result.data;
 
-    logInfo('Result', {
-      s: success,
-      info: balanceInfo
-    });
-
     if (success) {
       return { isEnough: balanceInfo.isEnough, solBalance: balanceInfo.solBalance };
     } else {
       throw new Error(result.error);
     }
   } catch (err) {
-    logInfo('Checking balance error', {
-      data: err
-    });
     throw new Error('Error checking balance:', err);
   } 
 }
@@ -234,15 +221,8 @@ export async function placeBet(
     });
 
     try {
-      //const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
       const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd);
       hasEnough = isEnough;
-
-      logInfo('Placing bet', {
-        component: 'Solana Wallet',
-        enough: isEnough,
-        bal: solBalance
-      });
     } catch (error) {
       throw new Error('Failed to fetch wallet balance');
     }
@@ -250,10 +230,6 @@ export async function placeBet(
     if (!hasEnough) {
       throw new Error("You don't have enough SOL to place this bet");
     }
-
-    logInfo('Ready to transfer sol', {
-      component: 'Solana wallet'
-    });
 
     const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
 
