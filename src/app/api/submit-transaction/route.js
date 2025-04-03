@@ -89,7 +89,7 @@ export async function POST(request) {
 
         // Call your existing confirm_transaction API if needed
         try {
-            const confirmResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/confirm_transaction`, {
+            const confirmResponse = await fetch('/api/confirm_transaction', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -102,7 +102,7 @@ export async function POST(request) {
 
             if (!confirmResponse.ok) {
                 console.warn(`Warning: confirm_transaction API returned ${confirmResponse.status}`);
-                const result = confirmResponse.json();
+                const result = await confirmResponse.json();
                 throw new Error(result.error);
                 // We continue anyway since the transaction itself succeeded
             }
