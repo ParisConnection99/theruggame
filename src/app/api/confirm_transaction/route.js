@@ -22,34 +22,34 @@ if (!admin.apps.length) {
 
 export async function POST(request) {
     try {
-        console.log('Entered confirm.');
+        // console.log('Entered confirm.');
 
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) {
-            return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        // const authHeader = request.headers.get('Authorization');
+        // if (!authHeader) {
+        //     return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
+        //         status: 401,
+        //         headers: { 'Content-Type': 'application/json' },
+        //     });
+        // }
 
-        // Verify the token
-        const token = authHeader.split(' ')[1]; // Bearer <token>
-        let decodedToken;
-        try {
-            decodedToken = await admin.auth().verifyIdToken(token); // Verify the token
-        } catch (error) {
-            return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
-                status: 401,
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
+        // // Verify the token
+        // const token = authHeader.split(' ')[1]; // Bearer <token>
+        // let decodedToken;
+        // try {
+        //     decodedToken = await admin.auth().verifyIdToken(token); // Verify the token
+        // } catch (error) {
+        //     return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
+        //         status: 401,
+        //         headers: { 'Content-Type': 'application/json' },
+        //     });
+        // }
 
-        console.log('Before fetching the body');
+        // console.log('Before fetching the body');
 
-        const uid = decodedToken.uid;
+        //const uid = decodedToken.uid;
         const body = await request.json();
 
-        const { signature } = body;
+        const { signature, uid } = body;
 
         console.log(`Signature: ${signature}`);
 

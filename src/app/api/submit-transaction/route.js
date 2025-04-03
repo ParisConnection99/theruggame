@@ -36,8 +36,9 @@ export async function POST(request) {
 
         // Verify the token
         const token = authHeader.split(' ')[1]; // Bearer <token>
+        let decodedToken;
         try {
-            await admin.auth().verifyIdToken(token); // Verify the token
+            decodedToken = await admin.auth().verifyIdToken(token); // Verify the token
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
                 status: 401,
@@ -45,7 +46,7 @@ export async function POST(request) {
             });
         }
 
-
+        const uid = decodedToken.uid;
         // Parse the request body
         const body = await request.json();
         const { serializedTransaction, amount, key, wallet, destinationWallet } = body;
@@ -92,11 +93,11 @@ export async function POST(request) {
             const confirmResponse = await fetch('https://theruggame.fun/api/confirm_transaction', {
                 method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    signature
+                    signature: signature,
+                    key: uid
                 }),
             });
 
