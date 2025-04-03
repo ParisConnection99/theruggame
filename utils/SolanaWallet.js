@@ -40,6 +40,41 @@ export async function checkSufficientBalance(publicKeyOrString, amount, endpoint
   }
 }
 
+export async function checkBalance(publicKey, amount) {
+  if (!publicKey) {
+    throw new Error('Wallet not connected');
+  }
+
+  try {
+    const response = await fetch('/api/balance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        publicKey,
+        amount,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to check balance');
+    }
+
+    const { isEnough, solBalance } = result;
+
+    return { isEnough: isEnough, solBalance: solBalance };
+
+  } catch (err) {
+    setError(err.message);
+    console.error('Error checking balance:', err);
+  } finally {
+    setLoading(false);
+  }
+}
+
 /**
  * Transfers SOL from user wallet to the site wallet
  * @param {PublicKey} publicKey - The sender's wallet public key
@@ -180,7 +215,8 @@ export async function placeBet(
     let hasEnough;
 
     try {
-      const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
+      //const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
+      const { isEnough } = await checkBalance(pulicKeyToCheck, amountToAdd);
       hasEnough = isEnough;
     } catch (error) {
       throw new Error('Failed to fetch wallet balance');

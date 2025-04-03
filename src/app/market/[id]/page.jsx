@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet } from '@/utils/SolanaWallet.js';
+import { checkSufficientBalance, placeBet, checkBalance } from '@/utils/SolanaWallet.js';
 import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
@@ -537,7 +537,9 @@ export default function MarketPage() {
         let solanaBalance;
 
         try {
-          solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
+          //solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
+          solanaBalance = await checkBalance(userPublicKey, betWithFees);
+          
         } catch (error) {
           await errorLog("FETCHING_BALANCE_ERROR",
             error.message || 'Error object with empty message',
