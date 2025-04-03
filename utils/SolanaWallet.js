@@ -45,6 +45,7 @@ export async function checkBalance(publicKey, amount) {
     throw new Error('Wallet not connected');
   }
 
+
   try {
     const response = await fetch('/api/balance', {
       method: 'POST',
@@ -85,13 +86,108 @@ export async function checkBalance(publicKey, amount) {
  * @param {string} [endpoint=RPC_ENDPOINT] - Optional custom RPC endpoint
  * @returns {Promise<{success: boolean, signature?: string, error?: string}>} Transaction result
  */
+// export async function transferSOL(
+//   publicKey,
+//   sendTransaction,
+//   amount,
+//   key,
+//   token,
+//   endpoint = RPC_ENDPOINT
+// ) {
+//   if (!publicKey) {
+//     return { success: false, error: 'Wallet not connected' };
+//   }
+
+//   const wallet = new PublicKey(publicKey);
+//   const destinationWallet = new PublicKey('A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU');
+
+//   try {
+//     // Use connectionless approach to avoid WebSocket issues
+//     // The sendTransaction function already has a connection from the wallet adapter
+//     const connection = new Connection(endpoint, {
+//       commitment: 'confirmed',
+//       wsEndpoint: WS_ENDPOINT,
+//       disableRetryOnRateLimit: false,
+//       confirmTransactionInitialTimeout: 60000 // 60 seconds
+//     });
+
+//     // Create transaction
+//     const transaction = new Transaction().add(
+//       SystemProgram.transfer({
+//         fromPubkey: wallet,
+//         toPubkey: destinationWallet,
+//         lamports: Math.round(amount * LAMPORTS_PER_SOL) // Ensure we use integer lamports
+//       })
+//     );
+
+//     transaction.add(
+//       createMemoInstruction(`${key}`, [wallet])
+//     );
+
+//     // Get blockhash only once
+//     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+//     transaction.recentBlockhash = blockhash;
+//     transaction.feePayer = wallet;
+
+//     // Send transaction (this triggers the wallet popup for user approval)
+//     const signature = await sendTransaction(transaction, connection);
+
+//     // Confirm with parameters that don't rely on WebSockets
+//     const confirmation = await connection.confirmTransaction({
+//       blockhash,
+//       lastValidBlockHeight,
+//       signature
+//     }, 'confirmed');
+
+//     // Check for timeout errors
+//     if (confirmation.value.err) {
+//       throw new Error(`Transaction failed: ${confirmation.value.err}`);
+//     }
+
+//     const response = await fetch('/api/confirm_transaction', {
+//       method: 'POST',
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${token}`
+//       },
+//       body: JSON.stringify({
+//         signature
+//       }),
+//     });
+
+//     if (!response.ok) {
+//       const result = await response.json();
+//       throw new Error(result.error);
+//     }
+
+//     return {
+//       success: true,
+//       signature,
+//       transactionUrl: `https://explorer.solana.com/tx/${signature}`
+//     };
+//   } catch (error) {
+//     // Provide more specific error messaging
+//     let errorMessage = error.message;
+//     if (error.message.includes('User rejected')) {
+//       errorMessage = 'Transaction was rejected by user';
+//     } else if (error.message.includes('timeout')) {
+//       errorMessage = 'Transaction confirmation timed out. Please check Solana Explorer for status.';
+//     }
+
+//     return {
+//       success: false,
+//       error: errorMessage
+//     };
+//   }
+// }
+
 export async function transferSOL(
   publicKey,
-  sendTransaction,
+  signTransaction, // Changed from sendTransaction to signTransaction
   amount,
   key,
   token,
-  endpoint = RPC_ENDPOINT
+  // Removed endpoint parameter since we'll use server
 ) {
   if (!publicKey) {
     return { success: false, error: 'Wallet not connected' };
@@ -101,15 +197,6 @@ export async function transferSOL(
   const destinationWallet = new PublicKey('A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU');
 
   try {
-    // Use connectionless approach to avoid WebSocket issues
-    // The sendTransaction function already has a connection from the wallet adapter
-    const connection = new Connection(endpoint, {
-      commitment: 'confirmed',
-      wsEndpoint: WS_ENDPOINT,
-      disableRetryOnRateLimit: false,
-      confirmTransactionInitialTimeout: 60000 // 60 seconds
-    });
-
     // Create transaction
     const transaction = new Transaction().add(
       SystemProgram.transfer({
@@ -123,42 +210,60 @@ export async function transferSOL(
       createMemoInstruction(`${key}`, [wallet])
     );
 
-    // Get blockhash only once
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    // Get blockhash from server instead of directly
+    const blockhashResponse = await fetch('/api/get-blockhash', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    });
+
+    if (!blockhashResponse.ok) {
+      throw new Error('Failed to get recent blockhash');
+    }
+
+    const { blockhash, lastValidBlockHeight } = await blockhashResponse.json();
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = wallet;
 
-    // Send transaction (this triggers the wallet popup for user approval)
-    const signature = await sendTransaction(transaction, connection);
+    // SIGN transaction (shows popup but doesn't submit)
+    const signedTransaction = await signTransaction(transaction);
+    
+    // Serialize the signed transaction
+    const serializedTransaction = Buffer.from(signedTransaction.serialize()).toString('base64');
 
-    // Confirm with parameters that don't rely on WebSockets
-    const confirmation = await connection.confirmTransaction({
-      blockhash,
-      lastValidBlockHeight,
-      signature
-    }, 'confirmed');
-
-    // Check for timeout errors
-    if (confirmation.value.err) {
-      throw new Error(`Transaction failed: ${confirmation.value.err}`);
-    }
-
-    const response = await fetch('/api/confirm_transaction', {
+    // Send to server for submission via QuickNode
+    const response = await fetch('/api/submit-transaction', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        signature
+        serializedTransaction,
+        amount,
+        key,
+        wallet: publicKey.toString(),
+        destinationWallet: destinationWallet.toString()
       }),
     });
 
     if (!response.ok) {
       const result = await response.json();
-      throw new Error(result.error);
+      throw new Error(result.error || 'Transaction submission failed');
     }
 
+    const result = await response.json();
+    const { signature, success } = result;
+
+    if (!success) {
+      throw new Error(result.error || 'Transaction failed');
+    }
+
+    // We don't need to call confirm_transaction separately since
+    // the server should have already confirmed it
+    
     return {
       success: true,
       signature,
@@ -183,7 +288,8 @@ export async function transferSOL(
 // Update placeBet function to include marketId
 export async function placeBet(
   publicKey,
-  sendTransaction,
+  signTransaction,
+  //sendTransaction,
   betAmount, // Full bet amount without fees / will be added to create bet
   onSuccess,
   onError,
@@ -231,7 +337,7 @@ export async function placeBet(
       throw new Error("You don't have enough SOL to place this bet");
     }
 
-    const result = await transferSOL(publicKey, sendTransaction, amountToAdd, key, token);
+    const result = await transferSOL(publicKey, signTransaction, amountToAdd, key, token);
 
     if (result.success) {
       // we can call the endpoint from here to check if successful

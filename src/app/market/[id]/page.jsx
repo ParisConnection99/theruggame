@@ -32,7 +32,7 @@ export default function MarketPage() {
   const MIN_BET_AMOUNT = 0.07;
   const MAX_BET_AMOUNT = 100;
   const inputRef = useRef(null); // Add ref for the input element
-  const { publicKey, sendTransaction, connected } = useWallet();
+  const { publicKey, sendTransaction, signTransaction, connected } = useWallet();
   const analytics = useAnalytics();
   const { user: authUser, auth } = useAuth();
 
@@ -609,7 +609,8 @@ export default function MarketPage() {
           await new Promise((resolve, reject) => {
             placeBet(
               userPublicKey,
-              sendTransaction,
+              signTransaction,
+              //sendTransaction,
               betAmount,
               // Success callback
               async (transferResult) => {
