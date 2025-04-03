@@ -3,8 +3,8 @@
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { createMemoInstruction } from '@solana/spl-memo';
-const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
-//const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
+//const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
+const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 
 /**
