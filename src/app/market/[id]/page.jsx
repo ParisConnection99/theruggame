@@ -557,11 +557,6 @@ export default function MarketPage() {
 
         const amountToAdd = Math.max(0, betWithFees - balance);
 
-        logInfo('Amount to Add', {
-          amount: amountToAdd,
-          balance: solanaBalance
-        });
-
         if (solanaBalance < amountToAdd) {
           showToast("You don't have enough SOL to place this bet.", 'error');
           setIsBetting(false);
