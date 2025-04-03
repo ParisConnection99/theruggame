@@ -29,6 +29,8 @@ async function checkSufficientBalance(walletAddress, amount) {
       throw new Error('Invalid wallet address');
     }
 
+    console.log('Before making the connection attempt.');
+
     // Get balance with retry logic
     let attempts = 3;
     let lamports;
@@ -63,7 +65,7 @@ async function checkSufficientBalance(walletAddress, amount) {
     };
 
   } catch (error) {
-    console.error(`Balance check error:`, error);
+    console.error(`Balance check error:`, error.message);
     throw new Error(`Failed to check wallet balance: ${error.message}`);
   }
 }
@@ -72,18 +74,18 @@ export async function POST(request) {
   try {
     // Parse the request body
     const body = await request.json();
-    const { walletAddress, amount } = body;
+    const { publicKey, amount } = body;
 
-    console.log(`Walletad: ${walletAddress}, amount: ${amount}`);
+    console.log(`Walletad: ${publicKey}, amount: ${amount}`);
     
-    if (!walletAddress) {
+    if (!publicKey) {
       return NextResponse.json(
         { error: 'Wallet address is required' },
         { status: 400 }
       );
     }
 
-    const balanceInfo = await checkSufficientBalance(walletAddress, amount);
+    const balanceInfo = await checkSufficientBalance(publicKey, amount);
 
     console.log('Balance info: ', balanceInfo);
     
