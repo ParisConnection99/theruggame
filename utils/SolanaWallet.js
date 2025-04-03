@@ -221,7 +221,7 @@ export async function placeBet(
 
     try {
       //const { isEnough } = await checkSufficientBalance(publicKeyToCheck, amountToAdd);
-      const { isEnough } = await checkBalance(pulicKeyToCheck, amountToAdd);
+      const { isEnough } = await checkBalance(publicKeyToCheck, amountToAdd);
       hasEnough = isEnough;
     } catch (error) {
       throw new Error('Failed to fetch wallet balance');

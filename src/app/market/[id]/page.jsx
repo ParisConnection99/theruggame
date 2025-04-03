@@ -538,8 +538,9 @@ export default function MarketPage() {
 
         try {
           //solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
-          solanaBalance = await checkBalance(userPublicKey, betWithFees);
-          
+          const { isEnough, solBalance } = await checkBalance(userPublicKey, betWithFees);
+          solanaBalance = solBalance;
+
         } catch (error) {
           await errorLog("FETCHING_BALANCE_ERROR",
             error.message || 'Error object with empty message',
