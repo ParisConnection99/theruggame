@@ -224,8 +224,17 @@ export default function ProfilePage() {
 
                 const pendingBets = await response.json();
 
-                if (pendingBets) {
-                    setPendingBets(pendingBets);
+                if (pendingBets && pendingBets.length > 0) {
+                    // Sort by date/timestamp (assuming there's a property like 'createdAt' or 'timestamp')
+                    const sortedBets = pendingBets.sort((a, b) => {
+                        // For date strings
+                        return new Date(b.inserted_at) - new Date(a.inserted_at);
+
+                        // OR if you have a timestamp number
+                        // return b.timestamp - a.timestamp;
+                    });
+
+                    setPendingBets(sortedBets);
                 } else {
                     setPendingBets([]);
                 }
@@ -624,12 +633,12 @@ export default function ProfilePage() {
                                                     {bet.amount} SOL
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'pending'
-                                                        ? 'text-yellow-500'
-                                                        : bet.status === 'processing'
-                                                            ? 'text-blue-500'
-                                                            : bet.status === 'error'
-                                                                ? 'text-red-500'
-                                                                : ''
+                                                    ? 'text-yellow-500'
+                                                    : bet.status === 'processing'
+                                                        ? 'text-blue-500'
+                                                        : bet.status === 'error'
+                                                            ? 'text-red-500'
+                                                            : ''
                                                     }`}>
                                                     {bet.status.toUpperCase()}
                                                 </td>
