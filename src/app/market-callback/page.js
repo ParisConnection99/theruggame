@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { errorLog } from '@/utils/ErrorLog';
+import { logInfo, logError } from '@/utils/logger';
 
 
 function CallbackContent() {
@@ -68,11 +69,16 @@ function CallbackContent() {
         router.push(`/market/${marketId}?txSignature=complete`);
       } catch (error) {
         await errorLog("MARKET_CALLBACK_ERROR",
-          error.message || 'Error object with empty message',
+          error || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET-CALLBACK",
           "SERIOUS");
 
+
+          logInfo('Error', {
+            component: 'masrket callback',
+            err: error
+          });
           await fetch('/api/pending-bets/error/mobile', {
             method: 'POST',
             headers: {
