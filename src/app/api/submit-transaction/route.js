@@ -41,9 +41,8 @@ export async function POST(request) {
 
         // Verify the token
         const token = authHeader.split(' ')[1]; // Bearer <token>
-        let decodedToken;
         try {
-            decodedToken = await admin.auth().verifyIdToken(token); // Verify the token
+            await admin.auth().verifyIdToken(token); // Verify the token
         } catch (error) {
             return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
                 status: 401,
@@ -51,9 +50,6 @@ export async function POST(request) {
             });
         }
 
-        throw new Error('Testing pending bets update.');
-
-        const uid = decodedToken.uid;
         // Parse the request body
         const body = await request.json();
         const { serializedTransaction, amount, key, wallet, destinationWallet, id } = body;

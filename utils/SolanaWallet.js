@@ -133,9 +133,6 @@ export async function transferSOL(
       throw new Error(result.error || 'Transaction failed');
     }
 
-    // We don't need to call confirm_transaction separately since
-    // the server should have already confirmed it
-
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     await fetch('/api/check-transaction', {
