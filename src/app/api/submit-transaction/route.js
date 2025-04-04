@@ -51,6 +51,8 @@ export async function POST(request) {
             });
         }
 
+        throw new Error('Testing pending bets update.');
+
         const uid = decodedToken.uid;
         // Parse the request body
         const body = await request.json();
