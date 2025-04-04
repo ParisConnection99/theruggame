@@ -264,18 +264,10 @@ export default function ProfilePage() {
             const handlePendingBetsUpdate = (update) => {
                 switch (update.type) {
                     case 'INSERT':
-                        logInfo('New pending bet:', {
-                            payload: update.payload
-                        });
-                        // Add new bet to state/context
                         setPendingBets(prev => [...prev, update.payload]);
                         break; // You were missing this break statement
 
                     case 'UPDATE':
-                        logInfo('Bet status updated:',{
-                            payload: update.payload
-                        });
-
                         // If status is complete, remove the bet from pending bets
                         if (update.payload.status === 'complete') {
                             setPendingBets(prev =>
@@ -292,7 +284,6 @@ export default function ProfilePage() {
                         break;
 
                     default:
-                        logInfo('Unknown update type:', { type: update.type });
                         break;
                 }
             };
