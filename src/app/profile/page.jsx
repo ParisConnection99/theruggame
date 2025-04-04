@@ -624,7 +624,7 @@ export default function ProfilePage() {
                                                     {new Date(bet.inserted_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="p-1 truncate">
-                                                    {bet.id}...
+                                                    {bet.id}
                                                 </td>
                                                 <td className="p-1 truncate">
                                                     {bet.token_name || 'Unknown'}
