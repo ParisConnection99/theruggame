@@ -235,8 +235,7 @@ export default function ProfilePage() {
             };
             
             // Import and set up the real-time listener
-            const { listenToUserPendingBets } = await import('@/lib/realtimeListeners');
-            const subscription = listenToUserPendingBets(uid, handlePendingBetsUpdate);
+            const subscription = listenToBets(uid, handlePendingBetsUpdate);
             
             // Clean up subscription when component unmounts or auth changes
             return () => {
