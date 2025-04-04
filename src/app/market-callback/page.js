@@ -69,16 +69,17 @@ function CallbackContent() {
         router.push(`/market/${marketId}?txSignature=complete`);
       } catch (error) {
         await errorLog("MARKET_CALLBACK_ERROR",
-          error || 'Error object with empty message',
+          error.message || 'Error object with empty message',
           error.stack || "no stack trace available",
           "MARKET-CALLBACK",
           "SERIOUS");
 
 
-          logInfo('Error', {
-            component: 'masrket callback',
-            err: error
-          });
+          window.dispatchEvent(new CustomEvent('market-callback-event', {
+            detail: { isConnected: true }
+          }));
+  
+          
           await fetch('/api/pending-bets/error/mobile', {
             method: 'POST',
             headers: {
@@ -89,10 +90,12 @@ function CallbackContent() {
             }),
           });
 
+          await new Promise((resolve) => setTimeout(resolve, 200));
+
           localStorage.removeItem('bp_id');
         // Redirect back to the market page with error parameter
         const errorMessage = error.message || 'Unknown error processing transaction';
-        router.push(`/market/${marketId}?error}`);
+        router.push(`/market/${marketId}?error=Critical}`);
       }
     }
 
@@ -100,6 +103,9 @@ function CallbackContent() {
     try {
       processCallback();
     } catch (error) {
+      logInfo('call back error', {
+        err: error.message
+      });
       router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
   }, [searchParams, router]);
