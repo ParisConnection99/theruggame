@@ -652,7 +652,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* --- List Of Bets --- */}
-                    <div className="mt-6 w-full max-w-md">
+                    {/* <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
                         {betsLoading ? (
                             <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
@@ -683,7 +683,7 @@ export default function ProfilePage() {
                                                     {bet.token_name || 'Unknown'}
                                                 </td>
                                                 <td className="p-1 truncate">
-                                                    {bet.matched_amount}(s)
+                                                    {bet.matched_amount}s
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
                                                     ? 'text-green-500'
@@ -726,7 +726,78 @@ export default function ProfilePage() {
                                 <p className="text-gray-400">No bet history</p>
                             </div>
                         )}
-                    </div>
+                    </div> */}
+                    <div className="mt-6 w-full max-w-md">
+    <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
+    {betsLoading ? (
+        <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
+            <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-700 rounded w-full"></div>
+        </div>
+    ) : bets.length > 0 ? (
+        <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
+            <table className="w-full table-fixed">
+                <thead>
+                    <tr className="text-sm text-gray-400">
+                        <th className="w-[25%] p-1 text-left" title="Date">📅</th>
+                        <th className="w-[25%] p-1 text-left" title="Name">🏷️</th>
+                        <th className="w-[20%] p-1 text-left" title="Result">🎯</th>
+                        <th className="w-[20%] p-1 text-left" title="Profit">📈</th>
+                        <th className="w-[10%] p-1 text-center" title="Share">📤</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {bets.map((bet) => (
+                        <tr key={bet.id} className="text-sm border-t border-gray-700">
+                            <td className="p-1 truncate">
+                                {new Date(bet.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="p-1 truncate">
+                                {bet.token_name || 'Unknown'}
+                            </td>
+                            <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
+                                ? 'text-green-500'
+                                : bet.status === 'LOST'
+                                    ? 'text-red-500'
+                                    : ''
+                                }`}>
+                                {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REFUNDED' ? bet.status : ''}
+                            </td>
+                            <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
+                                ? 'text-green-500'
+                                : bet.status === 'LOST'
+                                    ? 'text-red-500'
+                                    : ''
+                                }`}>
+                                {bet.status === 'WON' || bet.status === 'REFUNDED'
+                                    ? `${bet.matched_amount} SOL`
+                                    : bet.status === 'LOST'
+                                        ? `-${bet.matched_amount} SOL`
+                                        : ''}
+                            </td>
+                            <td className="p-1 text-center">
+                                {(bet.status === 'WON' || bet.status === 'LOST') &&
+                                    <span
+                                        className="cursor-pointer hover:opacity-75"
+                                        title="Share bet result"
+                                        onClick={() => handleBetShare(bet)}
+                                    >
+                                        📋
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    ) : (
+        <div className="text-center py-4 bg-gray-800 rounded-lg">
+            <p className="text-gray-400">No bet history</p>
+        </div>
+    )}
+</div>
                     <h4 className="text-gray-500 text-sm mt-4">JOINED AT: {userData.created_at ? new Date(userData.created_at).toLocaleDateString() : "12/01/2025"}</h4>
                 </div>
             </div>
