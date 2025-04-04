@@ -85,7 +85,7 @@ export async function POST(request) {
 
         const transactionContext = {
             recentBlockhash: transaction.recentBlockhash,
-            lastValid: lastValidBlockHeight,
+            lastValid: transaction.lastValidBlockHeight,
             signature: signature
           };
 
