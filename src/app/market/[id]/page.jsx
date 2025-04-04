@@ -625,8 +625,10 @@ export default function MarketPage() {
                     inputRef.current.value = "";
                   }
 
-                  showToast("Transaction submitted! Your bet is being processed...");
-                  showToast('Check your profile to see the bet updates.');
+                  showToast('Bet placed successfully', 'success');
+
+                  // showToast("Transaction submitted! Your bet is being processed...");
+                  // showToast('Check your profile to see the bet updates.');
                   resolve();
                 } catch (error) {
                   reject(error);

@@ -135,7 +135,7 @@ export async function transferSOL(
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    await fetch('/api/check-transaction', {
+    const transactionResponse = await fetch('/api/check-transaction', {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
@@ -145,6 +145,11 @@ export async function transferSOL(
         data
       }),
     });
+
+    if (!transactionResponse.ok) {
+      const errorData = await transactionResponse.json();
+      throw new Error(errorData.error);
+    }
 
     return {
       success: true,
