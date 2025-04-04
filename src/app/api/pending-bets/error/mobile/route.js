@@ -11,6 +11,11 @@ export async function POST(request) {
             throw error;
         }
 
+        return NextResponse.json(
+            { success: true },
+            { status: 200 }
+        );
+
     } catch (error) {
         return NextResponse.json(
             { success: false, error: error.message || 'Failed to updated pending bets.' },
