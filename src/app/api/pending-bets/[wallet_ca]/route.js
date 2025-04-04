@@ -41,6 +41,8 @@ export async function GET(request, { params }) {
 
         const walletAddress = await params.wallet_ca;
 
+        console.log('Wallet address: ', walletAddress);
+
         if (!walletAddress) {
             return new Response(JSON.stringify({ error: 'Wallet address is required'}), {
                 status: 400,
@@ -49,6 +51,8 @@ export async function GET(request, { params }) {
         }
 
         const pendingBets = await serviceRepo.pendingBetsService.fetchPendingBetsByWalletCa(walletAddress);
+
+        console.log('Pending Bets: ',pendingBets);
 
         return new Response(JSON.stringify(pendingBets), {
             status: 200,

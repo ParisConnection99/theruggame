@@ -200,6 +200,8 @@ export default function ProfilePage() {
     useEffect(() => {
         if (!authUser) return;
 
+        
+
         const fetchPendingBets = async () => {
             try {
                 setPendingBetsLoading(true);
