@@ -72,8 +72,6 @@ export async function POST(request) {
             'confirmed'
         );
 
-        throw new Error('Testing pending bets.');
-
         // Check for errors in confirmation
         if (confirmation.value.err) {
             return NextResponse.json(
