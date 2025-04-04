@@ -31,6 +31,7 @@ export default function ProfilePage() {
     const [userLoading, setUserLoading] = useState(true);
     const [betsLoading, setBetsLoading] = useState(false);
     const [cashoutsLoading, setCashoutsLoading] = useState(false);
+    const [pendingBetsLoading, setPendingBetsLoading] = useState(false);
 
     // Pending Bets
     const [pendingBets, setPendingBets] = useState([]);
@@ -546,15 +547,9 @@ export default function ProfilePage() {
                     </div>
 
                     {/* --- List Of Pending Bets --- */}
-<div className="mt-6 w-full max-w-md">
+                    <div className="mt-6 w-full max-w-md">
     <h3 className="text-l font-bold mb-2 text-center">Pending Bets</h3>
-    {pendingBetsLoading ? (
-        <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
-            <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-700 rounded w-full"></div>
-        </div>
-    ) : pendingBets.length > 0 ? (
+    {pendingBets.length > 0 ? (
         <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
             <table className="w-full table-fixed">
                 <thead>
