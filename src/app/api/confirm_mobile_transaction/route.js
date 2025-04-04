@@ -33,8 +33,6 @@ export async function POST(request) {
 
         const { data, nonce, key } = body;
 
-        throw new Error('Testing updating pending bets');
-
         if (!data || !nonce || !key) {
             return new Response(JSON.stringify({ error: 'Missing parameters.' }), {
                 status: 401,
@@ -86,7 +84,6 @@ export async function POST(request) {
         }
 
     } catch (error) {
-
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
