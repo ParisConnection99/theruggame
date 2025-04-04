@@ -19,6 +19,7 @@ if (!admin.apps.length) {
 }
 
 export async function GET(request, { params }) {
+    console.log('Starting fetching pending bets');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -38,6 +39,8 @@ export async function GET(request, { params }) {
                 headers: { 'Content-Type': 'application/json' },
             });
         }
+
+        console.log('Auth passed time to fetch params');
 
         const walletAddress = await params.wallet_ca;
 

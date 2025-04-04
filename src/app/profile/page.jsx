@@ -211,6 +211,11 @@ export default function ProfilePage() {
                 const uid = authUser.uid;
                 const token = await authUser.getIdToken();
 
+                logInfo('Token', {
+                    component: 'Profile',
+                    tok: token
+                });
+
                 const response = await fetch(`/api/pending-bets?wallet_ca=${uid}`, {
                     method: 'GET',
                     headers: {
