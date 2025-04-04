@@ -83,17 +83,15 @@ export async function POST(request) {
             throw error;
         }
 
-        const lastValidBlockHeight = await connection.getLatestBlockhash().lastValidBlockHeight
+        const { blockhash, lastValidBlockHeight} = await connection.getLatestBlockhash();
 
         const transactionContext = {
-            recentBlockhash: transaction.recentBlockhash,
+            recentBlockhash: blockhash,  // Use blockhash, not transaction.recentBlockhash
             lastValid: lastValidBlockHeight,
             signature: signature
-          };
+        };
 
         const encryptedContext = encryptionService.encrypt(transactionContext);
-
-        console.log('Encrpted data: submit-transaction: ', encryptedContext);
 
         return NextResponse.json({
             success: true,
