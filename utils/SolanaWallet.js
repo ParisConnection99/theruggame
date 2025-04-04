@@ -136,7 +136,7 @@ export async function transferSOL(
     // We don't need to call confirm_transaction separately since
     // the server should have already confirmed it
 
-    await sleep(5000);
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     logInfo('After sleep checking transaction', {
       data: data
