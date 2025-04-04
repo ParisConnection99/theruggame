@@ -205,16 +205,10 @@ export default function ProfilePage() {
 
         const fetchPendingBets = async () => {
             try {
-                logInfo('Fetching pending bets...');
 
                 setPendingBetsLoading(true);
                 const uid = authUser.uid;
                 const token = await authUser.getIdToken();
-
-                logInfo('Token', {
-                    component: 'Profile',
-                    tok: token
-                });
 
                 const response = await fetch(`/api/pending-bets/${uid}`, {
                     method: 'GET',
@@ -225,18 +219,10 @@ export default function ProfilePage() {
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    logInfo('Response error', {
-                        component: 'Profile',
-                        er: errorData.error
-                    });
                     throw new Error(errorData.error);
                 }
 
                 const pendingBets = await response.json();
-
-                logInfo('Pending bets', {
-                    pb: pendingBets
-                });
 
                 if (pendingBets) {
                     setPendingBets(pendingBets);
