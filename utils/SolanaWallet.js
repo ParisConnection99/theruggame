@@ -193,7 +193,7 @@ export async function placeBet(
 ) {
   if (setLoading) setLoading(true);
 
-  if (!betAmount || !userId || !amountToAdd || !betType || !token_name) {
+  if (!betAmount || !userId || !amountToAdd || !betType || !token_name || !id) {
     throw new Error('Inputs cant be empty');
   }
 
@@ -217,7 +217,7 @@ export async function placeBet(
     });
 
     try {
-      const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd, id);
+      const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd);
       hasEnough = isEnough;
     } catch (error) {
       throw new Error('Failed to fetch wallet balance');
@@ -227,7 +227,7 @@ export async function placeBet(
       throw new Error("You don't have enough SOL to place this bet");
     }
 
-    const result = await transferSOL(publicKey, signTransaction, amountToAdd, key, token);
+    const result = await transferSOL(publicKey, signTransaction, amountToAdd, key, token, id);
 
     if (result.success) {
       // we can call the endpoint from here to check if successful

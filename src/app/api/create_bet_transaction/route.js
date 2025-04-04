@@ -103,6 +103,8 @@ export async function POST(request) {
 
         const pendingBet = await serviceRepo.pendingBetsService.createPendingBet(betData);
 
+        console.log('Fetched pending bet: ', pendingBet);
+
         const { ip, device_info } = await fetchRequestData(request);
         await serviceRepo.activityLogService.logActivity({
             user_id: user.user_id,
