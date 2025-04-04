@@ -590,7 +590,7 @@ export default function ProfilePage() {
                                                 ? 'text-green-500'
                                                 : 'text-red-500'
                                         }>
-                                            {cashout.status}
+                                            {cashout.status.toUpperCase()}
                                         </div>
                                     </div>
                                 ))}
