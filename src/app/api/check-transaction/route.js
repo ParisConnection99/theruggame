@@ -65,7 +65,7 @@ export async function POST(request) {
 
         const signature = decryptedContext.signature;
         const blockhash = decryptedContext.recentBlockhash;
-        const lastValidBlockHeight = decryptedContext.lastValidBlockHeight;
+        const lastValidBlockHeight = decryptedContext.lastValid;
 
         console.log('Fetched decrypted context: ', JSON.stringify(decryptedContext, null, 2));
 
