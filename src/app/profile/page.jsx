@@ -626,7 +626,7 @@ export default function ProfilePage() {
                                         {pendingBets.map((bet) => (
                                             <tr key={bet.id} className="text-sm border-t border-gray-700">
                                                 <td className="p-1 truncate">
-                                                    {new Date(bet.created_at).toLocaleDateString()}
+                                                    {new Date(bet.inserted_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="p-1 truncate">
                                                     {bet.id}...
