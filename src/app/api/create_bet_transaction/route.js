@@ -127,7 +127,7 @@ export async function POST(request) {
             try {
 
                 const url = await phantomConnect.signAndSendTransaction(amountToAdd, uid, encodedNonce);
-                return new Response(JSON.stringify({ url: url, id: id }), {
+                return new Response(JSON.stringify({ url: url, id: pendingBet.id }), {
                     status: 201,
                     headers: { 'Content-Type': 'application/json' },
                 });
