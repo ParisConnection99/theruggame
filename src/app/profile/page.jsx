@@ -263,7 +263,7 @@ export default function ProfilePage() {
 
             const handlePendingBetsUpdate = (update) => {
                 switch (update.type) {
-                    case 'NEW_PENDING_BET':
+                    case 'INSERT':
                         logInfo('New pending bet:', {
                             payload: update.payload
                         });
@@ -271,7 +271,7 @@ export default function ProfilePage() {
                         setPendingBets(prev => [...prev, update.payload]);
                         break; // You were missing this break statement
 
-                    case 'BET_STATUS_UPDATE':
+                    case 'UPDATE':
                         logInfo('Bet status updated:',{
                             payload: update.payload
                         });
