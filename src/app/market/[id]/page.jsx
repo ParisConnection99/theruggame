@@ -604,12 +604,13 @@ export default function MarketPage() {
 
         } else {
 
-          const { key } = await createBetTransactionResponse.json();
+          const { key, id } = await createBetTransactionResponse.json();
 
           await new Promise((resolve, reject) => {
             placeBet(
               userPublicKey,
               signTransaction,
+              id,
               //sendTransaction,
               betAmount,
               // Success callback
@@ -625,7 +626,9 @@ export default function MarketPage() {
                     inputRef.current.value = "";
                   }
 
-                  showToast('Your bet has been placed', 'success');
+                  //showToast('Your bet has been placed', 'success');
+                  showToast("Transaction submitted! Your bet is being processed...");
+                  showToast('Check your profile to see the bet updates.');
                   resolve();
                 } catch (error) {
                   reject(error);

@@ -101,7 +101,7 @@ export async function POST(request) {
 
         // Add some logs
 
-        await serviceRepo.pendingBetsService.createPendingBet(betData);
+        const pendingBet = await serviceRepo.pendingBetsService.createPendingBet(betData);
 
         const { ip, device_info } = await fetchRequestData(request);
         await serviceRepo.activityLogService.logActivity({
@@ -116,7 +116,8 @@ export async function POST(request) {
 
         if (!isMobile) {
             return new Response(JSON.stringify({
-                key: encodedNonce
+                key: encodedNonce,
+                id: pendingBet.id
             }), {
                 status: 201,
                 headers: { 'Content-Type': 'application/json' },

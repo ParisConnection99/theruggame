@@ -1,7 +1,12 @@
 // app/api/submit-transaction/route.js
 import { NextResponse } from 'next/server';
 import { Connection, Transaction } from '@solana/web3.js';
+import { serviceRepo } from '@/services/ServiceRepository';
 import admin from 'firebase-admin';
+import EncryptionService from '@/lib/EncryptionService';
+const key = process.env.ENCRYPTION_KEY;
+const iv = process.env.ENCRYPTION_IV;
+const encryptionService = new EncryptionService(key, iv);
 
 // Get this from your environment variables
 const QUICKNODE_RPC_ENDPOINT = process.env.QUICKNODE_RPC_ENDPOINT;
@@ -49,7 +54,7 @@ export async function POST(request) {
         const uid = decodedToken.uid;
         // Parse the request body
         const body = await request.json();
-        const { serializedTransaction, amount, key, wallet, destinationWallet } = body;
+        const { serializedTransaction, amount, key, wallet, destinationWallet, id } = body;
 
         if (!serializedTransaction) {
             return NextResponse.json(
@@ -70,54 +75,81 @@ export async function POST(request) {
             { skipPreflight: false, preflightCommitment: 'confirmed' }
         );
 
-        // Wait for confirmation
-        const confirmation = await connection.confirmTransaction(
-            {
-                signature,
-                blockhash: transaction.recentBlockhash,
-                lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
-            },
-            'confirmed'
-        );
-
-        // Check for errors in confirmation
-        if (confirmation.value.err) {
-            return NextResponse.json(
-                { success: false, error: `Transaction error: ${confirmation.value.err}` },
-                { status: 400 }
-            );
-        }
-
-        // Call your existing confirm_transaction API if needed
         try {
-            const confirmResponse = await fetch('https://theruggame.fun/api/confirm_transaction', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    signature: signature,
-                    key: uid
-                }),
-            });
-
-            if (!confirmResponse.ok) {
-                console.warn(`Warning: confirm_transaction API returned ${confirmResponse.status}`);
-                const result = await confirmResponse.json();
-                throw new Error(result.error);
-                // We continue anyway since the transaction itself succeeded
-            }
-        } catch (confirmError) {
-            console.error('Error calling confirm_transaction:', confirmError);
-            throw confirmError;
-            // We continue anyway since the transaction itself succeeded
+            console.log('Saving the signature to pending bets + signature.');
+            await serviceRepo.pendingBetsService.updateStatusToProcessingWithId(id, signature);
+        } catch (error) {
+            console.log('Error updating pending bet status: ', error);
+            throw error;
         }
+
+        const transactionContext = {
+            recentBlockhash: transaction.recentBlockhash,
+            lastValid: lastValidBlockHeight,
+            signature: signature
+          };
+
+        const encryptedContext = encryptionService.encrypt(transactionContext);
 
         return NextResponse.json({
             success: true,
-            signature,
-            amount
+            data: encryptedContext
         });
+
+
+
+        // send the signature to the database / change status to processing
+
+        // return the confirmation
+
+        // Wait for confirmation
+        // const confirmation = await connection.confirmTransaction(
+        //     {
+        //         signature,
+        //         blockhash: transaction.recentBlockhash,
+        //         lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
+        //     },
+        //     'confirmed'
+        // );
+
+        // // Check for errors in confirmation
+        // if (confirmation.value.err) {
+        //     return NextResponse.json(
+        //         { success: false, error: `Transaction error: ${confirmation.value.err}` },
+        //         { status: 400 }
+        //     );
+        // }
+
+        // // Call your existing confirm_transaction API if needed
+        // try {
+        //     const confirmResponse = await fetch('https://theruggame.fun/api/confirm_transaction', {
+        //         method: 'POST',
+        //         headers: {
+        //             "Content-Type": "application/json"
+        //         },
+        //         body: JSON.stringify({
+        //             signature: signature,
+        //             key: uid
+        //         }),
+        //     });
+
+        //     if (!confirmResponse.ok) {
+        //         console.warn(`Warning: confirm_transaction API returned ${confirmResponse.status}`);
+        //         const result = await confirmResponse.json();
+        //         throw new Error(result.error);
+        //         // We continue anyway since the transaction itself succeeded
+        //     }
+        // } catch (confirmError) {
+        //     console.error('Error calling confirm_transaction:', confirmError);
+        //     throw confirmError;
+        //     // We continue anyway since the transaction itself succeeded
+        // }
+
+        // return NextResponse.json({
+        //     success: true,
+        //     signature,
+        //     amount
+        // });
 
     } catch (error) {
         console.error('Transaction submission error:', error);

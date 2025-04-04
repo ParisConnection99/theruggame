@@ -1,44 +1,9 @@
-// Solana Wallet Utilities
-// This file provides functions for Solana wallet interaction including balance checking and transfers
 
 import { Connection, PublicKey, LAMPORTS_PER_SOL, SystemProgram, Transaction, clusterApiUrl } from '@solana/web3.js';
 import { createMemoInstruction } from '@solana/spl-memo';
-//const RPC_ENDPOINT = clusterApiUrl('devnet'); // More reliable than direct URL
 const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 import { logInfo, logError } from '@/utils/logger';
-/**
- * Checks if a user has sufficient SOL balance for a transaction
- * @param {PublicKey} publicKey - The user's wallet public key
- * @param {number} amount - The amount of SOL to check for (plus a small buffer for fees)
- * @param {string} [endpoint=RPC_ENDPOINT] - Optional custom RPC endpoint
- * @returns {Promise<boolean>} Whether the user has sufficient balance
- */
-export async function checkSufficientBalance(publicKeyOrString, amount, endpoint = RPC_ENDPOINT) {
-  if (!publicKeyOrString) {
-    throw new Error('Wallet not connected');
-  }
-
-  try {
-    const connection = new Connection(endpoint, 'confirmed');
-
-    // Convert string to PublicKey if needed
-    const publicKey = typeof publicKeyOrString === 'string'
-      ? new PublicKey(publicKeyOrString)
-      : publicKeyOrString;
-
-    const lamports = await connection.getBalance(publicKey);
-    const solBalance = lamports / LAMPORTS_PER_SOL;
-
-    // Add small buffer for transaction fees
-    const requiredAmount = amount + 0.000005;
-
-    return { isEnough: solBalance >= requiredAmount, solBalance: solBalance };
-
-  } catch (error) {
-    throw new Error(`Failed to check wallet balance: ${error.message}`);
-  }
-}
 
 export async function checkBalance(publicKey, amount) {
   if (!publicKey) {
@@ -92,6 +57,7 @@ export async function transferSOL(
   amount,
   key,
   token,
+  id
   // Removed endpoint parameter since we'll use server
 ) {
   if (!publicKey) {
@@ -150,7 +116,8 @@ export async function transferSOL(
         amount,
         key,
         wallet: publicKey.toString(),
-        destinationWallet: destinationWallet.toString()
+        destinationWallet: destinationWallet.toString(),
+        id
       }),
     });
 
@@ -160,7 +127,7 @@ export async function transferSOL(
     }
 
     const result = await response.json();
-    const { signature, success } = result;
+    const { data, success } = result;
 
     if (!success) {
       throw new Error(result.error || 'Transaction failed');
@@ -168,11 +135,28 @@ export async function transferSOL(
 
     // We don't need to call confirm_transaction separately since
     // the server should have already confirmed it
-    
+
+    await sleep(5000);
+
+    logInfo('After sleep checking transaction', {
+      data: data
+    });
+
+    await fetch('/api/check-transaction', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        data
+      }),
+    });
+
     return {
       success: true,
-      signature,
-      transactionUrl: `https://explorer.solana.com/tx/${signature}`
+      //signature,
+      //transactionUrl: `https://explorer.solana.com/tx/${signature}`
     };
   } catch (error) {
     // Provide more specific error messaging
@@ -194,6 +178,7 @@ export async function transferSOL(
 export async function placeBet(
   publicKey,
   signTransaction,
+  id,
   //sendTransaction,
   betAmount, // Full bet amount without fees / will be added to create bet
   onSuccess,
@@ -232,7 +217,7 @@ export async function placeBet(
     });
 
     try {
-      const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd);
+      const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd, id);
       hasEnough = isEnough;
     } catch (error) {
       throw new Error('Failed to fetch wallet balance');

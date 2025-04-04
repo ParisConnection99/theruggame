@@ -64,6 +64,19 @@ class PendingBetsService {
 
         return data[0];
     }
+
+    async updateStatusToProcessingWithId(id, signature) {
+        const { error } = await this.supabase
+            .from(this.tableName)
+            .update({
+                signature: signature,
+                status: 'processing'
+            })
+            .eq('id', id)
+            .select()
+
+        if (error) throw error;
+    }
 }
 
 module.exports = PendingBetsService;
