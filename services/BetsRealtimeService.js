@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabaseClient';
 
-export const listenToUserPendingBets = (walletAddress, onBetUpdate) => {
+export const listenToBets = (walletAddress, onBetUpdate) => {
     try {
         const subscription = supabase
             .channel(`wallet-${walletAddress}-pending-bets`)
