@@ -14,6 +14,7 @@ function CallbackContent() {
     async function processCallback() {
       const marketId = localStorage.getItem('pending_transaction_market_id');
       const key = localStorage.getItem('key_id');
+      const id = localStorage.getItem('bp_id');
 
       try {
         // Log all parameters for debugging
@@ -71,6 +72,18 @@ function CallbackContent() {
           error.stack || "no stack trace available",
           "MARKET-CALLBACK",
           "SERIOUS");
+
+          await fetch('/api/pending-bets/error/mobile', {
+            method: 'POST',
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id
+            }),
+          });
+
+          localStorage.removeItem('bp_id');
         // Redirect back to the market page with error parameter
         const errorMessage = error.message || 'Unknown error processing transaction';
         router.push(`/market/${marketId}?error=${encodeURIComponent(errorMessage)}`);

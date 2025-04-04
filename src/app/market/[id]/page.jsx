@@ -593,7 +593,9 @@ export default function MarketPage() {
         localStorage.setItem('pending_transaction_market_id', market.id);
 
         if (isMobileDevice) {
-          const { url } = await createBetTransactionResponse.json();
+          const { url, id } = await createBetTransactionResponse.json();
+
+          localStorage.setItem('bp_id', id);
 
           try {
             window.location.href = url;
@@ -626,9 +628,6 @@ export default function MarketPage() {
                   }
 
                   showToast('Bet placed successfully', 'success');
-
-                  // showToast("Transaction submitted! Your bet is being processed...");
-                  // showToast('Check your profile to see the bet updates.');
                   resolve();
                 } catch (error) {
                   reject(error);

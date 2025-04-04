@@ -98,7 +98,6 @@ export async function transferSOL(
     transaction.recentBlockhash = blockhash;
     transaction.feePayer = wallet;
 
-    // SIGN transaction (shows popup but doesn't submit)
     const signedTransaction = await signTransaction(transaction);
     
     // Serialize the signed transaction
@@ -152,9 +151,7 @@ export async function transferSOL(
     }
 
     return {
-      success: true,
-      //signature,
-      //transactionUrl: `https://explorer.solana.com/tx/${signature}`
+      success: true
     };
   } catch (error) {
     // Provide more specific error messaging
