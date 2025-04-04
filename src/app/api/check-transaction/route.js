@@ -55,8 +55,10 @@ export async function POST(request) {
 
         const transactionContext = await request.json();
 
+        console.log('Encrpted data: check-transaction: ', transactionContext);
+
         // Decrypt the context string
-        const decryptedContextString = encryptionService.decrypt(transactionContext.context);
+        const decryptedContextString = encryptionService.decrypt(transactionContext);
 
         // Parse the string back to an object
         const decryptedContext = JSON.parse(decryptedContextString);

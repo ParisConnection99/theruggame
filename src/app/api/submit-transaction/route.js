@@ -91,6 +91,8 @@ export async function POST(request) {
 
         const encryptedContext = encryptionService.encrypt(transactionContext);
 
+        console.log('Encrpted data: submit-transaction: ', encryptedContext);
+
         return NextResponse.json({
             success: true,
             data: encryptedContext
