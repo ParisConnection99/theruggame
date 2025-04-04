@@ -61,6 +61,8 @@ class PendingBetsService {
             .in('status', ['pending', 'processing', 'error'])
             
         if (error) throw error;
+
+        console.log(`Pending Bets: ${JSON.stringify(data, null, 2)}`);
     
         return data;
     }

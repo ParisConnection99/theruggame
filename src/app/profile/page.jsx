@@ -13,6 +13,7 @@ import { showToast } from '@/components/CustomToast';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
 import { listenToBets } from '@/services/BetsRealtimeService';
+import { logInfo, logError } from '@/utils/logger';
 
 export default function ProfilePage() {
     const { user: authUser, auth } = useAuth();
@@ -198,12 +199,14 @@ export default function ProfilePage() {
 
     // Fetch Pending Bets
     useEffect(() => {
-        if (!authUser) return;
-
-        
+        if (!userData || !userData.user_id || !authUser) {
+            return;
+        }
 
         const fetchPendingBets = async () => {
             try {
+                logInfo('Fetching pending bets...');
+
                 setPendingBetsLoading(true);
                 const uid = authUser.uid;
                 const token = await authUser.getIdToken();
@@ -217,10 +220,18 @@ export default function ProfilePage() {
 
                 if (!response.ok) {
                     const errorData = await response.json();
+                    logInfo('Response error', {
+                        component: 'Profile',
+                        er: errorData.error
+                    });
                     throw new Error(errorData.error);
                 }
 
                 const pendingBets = await response.json();
+
+                logInfo('Pending bets', {
+                    pb: pendingBets
+                });
 
                 if (pendingBets) {
                     setPendingBets(pendingBets);
@@ -240,7 +251,7 @@ export default function ProfilePage() {
         }
 
         fetchPendingBets();
-    }, [authUser]);
+    }, [userData]);
     // Listen for pending bets updates
     useEffect(() => {
         if (!authUser) return;
