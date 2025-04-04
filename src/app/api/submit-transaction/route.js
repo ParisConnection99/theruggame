@@ -83,9 +83,11 @@ export async function POST(request) {
             throw error;
         }
 
+        const lastValidBlockHeight = await connection.getLatestBlockhash().lastValidBlockHeight
+
         const transactionContext = {
             recentBlockhash: transaction.recentBlockhash,
-            lastValid: transaction.lastValidBlockHeight,
+            lastValid: lastValidBlockHeight,
             signature: signature
           };
 
