@@ -19,7 +19,6 @@ if (!admin.apps.length) {
 }
 
 export async function GET(request, { params }) {
-    console.log('Starting fetching pending bets');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -40,11 +39,7 @@ export async function GET(request, { params }) {
             });
         }
 
-        console.log('Auth passed time to fetch params');
-
         const walletAddress = await params.wallet_ca;
-
-        console.log('Wallet address: ', walletAddress);
 
         if (!walletAddress) {
             return new Response(JSON.stringify({ error: 'Wallet address is required'}), {
@@ -54,8 +49,6 @@ export async function GET(request, { params }) {
         }
 
         const pendingBets = await serviceRepo.pendingBetsService.fetchPendingBetsByWalletCa(walletAddress);
-
-        console.log('Pending Bets: ',pendingBets);
 
         return new Response(JSON.stringify(pendingBets), {
             status: 200,
