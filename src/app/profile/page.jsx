@@ -683,7 +683,7 @@ export default function ProfilePage() {
                                                     {bet.token_name || 'Unknown'}
                                                 </td>
                                                 <td className="p-1 truncate">
-                                                    {bet.matched_amount} SOL
+                                                    {bet.matched_amount}(s)
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
                                                     ? 'text-green-500'

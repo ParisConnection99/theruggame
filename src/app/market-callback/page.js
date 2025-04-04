@@ -79,7 +79,6 @@ function CallbackContent() {
             detail: { isConnected: true }
           }));
   
-          
           await fetch('/api/pending-bets/error/mobile', {
             method: 'POST',
             headers: {
