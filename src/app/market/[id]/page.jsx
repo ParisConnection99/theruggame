@@ -606,11 +606,6 @@ export default function MarketPage() {
 
           const { key, id } = await createBetTransactionResponse.json();
 
-          logInfo('Key and id', {
-            key: key,
-            id: id
-          });
-
           await new Promise((resolve, reject) => {
             placeBet(
               userPublicKey,
@@ -631,7 +626,6 @@ export default function MarketPage() {
                     inputRef.current.value = "";
                   }
 
-                  //showToast('Your bet has been placed', 'success');
                   showToast("Transaction submitted! Your bet is being processed...");
                   showToast('Check your profile to see the bet updates.');
                   resolve();

@@ -76,10 +76,8 @@ export async function POST(request) {
         );
 
         try {
-            console.log('Saving the signature to pending bets + signature.');
             await serviceRepo.pendingBetsService.updateStatusToProcessingWithId(id, signature);
         } catch (error) {
-            console.log('Error updating pending bet status: ', error);
             throw error;
         }
 
@@ -97,61 +95,6 @@ export async function POST(request) {
             success: true,
             data: encryptedContext
         });
-
-
-
-        // send the signature to the database / change status to processing
-
-        // return the confirmation
-
-        // Wait for confirmation
-        // const confirmation = await connection.confirmTransaction(
-        //     {
-        //         signature,
-        //         blockhash: transaction.recentBlockhash,
-        //         lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
-        //     },
-        //     'confirmed'
-        // );
-
-        // // Check for errors in confirmation
-        // if (confirmation.value.err) {
-        //     return NextResponse.json(
-        //         { success: false, error: `Transaction error: ${confirmation.value.err}` },
-        //         { status: 400 }
-        //     );
-        // }
-
-        // // Call your existing confirm_transaction API if needed
-        // try {
-        //     const confirmResponse = await fetch('https://theruggame.fun/api/confirm_transaction', {
-        //         method: 'POST',
-        //         headers: {
-        //             "Content-Type": "application/json"
-        //         },
-        //         body: JSON.stringify({
-        //             signature: signature,
-        //             key: uid
-        //         }),
-        //     });
-
-        //     if (!confirmResponse.ok) {
-        //         console.warn(`Warning: confirm_transaction API returned ${confirmResponse.status}`);
-        //         const result = await confirmResponse.json();
-        //         throw new Error(result.error);
-        //         // We continue anyway since the transaction itself succeeded
-        //     }
-        // } catch (confirmError) {
-        //     console.error('Error calling confirm_transaction:', confirmError);
-        //     throw confirmError;
-        //     // We continue anyway since the transaction itself succeeded
-        // }
-
-        // return NextResponse.json({
-        //     success: true,
-        //     signature,
-        //     amount
-        // });
 
     } catch (error) {
         console.error('Transaction submission error:', error);

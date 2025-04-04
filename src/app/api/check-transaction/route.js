@@ -27,7 +27,6 @@ if (!admin.apps.length) {
 }
 
 export async function POST(request) {
-    console.log('Check transaction...');
     try {
         const authHeader = request.headers.get('Authorization');
         if (!authHeader) {
@@ -49,14 +48,8 @@ export async function POST(request) {
             });
         }
 
-        console.log('Passed authentication...');
-
         const uid = decodedToken.uid;
-
         const transactionContext = await request.json();
-
-        console.log('Encrpted data: check-transaction: ', transactionContext);
-
         // Decrypt the context string
         const decryptedContextString = encryptionService.decrypt(transactionContext.data);
 
@@ -66,9 +59,6 @@ export async function POST(request) {
         const signature = decryptedContext.signature;
         const blockhash = decryptedContext.recentBlockhash;
         const lastValidBlockHeight = decryptedContext.lastValid;
-
-        console.log('Fetched decrypted context: ', JSON.stringify(decryptedContext, null, 2));
-
         const connection = new Connection(QUICKNODE_RPC_ENDPOINT, 'confirmed');
 
         const confirmation = await connection.confirmTransaction(
@@ -87,8 +77,6 @@ export async function POST(request) {
                 { status: 400 }
             );
         }
-
-        console.log('Transaction has been confirmed time to validate...');
 
          // Call your existing confirm_transaction API if needed
         try {
@@ -117,7 +105,6 @@ export async function POST(request) {
 
 
     } catch (error) {
-        console.error('Transaction confirming error:', error);
 
         return NextResponse.json(
             { success: false, error: error.message || 'Failed to confirm transaction' },
