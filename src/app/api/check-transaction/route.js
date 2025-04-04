@@ -103,6 +103,10 @@ export async function POST(request) {
             // We continue anyway since the transaction itself succeeded
         }
 
+        return NextResponse.json(
+            { success: true },
+            { status: 200 }
+        );
 
     } catch (error) {
 

@@ -1,22 +1,27 @@
 import { supabase } from '@/lib/supabaseClient';
 
-export const listenToBets = (onBetUpdate) => {
+export const listenToUserPendingBets = (walletAddress, onBetUpdate) => {
     try {
         const subscription = supabase
-            .channel('bets-realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'bets' }, (payload) => {
-                console.log('Bet Update:', payload);
+            .channel(`wallet-${walletAddress}-pending-bets`)
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'pending_bets',
+                filter: `wallet_ca=eq.${walletAddress}`  // Using wallet_ca as the filter
+            }, (payload) => {
+                console.log(`Wallet ${walletAddress} Pending Bet Update:`, payload);
 
                 if (payload.eventType === 'INSERT') {
-                    console.log(`New Bet Placed: ${payload.new.user_id} bet ${payload.new.amount} SOL on ${payload.new.token_name}`);
+                    console.log(`New Pending Bet for wallet ${walletAddress}`);
                     onBetUpdate({
                         payload: payload.new,
                         type: 'INSERT'
                     });
                 }
 
-                if (payload.eventType === 'UPDATE' && payload.new.status === 'WON') {
-                    console.log(`Bet Won: ${payload.new.user_id} won ${payload.new.potential_payout} SOL on ${payload.new.token_name}`);
+                if (payload.eventType === 'UPDATE') {
+                    console.log(`Pending Bet Updated for wallet ${walletAddress}: ${payload.old.status} -> ${payload.new.status}`);
                     onBetUpdate({
                         payload: payload.new,
                         type: 'UPDATE'
@@ -27,7 +32,7 @@ export const listenToBets = (onBetUpdate) => {
 
         return subscription;
     } catch (error) {
-        console.error('Error setting up bet listener:', error);
+        console.error(`Error setting up pending bet listener for wallet ${walletAddress}:`, error);
         return null;
     }
 };

@@ -4,6 +4,7 @@ import { createMemoInstruction } from '@solana/spl-memo';
 const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 import { logInfo, logError } from '@/utils/logger';
+import { showToast } from '@/components/CustomToast';
 
 export async function checkBalance(publicKey, amount) {
   if (!publicKey) {
@@ -137,10 +138,6 @@ export async function transferSOL(
     // the server should have already confirmed it
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    logInfo('After sleep checking transaction', {
-      data: data
-    });
 
     await fetch('/api/check-transaction', {
       method: 'POST',
