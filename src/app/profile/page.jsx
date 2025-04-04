@@ -254,21 +254,27 @@ export default function ProfilePage() {
     }, [userData]);
     // Listen for pending bets updates
     useEffect(() => {
-        if (!authUser) return;
+        if (!userData || !userData.user_id || !authUser) {
+            return;
+        }
 
         const setupSubscription = async () => {
-            const uid = authUser.uid;
+            const uid = userData.wallet_ca;
 
             const handlePendingBetsUpdate = (update) => {
                 switch (update.type) {
                     case 'NEW_PENDING_BET':
-                        console.log('New pending bet:', update.payload);
+                        logInfo('New pending bet:', {
+                            payload: update.payload
+                        });
                         // Add new bet to state/context
                         setPendingBets(prev => [...prev, update.payload]);
                         break; // You were missing this break statement
 
                     case 'BET_STATUS_UPDATE':
-                        console.log('Bet status updated:', update.payload);
+                        logInfo('Bet status updated:',{
+                            payload: update.payload
+                        });
 
                         // If status is complete, remove the bet from pending bets
                         if (update.payload.status === 'complete') {
@@ -286,7 +292,7 @@ export default function ProfilePage() {
                         break;
 
                     default:
-                        console.log('Unknown update type:', update.type);
+                        logInfo('Unknown update type:', { type: update.type });
                         break;
                 }
             };
@@ -306,7 +312,7 @@ export default function ProfilePage() {
         return () => {
             cleanup.then(cleanupFn => cleanupFn && cleanupFn());
         };
-    }, [authUser]);
+    }, [userData]);
 
     const handleSignOut = async () => {
         if (analytics) {
