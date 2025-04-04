@@ -86,7 +86,7 @@ function CallbackContent() {
           localStorage.removeItem('bp_id');
         // Redirect back to the market page with error parameter
         const errorMessage = error.message || 'Unknown error processing transaction';
-        router.push(`/market/${marketId}?error=${encodeURIComponent(errorMessage)}`);
+        router.push(`/market/${marketId}}`);
       }
     }
 

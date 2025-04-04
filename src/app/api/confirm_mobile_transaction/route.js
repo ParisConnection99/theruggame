@@ -33,7 +33,7 @@ export async function POST(request) {
 
         const { data, nonce, key } = body;
 
-        throw new Error('Testing updating pending bets');
+        //throw new Error('Testing updating pending bets');
 
         if (!data || !nonce || !key) {
             return new Response(JSON.stringify({ error: 'Missing parameters.' }), {
