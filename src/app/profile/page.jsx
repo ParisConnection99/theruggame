@@ -196,13 +196,56 @@ export default function ProfilePage() {
         fetchCashouts();
     }, [userData]);
 
+    // Fetch Pending Bets
+    useEffect(() => {
+        if (!authUser) return;
+
+        const fetchPendingBets = async () => {
+            try {
+                setPendingBetsLoading(true);
+                const uid = authUser.uid;
+                const token = await authUser.getIdToken();
+
+                const response = await fetch(`/api/pending-bets?wallet_ca=${uid}`, {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error);
+                }
+
+                const pendingBets = await response.json();
+
+                if (pendingBets) {
+                    setPendingBets(pendingBets);
+                } else {
+                    setPendingBets([]);
+                }
+
+            } catch (error) {
+                await errorLog("FETCHING_PENDING_BETS_ERROR",
+                    error.message || 'Error object with empty message',
+                    error.stack || "no stack trace available",
+                    "PROFILE",
+                    "SERIOUS");
+            } finally {
+                setPendingBetsLoading(false);
+            }
+        }
+
+        fetchPendingBets();
+    }, [authUser]);
     // Listen for pending bets updates
     useEffect(() => {
         if (!authUser) return;
-        
+
         const setupSubscription = async () => {
             const uid = authUser.uid;
-            
+
             const handlePendingBetsUpdate = (update) => {
                 switch (update.type) {
                     case 'NEW_PENDING_BET':
@@ -210,42 +253,42 @@ export default function ProfilePage() {
                         // Add new bet to state/context
                         setPendingBets(prev => [...prev, update.payload]);
                         break; // You were missing this break statement
-                        
+
                     case 'BET_STATUS_UPDATE':
                         console.log('Bet status updated:', update.payload);
-                        
+
                         // If status is complete, remove the bet from pending bets
                         if (update.payload.status === 'complete') {
-                            setPendingBets(prev => 
+                            setPendingBets(prev =>
                                 prev.filter(bet => bet.id !== update.payload.id)
                             );
                         } else {
                             // Otherwise update the bet in the state
-                            setPendingBets(prev => 
-                                prev.map(bet => 
+                            setPendingBets(prev =>
+                                prev.map(bet =>
                                     bet.id === update.payload.id ? update.payload : bet
                                 )
                             );
                         }
                         break;
-                        
+
                     default:
                         console.log('Unknown update type:', update.type);
                         break;
                 }
             };
-            
+
             // Import and set up the real-time listener
             const subscription = listenToBets(uid, handlePendingBetsUpdate);
-            
+
             // Clean up subscription when component unmounts or auth changes
             return () => {
                 subscription?.unsubscribe();
             };
         };
-        
+
         const cleanup = setupSubscription();
-        
+
         // Return the cleanup function for when the component unmounts
         return () => {
             cleanup.then(cleanupFn => cleanupFn && cleanupFn());
@@ -548,56 +591,55 @@ export default function ProfilePage() {
 
                     {/* --- List Of Pending Bets --- */}
                     <div className="mt-6 w-full max-w-md">
-    <h3 className="text-l font-bold mb-2 text-center">Pending Bets</h3>
-    {pendingBets.length > 0 ? (
-        <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
-            <table className="w-full table-fixed">
-                <thead>
-                    <tr className="text-sm text-gray-400">
-                        <th className="w-[20%] p-1 text-left" title="Date">📅</th>
-                        <th className="w-[20%] p-1 text-left" title="ID">🆔</th>
-                        <th className="w-[20%] p-1 text-left" title="Name">🏷️</th>
-                        <th className="w-[20%] p-1 text-left" title="Amount">💰</th>
-                        <th className="w-[20%] p-1 text-left" title="Status">⏳</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {pendingBets.map((bet) => (
-                        <tr key={bet.id} className="text-sm border-t border-gray-700">
-                            <td className="p-1 truncate">
-                                {new Date(bet.created_at).toLocaleDateString()}
-                            </td>
-                            <td className="p-1 truncate">
-                                {bet.id.substring(0, 8)}...
-                            </td>
-                            <td className="p-1 truncate">
-                                {bet.token_name || 'Unknown'}
-                            </td>
-                            <td className="p-1 truncate">
-                                {bet.amount} SOL
-                            </td>
-                            <td className={`p-1 truncate ${
-                                bet.status === 'pending' 
-                                    ? 'text-yellow-500' 
-                                    : bet.status === 'processing' 
-                                        ? 'text-blue-500' 
-                                        : bet.status === 'error' 
-                                            ? 'text-red-500' 
-                                            : ''
-                            }`}>
-                                {bet.status.toUpperCase()}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    ) : (
-        <div className="text-center py-4 bg-gray-800 rounded-lg">
-            <p className="text-gray-400">No pending bets</p>
-        </div>
-    )}
-</div>
+                        <h3 className="text-l font-bold mb-2 text-center">Pending Bets</h3>
+                        {pendingBets.length > 0 ? (
+                            <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
+                                <table className="w-full table-fixed">
+                                    <thead>
+                                        <tr className="text-sm text-gray-400">
+                                            <th className="w-[20%] p-1 text-left" title="Date">📅</th>
+                                            <th className="w-[20%] p-1 text-left" title="ID">🆔</th>
+                                            <th className="w-[20%] p-1 text-left" title="Name">🏷️</th>
+                                            <th className="w-[20%] p-1 text-left" title="Amount">💰</th>
+                                            <th className="w-[20%] p-1 text-left" title="Status">⏳</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {pendingBets.map((bet) => (
+                                            <tr key={bet.id} className="text-sm border-t border-gray-700">
+                                                <td className="p-1 truncate">
+                                                    {new Date(bet.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-1 truncate">
+                                                    {bet.id.substring(0, 8)}...
+                                                </td>
+                                                <td className="p-1 truncate">
+                                                    {bet.token_name || 'Unknown'}
+                                                </td>
+                                                <td className="p-1 truncate">
+                                                    {bet.amount} SOL
+                                                </td>
+                                                <td className={`p-1 truncate ${bet.status === 'pending'
+                                                        ? 'text-yellow-500'
+                                                        : bet.status === 'processing'
+                                                            ? 'text-blue-500'
+                                                            : bet.status === 'error'
+                                                                ? 'text-red-500'
+                                                                : ''
+                                                    }`}>
+                                                    {bet.status.toUpperCase()}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 bg-gray-800 rounded-lg">
+                                <p className="text-gray-400">No pending bets</p>
+                            </div>
+                        )}
+                    </div>
 
                     {/* --- List Of Bets --- */}
                     <div className="mt-6 w-full max-w-md">

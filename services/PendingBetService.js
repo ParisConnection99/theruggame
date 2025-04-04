@@ -53,6 +53,18 @@ class PendingBetsService {
         return data && data.length > 0 ? data[0] : null;
       }
 
+      async fetchPendingBetsByWalletCa(walletAddress) {
+        const { data, error } = await this.supabase
+            .from(this.tableName)
+            .select('*')
+            .eq('wallet_ca', walletAddress)
+            .in('status', ['pending', 'processing', 'error'])
+            
+        if (error) throw error;
+    
+        return data;
+    }
+
     async updatePendingBetById(id, updateData) {
         const { data, error } = await this.supabase
             .from(this.tableName)
