@@ -4,7 +4,6 @@ import { createMemoInstruction } from '@solana/spl-memo';
 const RPC_ENDPOINT = clusterApiUrl('mainnet-beta');
 const WS_ENDPOINT = RPC_ENDPOINT.replace('https', 'wss'); // WebSocket endpoint
 import { logInfo, logError } from '@/utils/logger';
-import { showToast } from '@/components/CustomToast';
 
 export async function checkBalance(publicKey, amount) {
   if (!publicKey) {
@@ -163,6 +162,19 @@ export async function transferSOL(
     } else if (error.message.includes('timeout')) {
       errorMessage = 'Transaction confirmation timed out. Please check Solana Explorer for status.';
     }
+
+    // Update the pending bets with error
+
+    await fetch('/api/pending-bets/error', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        id
+      }),
+    });
 
     return {
       success: false,

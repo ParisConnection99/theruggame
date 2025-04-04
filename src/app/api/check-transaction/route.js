@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { Connection, Transaction } from '@solana/web3.js';
 import { serviceRepo } from '@/services/ServiceRepository';
 import EncryptionService from '@/lib/EncryptionService';
+import admin from 'firebase-admin';
+
 const key = process.env.ENCRYPTION_KEY;
 const iv = process.env.ENCRYPTION_IV;
 const encryptionService = new EncryptionService(key, iv);
-import admin from 'firebase-admin';
+
 
 // Get this from your environment variables
 const QUICKNODE_RPC_ENDPOINT = process.env.QUICKNODE_RPC_ENDPOINT;

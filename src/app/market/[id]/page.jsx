@@ -538,7 +538,6 @@ export default function MarketPage() {
         let solanaBalance;
 
         try {
-          //solanaBalance = await checkSufficientBalance(userPublicKey, betWithFees);
           const { isEnough, solBalance } = await checkBalance(userPublicKey, betWithFees);
           solanaBalance = solBalance;
 

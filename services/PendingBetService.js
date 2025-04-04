@@ -91,6 +91,18 @@ class PendingBetsService {
 
         if (error) throw error;
     }
+
+    async updateStatusWithId(id, status) {
+        const { error } = await this.supabase
+            .from(this.tableName)
+            .update({
+                status: status
+            })
+            .eq('id', id)
+            .select()
+
+        if (error) throw error;
+    }
 }
 
 module.exports = PendingBetsService;
