@@ -88,7 +88,7 @@ export async function POST(request) {
     } catch (error) {
 
         return new Response(JSON.stringify({ error: error.message }), {
-            status,
+            status: 500,
             headers: { 'Content-Type': 'application/json' },
         });
     }
