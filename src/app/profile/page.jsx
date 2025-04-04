@@ -216,7 +216,7 @@ export default function ProfilePage() {
                     tok: token
                 });
 
-                const response = await fetch(`/api/pending-bets?wallet_ca=${uid}`, {
+                const response = await fetch(`/api/pending-bets/${uid}`, {
                     method: 'GET',
                     headers: {
                         Authorization: `Bearer ${token}`,
