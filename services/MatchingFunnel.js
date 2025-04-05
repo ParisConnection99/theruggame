@@ -27,10 +27,14 @@ class MatchingFunnel {
             await db.runInTransaction(async () => {
                 try {
                     const bets = await this.db.getUnmatchedBets(this.BATCH_SIZE);
+
+                    console.log(`Bets: ${bets}`);
                     
                     matchableBets = await Promise.all(
                         bets.filter(async bet => await this.isMatchingAllowed(bet))
                     );
+
+                    console.log(`Matchable bets: ${matchableBets}`);
                     
                 } catch (innerError) {
                     throw innerError; // Re-throw to trigger transaction rollback

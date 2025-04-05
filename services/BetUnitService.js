@@ -73,6 +73,7 @@ class BetUnitService {
         }
 
         const finalError = `Failed to create bet units after ${this.MAX_RETRIES} attempts: ${lastError?.message}`;
+        console.log(`Failed to create bet units after ${this.MAX_RETRIES} attempts: ${lastError?.message}`)
         this.logger.error(finalError, {
             betId: bet.id,
             lastError: lastError?.message

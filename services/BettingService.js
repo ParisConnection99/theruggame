@@ -108,11 +108,14 @@ class BettingService {
       // Fetch Unmatchedbets n units
       const bets = await this.matchingService.intakeUnits(this.db);
 
+      console.log(`Unmatched bets: ${bets}`);
+
       if (bets.length > 1) {
         // Match Bets
         await this.matchingService.matchBets(bets);
       }
     } catch (error) {
+      console.log(`Error creating bet units: ${error.message}`);
       throw new Error(`Error creating Bet units: ${error.message}`);
     }
   }
