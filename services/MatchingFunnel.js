@@ -139,6 +139,7 @@ class MatchingFunnel {
                 matchedAt: new Date()
             };
         } catch (error) {
+            console.log(`Error matching units: ${error.message}`);
             throw new Error(`Unit matching failed: ${error.message}`);
         }
     }
