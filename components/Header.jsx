@@ -43,11 +43,11 @@ export default function Header() {
         );
 
         if (isMobileDevice &&
-            auth.currentUser && localStorage.getItem('session_id')
+            auth.currentUser
             && !isEffectivelyConnected) {
             setIsEffectivelyConnected(true);
         }
-    }, [auth]);
+    }, [auth.currentUser]);
 
     // Monitor connection states
     useEffect(() => {
@@ -89,7 +89,6 @@ export default function Header() {
             if (connected) {
                 await disconnect();
                 setIsEffectivelyConnected(false);
-                //localStorage.removeItem('welcome_popup');
             }
         } catch (error) {
             await errorLog("PHANTOM_DESKTOP_DISCONNECTION_ERROR",
