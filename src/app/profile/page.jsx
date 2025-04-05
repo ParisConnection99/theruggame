@@ -687,7 +687,7 @@ export default function ProfilePage() {
                                                         ? 'text-red-500'
                                                         : ''
                                                     }`}>
-                                                    {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REFUNDED' ? bet.status : ''}
+                                                    {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REF' ? bet.status : ''}
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
                                                     ? 'text-green-500'
@@ -696,9 +696,9 @@ export default function ProfilePage() {
                                                         : ''
                                                     }`}>
                                                     {bet.status === 'WON' || bet.status === 'REFUNDED'
-                                                        ? `${bet.matched_amount} s`
+                                                        ? `${bet.matched_amount} SOL`
                                                         : bet.status === 'LOST'
-                                                            ? `-${bet.matched_amount} s`
+                                                            ? `-${bet.matched_amount} SOL`
                                                             : ''}
                                                 </td>
                                                 <td className="p-1 text-center">
