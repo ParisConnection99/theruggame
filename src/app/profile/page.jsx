@@ -687,7 +687,7 @@ export default function ProfilePage() {
                                                         ? 'text-red-500'
                                                         : ''
                                                     }`}>
-                                                    {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REF' ? bet.status : ''}
+                                                    {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REFUNDED' ? bet.status : ''}
                                                 </td>
                                                 <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
                                                     ? 'text-green-500'
