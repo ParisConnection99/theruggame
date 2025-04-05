@@ -335,25 +335,44 @@ class MatchingFunnel {
     // - Handles partial matches and splits units if needed
     // - Updates bet status based on matching results
     async matchBets(bets) {
+        console.log('========== STARTING MATCHING PROCESS ==========');
+        console.log(`Received ${bets?.length || 0} bets to match`);
+        
         if (!bets || bets.length === 0) {
-            console.log('No bets to match');
+            console.log('No bets to match, returning empty result');
             return new Map();
         }
         
         const statusChanges = new Map();
+        console.log(`Bets to match: ${JSON.stringify(bets.map(b => ({
+            id: b.id,
+            marketId: b.marketId,
+            betType: b.betType,
+            netAmount: b.netAmount,
+            unitCount: b.units?.length || 0
+        })))}`);
         
         // Group bets by marketId for more efficient matching
         const betsByMarket = this.groupBetsByMarket(bets);
+        console.log(`Grouped bets into ${Object.keys(betsByMarket).length} markets`);
         
         for (const [marketId, marketBets] of Object.entries(betsByMarket)) {
+            console.log(`\n----- Processing Market ID: ${marketId} with ${marketBets.length} bets -----`);
             await this.matchBetsInMarket(marketBets, statusChanges);
         }
         
         // Apply all status changes at once
+        console.log(`\n----- Status Changes Summary -----`);
+        console.log(`Total units to update: ${statusChanges.size}`);
         if (statusChanges.size > 0) {
-            await this.applyStatusChanges(statusChanges);
+            console.log('Applying status changes to database...');
+            const result = await this.applyStatusChanges(statusChanges);
+            console.log(`Status update result: ${JSON.stringify(result)}`);
+        } else {
+            console.log('No status changes to apply');
         }
         
+        console.log('========== MATCHING PROCESS COMPLETE ==========');
         return statusChanges;
     }
     
@@ -377,60 +396,139 @@ class MatchingFunnel {
         const pumpBets = marketBets.filter(bet => bet.betType === 'PUMP');
         const rugBets = marketBets.filter(bet => bet.betType === 'RUG');
         
+        console.log(`Market has ${pumpBets.length} PUMP bets and ${rugBets.length} RUG bets`);
+        
         // Sort bets by netAmount (largest first) for optimal matching
         pumpBets.sort((a, b) => b.netAmount - a.netAmount);
         rugBets.sort((a, b) => b.netAmount - a.netAmount);
         
+        console.log('PUMP bets ordered by size:');
+        pumpBets.forEach(bet => {
+            console.log(`  Bet ID: ${bet.id}, Amount: ${bet.netAmount}, Units: ${bet.units?.length || 0}`);
+        });
+        
+        console.log('RUG bets ordered by size:');
+        rugBets.forEach(bet => {
+            console.log(`  Bet ID: ${bet.id}, Amount: ${bet.netAmount}, Units: ${bet.units?.length || 0}`);
+        });
+        
+        let matchAttempts = 0;
+        let successfulMatches = 0;
+        
         // Match PUMP bets against RUG bets
         for (const pumpBet of pumpBets) {
-            if (pumpBet.netAmount < this.MIN_MATCH_SIZE) continue;
+            console.log(`\nProcessing PUMP bet ${pumpBet.id} with amount ${pumpBet.netAmount}`);
+            
+            if (pumpBet.netAmount < this.MIN_MATCH_SIZE) {
+                console.log(`  Skipping bet ${pumpBet.id}: amount ${pumpBet.netAmount} below minimum ${this.MIN_MATCH_SIZE}`);
+                continue;
+            }
             
             for (const pumpUnit of pumpBet.units) {
-                if (statusChanges.has(pumpUnit.id) || 
-                    pumpUnit.amount < this.MIN_MATCH_SIZE) continue;
+                console.log(`  Processing unit ${pumpUnit.id} with amount ${pumpUnit.amount}`);
+                
+                if (statusChanges.has(pumpUnit.id)) {
+                    console.log(`    Unit ${pumpUnit.id} already matched in this session, skipping`);
+                    continue;
+                }
+                
+                if (pumpUnit.amount < this.MIN_MATCH_SIZE) {
+                    console.log(`    Unit ${pumpUnit.id} amount ${pumpUnit.amount} below minimum ${this.MIN_MATCH_SIZE}, skipping`);
+                    continue;
+                }
                 
                 // Try to match against available RUG units
+                console.log(`    Looking for matching RUG units for unit ${pumpUnit.id}`);
+                
+                let unitMatched = false;
                 for (const rugBet of rugBets) {
+                    console.log(`      Checking RUG bet ${rugBet.id}`);
+                    
                     for (const rugUnit of rugBet.units) {
-                        if (statusChanges.has(rugUnit.id) || 
-                            rugUnit.amount < this.MIN_MATCH_SIZE) continue;
+                        matchAttempts++;
+                        console.log(`        Comparing with RUG unit ${rugUnit.id} (amount: ${rugUnit.amount})`);
+                        
+                        if (statusChanges.has(rugUnit.id)) {
+                            console.log(`        Unit ${rugUnit.id} already matched in this session, skipping`);
+                            continue;
+                        }
+                        
+                        if (rugUnit.amount < this.MIN_MATCH_SIZE) {
+                            console.log(`        Unit ${rugUnit.id} amount ${rugUnit.amount} below minimum ${this.MIN_MATCH_SIZE}, skipping`);
+                            continue;
+                        }
                         
                         const matchAmount = Math.min(pumpUnit.amount, rugUnit.amount);
+                        console.log(`        Potential match amount: ${matchAmount}`);
                         
                         if (matchAmount >= this.MIN_MATCH_SIZE) {
+                            console.log(`        Match found! Proceeding with match of ${matchAmount} between units ${pumpUnit.id} and ${rugUnit.id}`);
+                            
                             await this.checkIfUnitNeedsSplitting(
                                 pumpUnit, rugUnit, matchAmount, statusChanges
                             );
                             
+                            successfulMatches++;
+                            unitMatched = true;
+                            
                             // If this unit is now fully matched, break the inner loop
-                            if (statusChanges.has(pumpUnit.id)) break;
+                            if (statusChanges.has(pumpUnit.id)) {
+                                console.log(`        Unit ${pumpUnit.id} fully matched, moving to next unit`);
+                                break;
+                            }
                         }
                     }
                     
                     // If this unit is now fully matched, break the outer loop
-                    if (statusChanges.has(pumpUnit.id)) break;
+                    if (statusChanges.has(pumpUnit.id)) {
+                        break;
+                    }
+                }
+                
+                if (!unitMatched) {
+                    console.log(`    No match found for unit ${pumpUnit.id}`);
                 }
             }
         }
+        
+        console.log(`Market matching complete: ${successfulMatches} successful matches out of ${matchAttempts} attempts`);
     }
 
     // Purpose: Handle the matching of two bet units
     async matchUnits(unit1, unit2, statusChanges) {
+        console.log(`Matching units: unit1=${unit1?.id || 'undefined'} (bet: ${unit1?.betId || 'unknown'}), unit2=${unit2?.id || 'undefined'} (bet: ${unit2?.betId || 'unknown'})`);
+        
         try {
             // Validate input
             if (!unit1 || !unit2) {
-                throw new Error('Both units must be provided for matching');
+                const error = 'Both units must be provided for matching';
+                console.error(error);
+                throw new Error(error);
             }
             
             if (!unit1.id || !unit2.id) {
-                throw new Error('Units must have valid IDs');
+                const error = 'Units must have valid IDs';
+                console.error(error, { unit1Id: unit1?.id, unit2Id: unit2?.id });
+                throw new Error(error);
             }
             
             if (!unit1.betId || !unit2.betId) {
-                throw new Error('Units must have valid bet IDs');
+                const error = 'Units must have valid bet IDs';
+                console.error(error, { unit1BetId: unit1?.betId, unit2BetId: unit2?.betId });
+                throw new Error(error);
             }
             
             const matchTimestamp = new Date();
+            console.log(`Match timestamp: ${matchTimestamp.toISOString()}`);
+            
+            // Check if already in status changes map
+            if (statusChanges.has(unit1.id)) {
+                console.warn(`Unit ${unit1.id} already has a pending status change`);
+            }
+            
+            if (statusChanges.has(unit2.id)) {
+                console.warn(`Unit ${unit2.id} already has a pending status change`);
+            }
             
             // Update status changes map
             statusChanges.set(unit1.id, {
@@ -447,6 +545,8 @@ class MatchingFunnel {
                 betId: unit2.betId
             });
             
+            console.log(`Units successfully matched: ${unit1.id} <-> ${unit2.id}`);
+            
             return {
                 success: true,
                 unit1Id: unit1.id,
@@ -461,6 +561,8 @@ class MatchingFunnel {
 
     // Purpose: Checks if either of the 2 units needs splitting
     async checkIfUnitNeedsSplitting(unit1, unit2, matchAmount, statusChanges) {
+        console.log(`Checking if units need splitting: unit1=${unit1.id} (${unit1.amount}), unit2=${unit2.id} (${unit2.amount}), matchAmount=${matchAmount}`);
+        
         // Check if either unit needs splitting
         const unit1NeedsSplit = unit1.amount > matchAmount;
         const unit2NeedsSplit = unit2.amount > matchAmount;
@@ -472,52 +574,80 @@ class MatchingFunnel {
         // If either remainder would be too small, don't split
         const minimumUnitSize = this.betUnitService.MINIMUM_UNIT_SIZE || this.MIN_MATCH_SIZE;
         
+        console.log(`Split analysis: unit1NeedsSplit=${unit1NeedsSplit} (remainder: ${unit1Remainder}), unit2NeedsSplit=${unit2NeedsSplit} (remainder: ${unit2Remainder}), minimumUnitSize=${minimumUnitSize}`);
+        
         if ((unit1NeedsSplit && unit1Remainder < minimumUnitSize) || 
             (unit2NeedsSplit && unit2Remainder < minimumUnitSize)) {
             // If splitting would create too small a remainder, just match the entire units
+            console.log(`Remainders too small, matching entire units without splitting`);
             await this.matchUnits(unit1, unit2, statusChanges);
         } else if (unit1NeedsSplit || unit2NeedsSplit) {
             // One or both units need splitting
+            console.log(`Need to split units before matching`);
             await this.splitUnits(unit1, unit2, matchAmount, statusChanges);
         } else {
             // Units match exactly, no splitting needed
+            console.log(`Units match exactly, no splitting needed`);
             await this.matchUnits(unit1, unit2, statusChanges);
         }
     }
 
     // Purpose: Split and match units as needed
     async splitUnits(unit1, unit2, matchAmount, statusChanges) {
+        console.log(`Starting unit splitting process for match amount ${matchAmount}`);
+        
         return await this.db.runInTransaction(async () => {
+            console.log(`Beginning transaction for unit splitting`);
+            
             let matchedUnit1 = unit1;
             let matchedUnit2 = unit2;
             
             if (unit1.amount > matchAmount) {
+                console.log(`Splitting unit1 (${unit1.id}): ${unit1.amount} into ${matchAmount} + ${unit1.amount - matchAmount}`);
                 // Split unit1 and use the split portion for matching
                 const [remainingUnit, splitUnit] = await this.betUnitService.splitUnit(unit1, matchAmount);
+                console.log(`Unit1 split complete: original=${unit1.id}, remaining=${remainingUnit.id} (${remainingUnit.amount}), split=${splitUnit.id} (${splitUnit.amount})`);
                 matchedUnit1 = splitUnit;
             }
             
             if (unit2.amount > matchAmount) {
+                console.log(`Splitting unit2 (${unit2.id}): ${unit2.amount} into ${matchAmount} + ${unit2.amount - matchAmount}`);
                 // Split unit2 and use the split portion for matching
                 const [remainingUnit, splitUnit] = await this.betUnitService.splitUnit(unit2, matchAmount);
+                console.log(`Unit2 split complete: original=${unit2.id}, remaining=${remainingUnit.id} (${remainingUnit.amount}), split=${splitUnit.id} (${splitUnit.amount})`);
                 matchedUnit2 = splitUnit;
             }
             
             // Match the (possibly split) units
+            console.log(`Matching split units: ${matchedUnit1.id} (${matchedUnit1.amount}) with ${matchedUnit2.id} (${matchedUnit2.amount})`);
             await this.matchUnits(matchedUnit1, matchedUnit2, statusChanges);
             
+            console.log(`Split and match process complete`);
             return [matchedUnit1, matchedUnit2];
         });
     }
     
     // Purpose: Update unit statuses and recalculate bet statuses
     async applyStatusChanges(statusChanges) {
+        console.log(`\n----- APPLYING STATUS CHANGES -----`);
+        console.log(`Updating statuses for ${statusChanges.size} units`);
+        
+        // Log all pending status changes
+        for (const [unitId, change] of statusChanges.entries()) {
+            console.log(`  Unit ${unitId}: new status=${change.newStatus}, matched with=${change.matchedWith}, bet=${change.betId}`);
+        }
+        
         // First update all unit statuses
+        console.log(`Calling database to update unit statuses...`);
         const updateResult = await this.db.updateUnitStatuses(statusChanges);
         
         if (!updateResult.success) {
-            throw new Error(`Failed to update unit statuses: ${updateResult.message}`);
+            const error = `Failed to update unit statuses: ${updateResult.message}`;
+            console.error(error);
+            throw new Error(error);
         }
+        
+        console.log(`Database update successful: ${JSON.stringify(updateResult)}`);
 
         // Get unique bet IDs and calculate matched amounts
         const betIds = new Set();
@@ -528,10 +658,15 @@ class MatchingFunnel {
             }
         }
         
+        console.log(`Need to recalculate status for ${betIds.size} affected bets`);
+        
         // For each affected bet, calculate total matched amount and update status
         for (const betId of betIds) {
             try {
+                console.log(`\nUpdating status for bet ${betId}:`);
+                
                 // Get all units for this bet to calculate amounts
+                console.log(`  Querying database for units of bet ${betId}`);
                 const unitsQuery = await this.db.pool.query(
                     `SELECT 
                         SUM(CASE WHEN status = 'MATCHED' THEN amount ELSE 0 END) as matched_amount,
@@ -542,25 +677,30 @@ class MatchingFunnel {
                 );
 
                 if (!unitsQuery.rows || unitsQuery.rows.length === 0) {
-                    console.warn(`No units found for bet ${betId}`);
+                    console.warn(`  No units found for bet ${betId}`);
                     continue;
                 }
 
                 const { matched_amount, total_amount } = unitsQuery.rows[0];
+                console.log(`  Query results: matched_amount=${matched_amount || 0}, total_amount=${total_amount || 0}`);
 
                 // Let status service handle the bet status update
+                console.log(`  Calling status update service for bet ${betId}`);
                 await this.statusUpdateService.updateBetStatus(
                     betId,
                     matched_amount || 0,
                     total_amount || 0
                 );
+                console.log(`  Status update completed for bet ${betId}`);
 
             } catch (error) {
-                console.error(`Failed to update status for bet ${betId}: ${error.message}`);
+                console.error(`  Failed to update status for bet ${betId}: ${error.message}`);
+                console.error(error.stack);
                 // Don't throw here - continue processing other bets
             }
         }
 
+        console.log(`\nStatus update process complete for all bets`);
         return {
             success: true,
             updatedBets: betIds.size,
