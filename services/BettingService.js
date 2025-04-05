@@ -112,6 +112,7 @@ class BettingService {
 
       if (bets.length > 1) {
         // Match Bets
+        console.log(`Bets ready to match`);
         await this.matchingService.matchBets(bets);
       }
     } catch (error) {
