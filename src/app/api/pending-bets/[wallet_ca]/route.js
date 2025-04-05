@@ -39,10 +39,10 @@ export async function GET(request, { params }) {
             });
         }
 
-        const walletAddress = await params.wallet_ca;
+        const walletAddress = params.wallet_ca;
 
         if (!walletAddress) {
-            return new Response(JSON.stringify({ error: 'Wallet address is required'}), {
+            return new Response(JSON.stringify({ error: 'Wallet address is required' }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json'},
             });
@@ -55,6 +55,7 @@ export async function GET(request, { params }) {
             headers: { 'Content-Type': 'application/json'},
         });
     } catch (error) {
+        console.log('Error in pending bets route: ', error);
         return new Response(JSON.stringify({ error: error.message || 'An error occurred fetching pending bets' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
