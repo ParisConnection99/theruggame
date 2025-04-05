@@ -574,6 +574,7 @@ class PostgresDatabase {
                 return result;
     
             } catch (error) {
+                console.log(`Error in transaction: ${error.message}`);
                 await client.query('ROLLBACK');
     
                 if (error.code === '23505') {
