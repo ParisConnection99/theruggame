@@ -608,9 +608,9 @@ export default function ProfilePage() {
                                     <thead>
                                         <tr className="text-sm text-gray-400">
                                             <th className="w-[15%] p-1 text-left" title="Date">📅</th>
-                                            <th className="w-[25%] p-1 text-left" title="ID">🆔</th>
+                                            <th className="w-[20%] p-1 text-left" title="ID">🆔</th>
                                             <th className="w-[25%] p-1 text-left" title="Name">🏷️</th>
-                                            <th className="w-[15%] p-1 text-left" title="Amount">💰</th>
+                                            <th className="w-[20%] p-1 text-left" title="Amount">💰</th>
                                             <th className="w-[20%] p-1 text-left" title="Status">⏳</th>
                                         </tr>
                                     </thead>
