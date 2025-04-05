@@ -68,6 +68,8 @@ class ExpiryService {
         throw new Error(`Error fetching unmatched bets: ${betError.message}`);
       }
 
+      console.log(`Unmatched and partially matched bets: ${bets}`);
+
       // Process all unmatched/partially matched bets in parallel
       if (bets.length > 0) {
         await Promise.all(bets.map(bet => this.processBetExpiry(bet)));
