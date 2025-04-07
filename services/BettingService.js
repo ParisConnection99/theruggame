@@ -107,7 +107,6 @@ class BettingService {
 
   async createUnitsAndMatch(bet) {
     try {
-      throw new Error('Testing the error logging.');
       // Create bet units
       await this.betUnitService.createUnits(bet);
 
@@ -115,15 +114,11 @@ class BettingService {
       // Fetch Unmatchedbets n units
       const bets = await this.matchingService.intakeUnits(this.db);
 
-      console.log(`Unmatched bets: ${bets}`);
-
       if (bets.length > 1) {
         // Match Bets
-        console.log(`Bets ready to match`);
         await this.matchingService.matchBets(bets);
       }
     } catch (error) {
-      console.log(`Error creating bet units: ${error.message}`);
       this.errorService.createError({
         error_type: 'CREATING_UNITS_AND_MATCHING_ERROR',
         error_message: error.message,
