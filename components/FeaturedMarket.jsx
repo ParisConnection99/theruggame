@@ -29,7 +29,7 @@ const FeaturedMarket = ({
   }
 
   const formatSol = (amount) => {
-    return parseFloat(amount).toFixed(4);
+    return parseFloat(amount).toFixed(2);
   };
 
 
