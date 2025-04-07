@@ -507,7 +507,7 @@
 
 // module.exports = MatchingFunnel;
 
-import { serviceRepo } from '@/services/ServiceRepository';
+const { serviceRepo } = require('@/services/ServiceRepository');
 
 class MatchingFunnel {
     constructor(db, config = {}, marketService, statusUpdateService, betUnitService) {
