@@ -302,6 +302,11 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
                   </div>
                 </div>
               </div>
+              
+              {/* Website URL at the bottom */}
+              <div className="text-center mt-4 text-gray-400 text-sm font-medium">
+                theruggame.fun
+              </div>
             </div>
           </div>
         </div>
