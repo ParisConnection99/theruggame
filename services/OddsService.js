@@ -38,7 +38,7 @@ class OddsService {
     
       if (error) throw error;
     
-      const endTime = new Date(market.endTime);
+      const endTime = new Date(market.end_time);
       const currentTime = new Date();
       const timeRemaining = Math.max(0, endTime.getTime() - currentTime.getTime());
     
