@@ -205,14 +205,7 @@ export default function MarketPage() {
               setTimeLeft('');  // Clear the timer
               setIsExpired(true);
               setIsBettingClosed(true);
-            } else {
-              await errorLog(
-                `MARKET_OUTCOME_ERROR: ${updatedMarket.payload.outcome}`,
-                'Error updating market',
-                "no stack trace available",
-                "MARKET",
-                "MILD");
-            }
+            } 
           }
           break;
       }
