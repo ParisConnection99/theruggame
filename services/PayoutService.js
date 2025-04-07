@@ -111,18 +111,10 @@ class PayoutService {
 
         console.log(`Processing market resolution: Market ${marketId}, Result: ${result}`);
 
-        // const { data: bets, error } = await this.supabase
-        //     .from('bets')
-        //     .select('*')
-        //     .eq('market_id', marketId)
-        //     .in('status', ['PARTIALLY_MATCHED', 'MATCHED']);
+        // First, fetch the qualifying bets
         const { data: bets, error } = await this.supabase
             .from('bets')
-            .select(`
-        *,
-        matches!matches_bet1_id_fkey(*),
-        matches!matches_bet2_id_fkey(*)
-        `)
+            .select('*')
             .eq('market_id', marketId)
             .in('status', ['PARTIALLY_MATCHED', 'MATCHED']);
 
@@ -136,22 +128,33 @@ class PayoutService {
             return;
         }
 
+        // Extract all bet IDs
+        const betIds = bets.map(bet => bet.id);
+
+        // Then fetch all matches related to these bets
+        const { data: matches, error: matchesError } = await this.supabase
+            .from('matches')
+            .select('*')
+            .or(`bet1_id.in.(${betIds}),bet2_id.in.(${betIds})`);
+
+        if (matchesError) {
+            console.error(`Failed to fetch matches: ${matchesError.message}`);
+            throw new Error(`Failed to fetch matches: ${matchesError.message}`);
+        }
+
+        // Now you can process your bets and matches as needed
+        // For example, to associate matches with each bet:
         const betsWithMatches = bets.map(bet => {
-            // Combine matches from both relationships
-            const allMatches = [
-                ...(bet.matches_as_bet1 || []),
-                ...(bet.matches_as_bet2 || [])
-            ];
-            
+            const betMatches = matches.filter(match =>
+                match.bet1_id === bet.id || match.bet2_id === bet.id
+            );
+
             return {
                 ...bet,
-                matches: allMatches,
-                // Remove the separate arrays to clean up the object
-                matches_as_bet1: undefined,
-                matches_as_bet2: undefined
+                matches: betMatches
             };
         });
-        
+
         console.log(`Found ${bets.length} bets with a total of ${betsWithMatches.reduce((sum, bet) => sum + bet.matches.length, 0)} matches`);
 
         try {
