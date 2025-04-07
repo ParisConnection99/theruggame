@@ -23,7 +23,6 @@ class MarketPhaseMessageService {
         delay: delaySeconds,
       });
       
-      console.log(`Scheduled phase check for market ${marketId} with delay ${delaySeconds}s`);
       return response.messageId;
     } catch (error) {
       console.error(`Failed to schedule phase check for market ${marketId}:`, error);
