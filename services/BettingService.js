@@ -91,7 +91,7 @@ class BettingService {
       });
 
       // Create and match units
-      await this.createUnitsAndMatch(bet);
+      await this.createUnitsAndMatch(bet); // this shouldnt throw 
 
       return bet;
     } catch (error) {
@@ -117,7 +117,7 @@ class BettingService {
       }
     } catch (error) {
       console.log(`Error creating bet units: ${error.message}`);
-      throw new Error(`Error creating Bet units: ${error.message}`);
+      //throw new Error(`Error creating Bet units: ${error.message}`); // this shouldnt throw because the bet is already placed
     }
   }
 
