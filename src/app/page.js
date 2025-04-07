@@ -220,7 +220,7 @@ export default function Home() {
   };
 
   const onWelcomePopupClose = () => {
-    localStorage.saveItem('welcome_popup', true);
+    localStorage.setItem('welcome_popup', true);
     setShowPopup(false);
   }
 
