@@ -28,6 +28,10 @@ const FeaturedMarket = ({
     imageSrc = "/images/ruggy_angry.svg";
   }
 
+  const formatSol = (amount) => {
+    return parseFloat(amount).toFixed(4);
+  };
+
 
   // Calculate and update countdown - using the same logic as MarketCard
   useEffect(() => {
@@ -169,7 +173,7 @@ const FeaturedMarket = ({
         <div className="text-base md:text-lg flex items-center">
           <span className="mr-2">💰 Amount wagered:</span>
           <span className="font-bold text-green-400">
-            {amountWagered}
+            {formatSol(amountWagered)}
           </span>
         </div>
 
