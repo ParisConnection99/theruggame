@@ -74,7 +74,6 @@ class PayoutService {
             //return { success: true, marketId, result };
             
         } catch (error) {
-            console.error(`Error in handleMarketResolution for market ${marketId}: ${error.message}`);
             // You might want to log the error to a monitoring service here
             this.errorService.createError({
                 error_type: 'HANDLE_MARKET_RESOLUTION_ERROR',
@@ -156,11 +155,18 @@ class PayoutService {
             .in('id', betIds);
 
         if (error) {
-            console.error(`Error batch updating bet statuses: ${error.message}`);
+            this.errorService.createError({
+                error_type: 'UPDATE_BET_STATUS_ERROR',
+                error_message: error.message || `Error batch updating bet statuses`,
+                stack_trace: error.stack || "no stack available",
+                wallet_ca: "no wallet available",
+                ip: "",
+                request_data: "",
+                source_location: "PAYOUT_SERVICE",
+                severity: "SERIOUS",
+              });
             throw new Error(`Failed to update bet statuses: ${error.message}`);
         }
-
-        console.log(`Updated ${betIds.length} bets to status: ${status}`);
     }
 
     /**
