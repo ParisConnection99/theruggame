@@ -748,7 +748,7 @@ export default function ProfilePage() {
                             </div>
                         )}
                     </div> */}
-                    <div className="mt-6 w-full max-w-md">
+ <div className="mt-6 w-full max-w-md">
   <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
   {betsLoading ? (
     <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
@@ -762,10 +762,9 @@ export default function ProfilePage() {
         <thead>
           <tr className="text-sm text-gray-400">
             <th className="w-[5%] p-1 text-center"></th>
-            <th className="w-[15%] p-1 text-left" title="Date">📅</th>
-            <th className="w-[25%] p-1 text-left" title="Name">🏷️</th>
-            <th className="w-[20%] p-1 text-left" title="Result">🎯</th>
-            <th className="w-[25%] p-1 text-left" title="Profit">📈</th>
+            <th className="w-[30%] p-1 text-left" title="Name">🏷️</th>
+            <th className="w-[25%] p-1 text-left" title="Result">🎯</th>
+            <th className="w-[30%] p-1 text-left" title="Profit">📈</th>
             <th className="w-[10%] p-1 text-center" title="Share">📤</th>
           </tr>
         </thead>
@@ -785,9 +784,6 @@ export default function ProfilePage() {
                   >
                     {expandedBets[bet.id] ? '▼' : '▶'}
                   </button>
-                </td>
-                <td className="p-1 truncate">
-                  {new Date(bet.created_at).toLocaleDateString()}
                 </td>
                 <td className="p-1 truncate">
                   {bet.token_name || 'Unknown'}
@@ -837,6 +833,12 @@ export default function ProfilePage() {
                   <td colSpan="6" className="p-0">
                     <div className="bg-gray-700 p-3 text-sm rounded mx-2 mb-2">
                       <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                          <span className="text-gray-400">Date:</span>
+                          <span className="ml-2 font-medium">
+                            {new Date(bet.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
                         <div>
                           <span className="text-gray-400">Matched amount:</span>
                           <span className="ml-2 font-medium">
