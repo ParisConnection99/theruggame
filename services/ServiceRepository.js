@@ -59,7 +59,8 @@ class ServiceRepository {
     ));
     this.register('payoutService', new PayoutService(
       this.get('supabase'), 
-      this.get('userService')
+      this.get('userService'),
+      this.get('errorService')
     ));
     this.register('tokenService', new TokenService(
       this.get('supabase'), 

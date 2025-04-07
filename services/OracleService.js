@@ -90,67 +90,6 @@ class OracleService {
         }
     }
 
-    // static async fetchTokenProfiles() {
-    //     try {
-    //         const headers = {
-    //             'Accept': '*/*',
-    //             'Accept-Encoding': 'gzip, deflate, br',
-    //             'Connection': 'keep-alive',
-    //             'User-Agent': 'PostmanRuntime/7.32.3',
-    //             'Cache-Control': 'no-cache',
-    //             'Postman-Token': Date.now().toString(),
-    //             'Host': 'api.dexscreener.com'
-    //         };
-
-    //         // const response = await fetch(`${this.baseUrl}/token-boosts/top/v1`, {
-    //         //     method: 'GET',
-    //         //     headers
-    //         // });
-
-    //         const response = await fetch(`${this.baseUrl}/token-profiles/latest/v1`, {
-    //             method: 'GET',
-    //             headers
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-
-    //         const data = await response.json();
-
-    //         if (!data) {
-    //             throw new Error('No response data received');
-    //         }
-
-    //         if (!Array.isArray(data)) {
-    //             throw new Error(`Expected array but received: ${typeof data}. Data: ${JSON.stringify(data)}`);
-    //         }
-
-    //         const solanaTokens = data
-    //             .map(token => ({
-    //                 tokenAddress: token.tokenAddress,
-    //                 chainId: token.chainId,
-    //                 header: token.header,
-    //                 description: token.description,
-    //                 links: token.links,
-    //                 icon: token.icon
-    //             }))
-    //             .filter(token => token.chainId === 'solana');
-
-    //         return solanaTokens;
-
-    //     } catch (error) {
-    //         console.error('Error in fetchTokenProfiles:', {
-    //             message: error.message,
-    //             response: error instanceof Response ? {
-    //                 status: error.status,
-    //                 statusText: error.statusText
-    //             } : 'No response'
-    //         });
-    //         throw error;
-    //     }
-    // }
-
     static async fetchTokenDetails(tokenAddresses) {
         try {
             const response = await fetch(`${this.baseUrl}/tokens/v1/solana/${tokenAddresses}`, {
