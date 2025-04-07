@@ -114,7 +114,6 @@ export default function Home() {
           error.stack || "no stack trace available",
           "HOME",
           "SERIOUS");
-        console.error("Error fetching markets: ", error);
         logEvent(analytics, 'home_page_error', {
           error_message: error.message,
           error_code: error.code || 'unknown'
@@ -129,7 +128,7 @@ export default function Home() {
   }, []);
 
   // Listening for updates on the market
-  useEffect(() => {
+  useEffect(async () => {
     const handleMarketUpdate = (updatedMarket) => {
       switch (updatedMarket.type) {
         case 'NEW MARKET':
@@ -175,7 +174,7 @@ export default function Home() {
       }
     }
 
-    const subscription = listenToMarkets(handleMarketUpdate);
+    const subscription = await listenToMarkets(handleMarketUpdate);
 
     return () => {
       if (subscription) {
