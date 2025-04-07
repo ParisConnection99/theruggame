@@ -761,8 +761,8 @@ export default function ProfilePage() {
       <table className="w-full table-fixed">
         <thead>
           <tr className="text-sm text-gray-400">
-            <th className="w-[5%] p-1 text-center"></th>
-            <th className="w-[30%] p-1 text-left" title="Name">🏷️</th>
+            <th className="w-[10%] p-1 text-center"></th>
+            <th className="w-[25%] p-1 text-left" title="Name">🏷️</th>
             <th className="w-[25%] p-1 text-left" title="Result">🎯</th>
             <th className="w-[30%] p-1 text-left" title="Profit">📈</th>
             <th className="w-[10%] p-1 text-center" title="Share">📤</th>
