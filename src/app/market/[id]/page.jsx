@@ -178,48 +178,101 @@ export default function MarketPage() {
     fetchUserData();
   }, [authUser]);
 
+  // useEffect(() => {
+  //   // Skip if market is not yet loaded
+  //   if (!market?.id) return;
+
+  //   const handleMarketUpdate = async (updatedMarket) => {
+  //     switch (updatedMarket.type) {
+  //       case 'PUMP VS RUG SPLIT UPDATE':
+  //         if (updatedMarket.payload.id === market.id) {
+  //           // Use functional update to avoid dependency on market itself
+  //           setMarket(prevMarket => ({
+  //             ...prevMarket,
+  //             ...updatedMarket.payload
+  //           }));
+  //         }
+  //         break;
+  //       case 'OUTCOME UPDATE':
+  //         if (updatedMarket.payload.id === market.id) {
+  //           // Validate the outcome is one of the expected values
+  //           if (
+  //             updatedMarket.payload.outcome === 'PUMP' || updatedMarket.payload.outcome === 'RUG'
+  //           ) {
+  //             setMarketOutcome(updatedMarket.payload.outcome);
+  //             // Update other relevant states
+  //             setTimerLabel('Market Result:');
+  //             setTimeLeft('');  // Clear the timer
+  //             setIsExpired(true);
+  //             setIsBettingClosed(true);
+  //           } 
+  //         }
+  //         break;
+  //     }
+  //   }
+
+  //   const subscription = listenToMarkets(handleMarketUpdate);
+
+  //   return () => {
+  //     if (subscription) {
+  //       subscription.unsubscribe();
+  //     }
+  //   }
+  // }, [market?.id]); // Only depend on the ID, not the entire market object
+
   useEffect(() => {
     // Skip if market is not yet loaded
     if (!market?.id) return;
 
-    const handleMarketUpdate = async (updatedMarket) => {
-      switch (updatedMarket.type) {
-        case 'PUMP VS RUG SPLIT UPDATE':
-          if (updatedMarket.payload.id === market.id) {
-            // Use functional update to avoid dependency on market itself
-            setMarket(prevMarket => ({
-              ...prevMarket,
-              ...updatedMarket.payload
-            }));
-          }
-          break;
-        case 'OUTCOME UPDATE':
-          if (updatedMarket.payload.id === market.id) {
-            // Validate the outcome is one of the expected values
-            if (
-              updatedMarket.payload.outcome === 'PUMP' || updatedMarket.payload.outcome === 'RUG'
-            ) {
-              setMarketOutcome(updatedMarket.payload.outcome);
-              // Update other relevant states
-              setTimerLabel('Market Result:');
-              setTimeLeft('');  // Clear the timer
-              setIsExpired(true);
-              setIsBettingClosed(true);
-            } 
-          }
-          break;
-      }
-    }
+    // Create inner function to handle async operations
+    const setupSubscription = async () => {
+      const handleMarketUpdate = async (updatedMarket) => {
+        switch (updatedMarket.type) {
+          case 'PUMP VS RUG SPLIT UPDATE':
+            if (updatedMarket.payload.id === market.id) {
+              // Use functional update to avoid dependency on market itself
+              setMarket(prevMarket => ({
+                ...prevMarket,
+                ...updatedMarket.payload
+              }));
+            }
+            break;
+          case 'OUTCOME UPDATE':
+            if (updatedMarket.payload.id === market.id) {
+              // Validate the outcome is one of the expected values
+              if (
+                updatedMarket.payload.outcome === 'PUMP' || updatedMarket.payload.outcome === 'RUG'
+              ) {
+                setMarketOutcome(updatedMarket.payload.outcome);
+                // Update other relevant states
+                setTimerLabel('Market Result:');
+                setTimeLeft('');  // Clear the timer
+                setIsExpired(true);
+                setIsBettingClosed(true);
+              }
+            }
+            break;
+        }
+      };
 
-    const subscription = listenToMarkets(handleMarketUpdate);
+      // Call the async function and await its result
+      const subscription = await listenToMarkets(handleMarketUpdate);
+      return subscription;
+    };
 
+    // Initialize subscription and store the promise
+    let subscriptionPromise = setupSubscription();
+
+    // Return cleanup function
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
-    }
-  }, [market?.id]); // Only depend on the ID, not the entire market object
-
+      // Handle the promise in cleanup
+      subscriptionPromise.then(subscription => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      });
+    };
+  }, [market?.id]);
 
   const handlePriceUpdate = (priceData) => {
     setCurrentPrice(priceData.price);

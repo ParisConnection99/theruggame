@@ -128,60 +128,125 @@ export default function Home() {
   }, []);
 
   // Listening for updates on the market
-  useEffect(async () => {
-    const handleMarketUpdate = (updatedMarket) => {
-      switch (updatedMarket.type) {
-        case 'NEW MARKET':
-          // Check if market with same token_address already exists
-          const marketExists = markets.some(market =>
-            market.token_address === updatedMarket.payload.token_address
-          );
+  // useEffect(async () => {
+  //   const handleMarketUpdate = (updatedMarket) => {
+  //     switch (updatedMarket.type) {
+  //       case 'NEW MARKET':
+  //         // Check if market with same token_address already exists
+  //         const marketExists = markets.some(market =>
+  //           market.token_address === updatedMarket.payload.token_address
+  //         );
 
-          // Only add if it doesn't exist
-          if (!marketExists) {
-            const newMarkets = [...markets, updatedMarket.payload];
-            newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            setMarkets(newMarkets);
-          }
-          break;
+  //         // Only add if it doesn't exist
+  //         if (!marketExists) {
+  //           const newMarkets = [...markets, updatedMarket.payload];
+  //           newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  //           setMarkets(newMarkets);
+  //         }
+  //         break;
 
-        case 'PUMP VS RUG SPLIT UPDATE':
-          // We should update the Featured Market.
-          setMarkets(currentMarkets => {
-            const updatedMarkets = currentMarkets.map(market =>
-              market.id === updatedMarket.payload.id ? updatedMarket.payload : market
+  //       case 'PUMP VS RUG SPLIT UPDATE':
+  //         // We should update the Featured Market.
+  //         setMarkets(currentMarkets => {
+  //           const updatedMarkets = currentMarkets.map(market =>
+  //             market.id === updatedMarket.payload.id ? updatedMarket.payload : market
+  //           );
+
+  //           // Recalculate featured market
+  //           updateFeaturedMarket(updatedMarkets);
+
+  //           return updatedMarkets;
+  //         });
+  //         break;
+  //       case 'MARKET STATUS UPDATE':
+
+  //         // Removes the markets with the resolved status
+  //         setMarkets(currentMarkets => {
+  //           const filteredMarkets = currentMarkets.filter(market =>
+  //             !(market.id === updatedMarket.payload.id && updatedMarket.payload.status === 'RESOLVED')
+  //           );
+
+  //           // Recalculate featured market if needed
+  //           updateFeaturedMarket(filteredMarkets);
+
+  //           return filteredMarkets;
+  //         });
+  //     }
+  //   }
+
+  //   const subscription = await listenToMarkets(handleMarketUpdate);
+
+  //   return () => {
+  //     if (subscription) {
+  //       subscription.unsubscribe();
+  //     }
+  //   };
+  // }, [markets]);
+  useEffect(() => {
+    // Define an inner async function
+    const setupSubscription = async () => {
+      const handleMarketUpdate = (updatedMarket) => {
+        switch (updatedMarket.type) {
+          case 'NEW MARKET':
+            // Check if market with same token_address already exists
+            const marketExists = markets.some(market =>
+              market.token_address === updatedMarket.payload.token_address
             );
-
-            // Recalculate featured market
-            updateFeaturedMarket(updatedMarkets);
-
-            return updatedMarkets;
-          });
-          break;
-        case 'MARKET STATUS UPDATE':
-
-          // Removes the markets with the resolved status
-          setMarkets(currentMarkets => {
-            const filteredMarkets = currentMarkets.filter(market =>
-              !(market.id === updatedMarket.payload.id && updatedMarket.payload.status === 'RESOLVED')
-            );
-
-            // Recalculate featured market if needed
-            updateFeaturedMarket(filteredMarkets);
-
-            return filteredMarkets;
-          });
+  
+            // Only add if it doesn't exist
+            if (!marketExists) {
+              const newMarkets = [...markets, updatedMarket.payload];
+              newMarkets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              setMarkets(newMarkets);
+            }
+            break;
+  
+          case 'PUMP VS RUG SPLIT UPDATE':
+            // We should update the Featured Market.
+            setMarkets(currentMarkets => {
+              const updatedMarkets = currentMarkets.map(market =>
+                market.id === updatedMarket.payload.id ? updatedMarket.payload : market
+              );
+  
+              // Recalculate featured market
+              updateFeaturedMarket(updatedMarkets);
+  
+              return updatedMarkets;
+            });
+            break;
+          case 'MARKET STATUS UPDATE':
+  
+            // Removes the markets with the resolved status
+            setMarkets(currentMarkets => {
+              const filteredMarkets = currentMarkets.filter(market =>
+                !(market.id === updatedMarket.payload.id && updatedMarket.payload.status === 'RESOLVED')
+              );
+  
+              // Recalculate featured market if needed
+              updateFeaturedMarket(filteredMarkets);
+  
+              return filteredMarkets;
+            });
+        }
       }
-    }
-
-    const subscription = await listenToMarkets(handleMarketUpdate);
-
-    return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+  
+      const subscription = await listenToMarkets(handleMarketUpdate);
+      return subscription;
     };
-  }, [markets]);
+  
+    // Call the async function and store the promise
+    let subscriptionPromise = setupSubscription();
+    
+    // Cleanup function
+    return () => {
+      // Use the promise to unsubscribe when component unmounts
+      subscriptionPromise.then(subscription => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      });
+    };
+  }, [markets]); // Be careful with this dependency - may cause infinite loops
 
   async function onMarketClick(marketId) {
     if (analytics) {

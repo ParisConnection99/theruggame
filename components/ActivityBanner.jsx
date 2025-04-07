@@ -79,20 +79,29 @@ const ActivityBanner = () => {
   }, []);
 
   // Fetch latest bet updates
-  useEffect( async() => {
+  useEffect( () => {
     console.log("Setting up bet update listener");
-    
-    const handleBetUpdates = (updatedBet) => {
-      const message = formatBetMessage(updatedBet);
-      addToQueue(message);
+
+    const setupSubscription = async () => {
+
+      const handleBetUpdates = (updatedBet) => {
+        const message = formatBetMessage(updatedBet);
+        addToQueue(message);
+      };
+
+      const subscription = await listenToBets(handleBetUpdates);
+      return subscription;
     };
     
-    const subscription = await listenToBets(handleBetUpdates);
+    
+    let subscriptionPromise = setupSubscription();
     
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+      subscriptionPromise.then(subscription => {
+        if (subscription) {
+          subscription.unsubscribe();
+        }
+      });
     };
   }, []);
 

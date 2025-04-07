@@ -287,7 +287,6 @@ class ExpiryService {
     try {
       market = await this.db.resolveStatus(marketId, newPhase);
     } catch (error) {
-      console.error('Error changing resolve status. ', error);
       throw error;
     }
 
