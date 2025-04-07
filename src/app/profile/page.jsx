@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
     // 3. Format SOL amounts consistently
     const formatSol = (amount) => {
-        return parseFloat(amount).toFixed(3);
+        return parseFloat(amount).toFixed(2);
     };
 
     const calculateWinAmount = (bet) => {
