@@ -313,7 +313,7 @@ export default function ProfilePage() {
             };
 
             // Import and set up the real-time listener
-            const subscription = listenToBets(uid, handlePendingBetsUpdate);
+            const subscription = await listenToBets(uid, handlePendingBetsUpdate);
 
             // Clean up subscription when component unmounts or auth changes
             return () => {

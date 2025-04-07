@@ -79,7 +79,7 @@ const ActivityBanner = () => {
   }, []);
 
   // Fetch latest bet updates
-  useEffect(() => {
+  useEffect( async() => {
     console.log("Setting up bet update listener");
     
     const handleBetUpdates = (updatedBet) => {
@@ -87,7 +87,7 @@ const ActivityBanner = () => {
       addToQueue(message);
     };
     
-    const subscription = listenToBets(handleBetUpdates);
+    const subscription = await listenToBets(handleBetUpdates);
     
     return () => {
       if (subscription) {
