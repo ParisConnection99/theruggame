@@ -277,9 +277,9 @@ class PayoutService {
         // Process refunds
         const refundPromises = bets.map(async (bet) => {
             try {
-                const refundAmount = bet.amount || bet.matchedAmount || 0;
+                const refundAmount = bet.amount || bet.matched_amount || 0; // This depends if this is before or after cutoff
                 if (refundAmount > 0) {
-                    const userId = bet.userId || bet.user_id;
+                    const userId = bet.user_id;
                     await this.userService.updateBalance(userId, refundAmount);
                 }
             } catch (error) {
