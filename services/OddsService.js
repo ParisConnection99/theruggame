@@ -25,6 +25,25 @@ class OddsService {
   
       return betType === 'PUMP' ? market.current_pump_odds : market.current_rug_odds;
     }
+
+    async getCurrentMatchedOdds(marketId) {
+      const { data: market, error } = await this.supabase
+        .from('markets')
+        .eq('id', marketId)
+        .single();
+    
+      if(!market) {
+        throw new Error('Error processing Market.');
+      }
+    
+      if (error) throw error;
+    
+      const endTime = new Date(market.endTime);
+      const currentTime = new Date();
+      const timeRemaining = Math.max(0, endTime.getTime() - currentTime.getTime());
+    
+      return this.calculateOdds(market.total_matched_pump, market.total_matched_rug, timeRemaining);
+    }
   
     calculateOdds(pumpAmount, rugAmount, timeRemaining) {
       const totalPool = pumpAmount + rugAmount;

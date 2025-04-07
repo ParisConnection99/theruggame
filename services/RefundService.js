@@ -185,6 +185,9 @@ class RefundService {
             throw new Error('Error processing Bet.');
         }
 
+        // IF ITS NOT PARTIALLY MATCHED
+        // FIRST FETCH THE BET THEN CHECK THE STATUS
+
         const { error } = await this.supabase
             .from('bets')
             .update({

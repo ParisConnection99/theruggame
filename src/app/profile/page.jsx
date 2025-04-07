@@ -674,6 +674,7 @@ export default function ProfilePage() {
                                     </thead>
                                     <tbody>
                                         {bets.map((bet) => (
+                                            // up
                                             <tr key={bet.id} className="text-sm border-t border-gray-700">
                                                 <td className="p-1 truncate">
                                                     {new Date(bet.created_at).toLocaleDateString()}
