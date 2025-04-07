@@ -70,7 +70,8 @@ class ServiceRepository {
     ));
     this.register('cashoutService', new CashoutService(
       this.get('supabase'),
-      this.get('userService')
+      this.get('userService'),
+      this.get('errorService')
     ));
     
     // Second level dependent services

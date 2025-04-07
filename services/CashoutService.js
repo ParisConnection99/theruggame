@@ -1,8 +1,9 @@
 // CashoutService.js
 class CashoutService {
-    constructor(supabase, userService) {
+    constructor(supabase, userService, errorService) {
         this.supabase = supabase;
         this.userService = userService;
+        this.errorService = errorService;
     }
 
     async createCashout(userId, amount, wallet_ca, device_info, ip_address) {
@@ -120,8 +121,18 @@ class CashoutService {
             try {
                 // Return funds to user balance
                 await this.userService.updateBalance(cashout.userId, parseFloat(cashout.amount));
-            } catch (balanceError) {
-                console.error(`Failed to refund user balance for cashout ${id}:`, balanceError);
+            } catch (error) {
+                console.error(`Failed to refund user balance for cashout ${id}:`, error);
+                this.errorService.createError({
+                    error_type: 'UPDATING_CASHOUT_ERROR',
+                    error_message: error.message || `Failed to refund user balance for cashout ${id}`,
+                    stack_trace: error.stack || "no stack available",
+                    wallet_ca: "no wallet available",
+                    ip: "",
+                    request_data: "",
+                    source_location: "CASHOUT_SERVICE",
+                    severity: "SERIOUS",
+                  });
             }
         }
 
