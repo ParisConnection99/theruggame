@@ -764,7 +764,7 @@ class MatchingFunnel {
             let pumpOdds = 0;
             let rugOdds = 0;
             try {
-                const oddsData = await this.oddsService.getCurrentOdds(marketId);
+                const oddsData = await this.oddsService.getCurrentMatchedOdds(marketId);
                 pumpOdds = oddsData?.pumpOdds || 0;
                 rugOdds = oddsData?.rugOdds || 0;
                 console.log(`Retrieved current odds for market ${marketId}: pump=${pumpOdds}, rug=${rugOdds}`);
