@@ -286,22 +286,6 @@ class MarketService {
     }
   }
 
-  // Subscribe to market updates including phase changes
-  subscribeToMarket(marketId, callback) {
-    return this.supabase
-      .channel(`market_${marketId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'markets',
-        filter: `id=eq.${marketId}`
-      }, async (update) => {
-        const marketStatus = await this.getMarketStatus(marketId);
-        callback(marketStatus);
-      })
-      .subscribe();
-  }
-
   // Fetch Market count
   async getMarketCount() {
     try {

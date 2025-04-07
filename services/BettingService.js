@@ -130,32 +130,6 @@ class BettingService {
     if (error) throw error;
     return data;
   }
-
-  // Subscribe to market updates
-  subscribeToMarket(marketId, callback) {
-    return this.supabase
-      .channel(`market_${marketId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'markets',
-        filter: `id=eq.${marketId}`
-      }, callback)
-      .subscribe();
-  }
-
-  // Subscribe to bet updates
-  subscribeToBets(marketId, callback) {
-    return this.supabase
-      .channel(`bets_${marketId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'bets',
-        filter: `market_id=eq.${marketId}`
-      }, callback)
-      .subscribe();
-  }
 }
 
 module.exports = BettingService;
