@@ -65,7 +65,6 @@ async function checkSufficientBalance(walletAddress, amount) {
     };
 
   } catch (error) {
-    console.error(`Balance check error:`, error.message);
     throw new Error(`Failed to check wallet balance: ${error.message}`);
   }
 }

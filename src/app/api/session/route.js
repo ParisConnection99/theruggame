@@ -49,7 +49,6 @@ export async function POST(request) {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
-        console.error('Error processing session request:', error);
         return Response.json({ error: error.message }, { status: 500 });
     }
 }
@@ -66,7 +65,6 @@ export async function PATCH(request) {
         });
 
     } catch (error) {
-        console.error('Error updating session request:', error);
         return Response.json({ error: error.message }, { status: 500 });
     }
 }
@@ -88,19 +86,11 @@ export async function DELETE(request) {
         // Call the deleteByWallet_ca function from the service
         await serviceRepo.sessionDataService.deleteByWallet_ca(wallet_ca);
 
-        // if (!deletedData || deletedData.length === 0) {
-        //     return new Response(JSON.stringify({ message: 'No session found for the given wallet_ca' }), {
-        //         status: 404,
-        //         headers: { 'Content-Type': 'application/json' }
-        //     });
-        // }
-
         return new Response(JSON.stringify({ message: 'Session deleted successfully' }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
-        console.error('Error deleting session:', error);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }

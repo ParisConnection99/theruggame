@@ -55,8 +55,6 @@ export async function GET(request) {
             lastValidBlockHeight
         });
     } catch (error) {
-        console.error('Error getting blockhash:', error);
-
         return NextResponse.json(
             { error: error.message || 'Failed to get blockhash' },
             { status: 500 }

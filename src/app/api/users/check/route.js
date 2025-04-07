@@ -15,7 +15,7 @@ if (!admin.apps.length) {
         });
         console.log("Firebase Admin initialized successfully");
     } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
+        console.error("Firebase Admin initialization error:");
     }
 }
 
@@ -76,7 +76,6 @@ export async function POST(request) {
         });
 
     } catch (error) {
-        console.error('Error in GET /api/users/check:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },

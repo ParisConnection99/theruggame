@@ -14,7 +14,6 @@ export async function GET(request) {
         headers: { 'Content-Type': 'application/json' }
       });
     } catch (error) {
-      console.error('Config error:', error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -40,7 +39,6 @@ export async function GET(request) {
         headers: { 'Content-Type': 'application/json' }
       });
     } catch (error) {
-      console.error('Market odds error:', error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -55,8 +53,6 @@ export async function GET(request) {
       const marketId = pathSegments[pathSegments.length - 2];
       const betType = pathSegments[pathSegments.length - 1];
 
-      console.log(`Getting odds for marketId: ${marketId}, betType: ${betType}`);
-      
       const odds = await serviceRepo.oddsService.getCurrentOdds(marketId, betType);
       
       return new Response(JSON.stringify({
@@ -68,7 +64,6 @@ export async function GET(request) {
         headers: { 'Content-Type': 'application/json' }
       });
     } catch (error) {
-      console.error(`Error getting ${pathSegments[pathSegments.length - 1]} odds:`, error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' }
@@ -150,7 +145,6 @@ export async function POST(request) {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error('POST request error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

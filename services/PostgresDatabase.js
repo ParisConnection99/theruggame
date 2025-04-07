@@ -564,7 +564,6 @@ class PostgresDatabase {
     
         while (retries > 0) {
             try {
-                console.log(`Starting transaction... Context: ${JSON.stringify(context)}, Retries left: ${retries}`);
     
                 await client.query(`BEGIN ISOLATION LEVEL ${isolationLevel}`);
     

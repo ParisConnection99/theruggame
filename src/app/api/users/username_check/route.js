@@ -13,7 +13,7 @@ if (!admin.apps.length) {
         });
         console.log("Firebase Admin initialized successfully");
     } catch (error) {
-        console.error("Firebase Admin initialization error:", error);
+        console.error("Firebase Admin initialization error:");
     }
 }
 
@@ -34,7 +34,6 @@ export async function POST(request) {
         try {
             decodedToken = await admin.auth().verifyIdToken(token);
         } catch (error) {
-            console.error('Token verification failed:', error);
             return new Response(JSON.stringify({ error: 'Unauthorized: Invalid or expired token' }), {
                 status: 401,
                 headers: { 'Content-Type': 'application/json' },
@@ -54,12 +53,8 @@ export async function POST(request) {
 
         const username = body.username;
 
-        console.log(`Username: ${username}`);
-
         // Check if the username is available
         const isUsernameAvailable = await serviceRepo.userService.isUsernameAvailable(username);
-
-        console.log(`Is username available: ${isUsernameAvailable}`);
 
         if (!isUsernameAvailable) {
             // Username already exists
@@ -78,14 +73,12 @@ export async function POST(request) {
                 headers: { 'Content-Type': 'application/json' },
             });
         } catch (error) {
-            console.error('Error updating username:', error);
             return new Response(JSON.stringify({ error: 'Error updating username.' }), {
                 status: 500,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
     } catch (error) {
-        console.error('Error in POST /api/users/username_check:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },

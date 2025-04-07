@@ -137,7 +137,6 @@ export async function GET(request) {
 
 
   } catch (error) {
-    console.error('Error in GET /api/users:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -215,7 +214,6 @@ export async function POST(request) {
       }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error processing user request:', error);
 
     // Check for specific error types
     if (error.message.includes('User not found')) {

@@ -95,8 +95,6 @@ export async function POST(request) {
         });
 
     } catch (error) {
-        console.error('Transaction submission error:', error);
-
         return NextResponse.json(
             { success: false, error: error.message || 'Failed to submit transaction' },
             { status: 500 }

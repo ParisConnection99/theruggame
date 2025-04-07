@@ -39,7 +39,6 @@ class UserService {
             .single();
     
         if (error) {
-            console.error(`Error in user service: ${error}`);
             // PGRST116 is the "no rows returned" error code for Supabase
             if (error.code === 'PGRST116') {
                 return null; // Return null when no user is found
@@ -100,7 +99,6 @@ class UserService {
           );
           
           if (error) {
-            console.error('Error updating balance:', error);
             throw error;
           }
           

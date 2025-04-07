@@ -42,7 +42,6 @@ export async function POST(request) {
 
         return NextResponse.json({ success: true, marketId });
     } catch (error) {
-        console.error("Error processing market phase check:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

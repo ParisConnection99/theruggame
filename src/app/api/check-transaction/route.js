@@ -100,7 +100,6 @@ export async function POST(request) {
                 // We continue anyway since the transaction itself succeeded
             }
         } catch (confirmError) {
-            console.error('Error calling confirm_transaction:', confirmError);
             throw confirmError;
             // We continue anyway since the transaction itself succeeded
         }
