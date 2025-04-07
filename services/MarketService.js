@@ -134,7 +134,6 @@ class MarketService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error placing bet:', error);
       throw error;
     }
 
@@ -188,7 +187,6 @@ class MarketService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error placing bet:', error);
       throw error;
     }
   }
@@ -281,7 +279,6 @@ class MarketService {
 
       return market;
     } catch (error) {
-      console.error(`Error fetching market with ID ${marketId}:`, error);
       throw error;
     }
   }
@@ -298,7 +295,6 @@ class MarketService {
       return count; // count contains the number of matching rows
 
     } catch (error) {
-      console.error('Error getting the market count:', error);
       throw error;
     }
   }
