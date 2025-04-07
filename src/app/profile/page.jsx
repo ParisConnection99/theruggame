@@ -94,7 +94,7 @@ export default function ProfilePage() {
 
     // 3. Format SOL amounts consistently
     const formatSol = (amount) => {
-        return parseFloat(amount).toFixed(4);
+        return parseFloat(amount).toFixed(3);
     };
 
     const calculateWinAmount = (bet) => {
@@ -580,7 +580,7 @@ export default function ProfilePage() {
                     />
 
                     <h1 className="text-white mt-3 font-bold text-sm">Wallet Ca: {userData.wallet_ca.substring(0, 10)}...</h1>
-                    <h2 className="font-bold text-sm">Balance: {userData.balance} SOL</h2>
+                    <h2 className="font-bold text-sm">Balance: {formatSol(userData.balance)} SOL</h2>
                     <button
                         className="text-m mt-3 mb-3 cursor-pointer hover:scale-105"
                         onClick={handleEditProfile}>[Edit Profile]</button>
