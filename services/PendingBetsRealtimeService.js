@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
+import { errorLog } from '@/utils/ErrorLog';
 
-export const listenToUserPendingBets = (userId, onPendingBetUpdate) => {
+export const listenToUserPendingBets = async (userId, onPendingBetUpdate) => {
     try {
         const subscription = supabase
             .channel(`user-${userId}-active-bets`)
@@ -16,7 +17,7 @@ export const listenToUserPendingBets = (userId, onPendingBetUpdate) => {
                     console.log(`New active bet created for user ${userId}`);
                     onPendingBetUpdate({
                         payload: payload.new,
-                        type: 'NEW_PENDING_BET'
+                        type: 'INSERT'
                     });
                 }
                 
@@ -24,7 +25,7 @@ export const listenToUserPendingBets = (userId, onPendingBetUpdate) => {
                     console.log(`Bet status updated: ${payload.old.status} -> ${payload.new.status}`);
                     onPendingBetUpdate({
                         payload: payload.new,
-                        type: 'BET_STATUS_UPDATE'
+                        type: 'UPDATE'
                     });
                     
                     // If the bet status has changed to something outside our filter criteria,
@@ -46,7 +47,11 @@ export const listenToUserPendingBets = (userId, onPendingBetUpdate) => {
 
         return subscription;
     } catch (error) {
-        console.error(`Error setting up listener for user ${userId} active bets:`, error);
+        await errorLog("PENDING_BETS_LISTENER_ERROR",
+            error.message || `Error setting up listener for user ${userId} active bets:`,
+            error.stack || "no stack trace available",
+            "USER_PENDING_BETS_LISTENER",
+            "SERIOUS");
         return null;
     }
 };

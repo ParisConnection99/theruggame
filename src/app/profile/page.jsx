@@ -12,7 +12,7 @@ import { UAParser } from 'ua-parser-js';
 import { showToast } from '@/components/CustomToast';
 import { logActivity } from '@/utils/LogActivity';
 import { errorLog } from '@/utils/ErrorLog';
-import { listenToBets } from '@/services/BetsRealtimeService';
+import { listenToUserPendingBets } from '@/services/PendingBetsRealtimeService';
 import { logInfo, logError } from '@/utils/logger';
 
 export default function ProfilePage() {
@@ -283,7 +283,7 @@ export default function ProfilePage() {
         }
 
         const setupSubscription = async () => {
-            const uid = userData.wallet_ca;
+            const userId = userData.user_id;
 
             const handlePendingBetsUpdate = (update) => {
                 switch (update.type) {
@@ -313,7 +313,7 @@ export default function ProfilePage() {
             };
 
             // Import and set up the real-time listener
-            const subscription = await listenToBets(uid, handlePendingBetsUpdate);
+            const subscription = await listenToUserPendingBets(userId, handlePendingBetsUpdate);
 
             // Clean up subscription when component unmounts or auth changes
             return () => {

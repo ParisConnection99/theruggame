@@ -1,28 +1,23 @@
 import { supabase } from '@/lib/supabaseClient';
 import { errorLog } from '@/utils/ErrorLog';
 
-export const listenToBets = async (walletAddress, onBetUpdate) => {
+export const listenToBets = async (onBetUpdate) => {
     try {
         const subscription = supabase
-            .channel(`wallet-${walletAddress}-pending-bets`)
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'pending_bets',
-                filter: `wallet_ca=eq.${walletAddress}`  // Using wallet_ca as the filter
-            }, (payload) => {
-                console.log(`Wallet ${walletAddress} Pending Bet Update:`, payload);
+            .channel('bets-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'bets' }, (payload) => {
+                console.log('Bet Update:', payload);
 
                 if (payload.eventType === 'INSERT') {
-                    console.log(`New Pending Bet for wallet ${walletAddress}`);
+                    console.log(`New Bet Placed: ${payload.new.user_id} bet ${payload.new.amount} SOL on ${payload.new.token_name}`);
                     onBetUpdate({
                         payload: payload.new,
                         type: 'INSERT'
                     });
                 }
 
-                if (payload.eventType === 'UPDATE') {
-                    console.log(`Pending Bet Updated for wallet ${walletAddress}: ${payload.old.status} -> ${payload.new.status}`);
+                if (payload.eventType === 'UPDATE' && payload.new.status === 'WON') {
+                    console.log(`Bet Won: ${payload.new.user_id} won ${payload.new.potential_payout} SOL on ${payload.new.token_name}`);
                     onBetUpdate({
                         payload: payload.new,
                         type: 'UPDATE'
@@ -33,10 +28,10 @@ export const listenToBets = async (walletAddress, onBetUpdate) => {
 
         return subscription;
     } catch (error) {
-        await errorLog("PENDING_BETS_LISTENER_ERROR",
-            error.message || 'Error in pending bets realtime service',
+        await errorLog("BETS_LISTENER_ERROR",
+            error.message || 'Error in bets realtime service',
             error.stack || "no stack trace available",
-            "PENDING_BETS_LISTENER",
+            "BETS_LISTENER",
             "SERIOUS");
         return null;
     }
