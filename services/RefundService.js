@@ -81,7 +81,7 @@ class RefundService {
             */
             await this.updateProcessBalance(userId, amount);
     
-            await this.updateBetRefundStatus(betId);
+            await this.updateBetRefundStatus(bet);
     
             return refund;
         } catch (error) {
@@ -180,9 +180,16 @@ class RefundService {
         }
     }
 
-    async updateBetRefundStatus(betId) {
-        if(!betId) {
+    async updateBetRefundStatus(bet) {
+        if(!bet) {
             throw new Error('Error processing Bet.');
+        }
+
+        console.log('Updating the bet status to refund if not partially matched.');
+
+        if (bet.status === 'PARTIALLY_MATCHED') {
+            console.log('We dont need to change the status to refunded because this bet is partially matched.');
+            return;
         }
 
         // IF ITS NOT PARTIALLY MATCHED
@@ -193,7 +200,7 @@ class RefundService {
             .update({
                 status: 'REFUNDED'
             })
-            .eq('id', betId);
+            .eq('id', bet.id);
 
         if(error) throw error;
     }
