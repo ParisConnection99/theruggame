@@ -507,15 +507,14 @@
 
 // module.exports = MatchingFunnel;
 
-const { serviceRepo } = require('@/services/ServiceRepository');
-
 class MatchingFunnel {
-    constructor(db, config = {}, marketService, statusUpdateService, betUnitService) {
+    constructor(db, config = {}, marketService, statusUpdateService, betUnitService, oddsService) {
         this.db = db;
         this.config = config;
         this.marketService = marketService;
         this.statusUpdateService = statusUpdateService;
         this.betUnitService = betUnitService;
+        this.oddsService = oddsService;
 
         // Configuration with defaults
         this.BATCH_SIZE = config.batchSize || 50;
@@ -765,7 +764,7 @@ class MatchingFunnel {
             let pumpOdds = 0;
             let rugOdds = 0;
             try {
-                const oddsData = await serviceRepo.oddsService.getCurrentMatchedOdds(marketId);
+                const oddsData = await this.oddsService.getCurrentMatchedOdds(marketId);
                 console.log(`Odds data: ${JSON.stringify(oddsData)}`);
                 pumpOdds = oddsData?.pumpOdds || 0;
                 rugOdds = oddsData?.rugOdds || 0;
