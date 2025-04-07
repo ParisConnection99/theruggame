@@ -34,7 +34,7 @@ export const listenToBets = async (walletAddress, onBetUpdate) => {
         return subscription;
     } catch (error) {
         await errorLog("PENDING_BETS_LISTENER_ERROR",
-            error.message || 'Error object with empty message',
+            error.message || 'Error in pending bets realtime service',
             error.stack || "no stack trace available",
             "PENDING_BETS_LISTENER",
             "SERIOUS");

@@ -15,7 +15,6 @@ class MarketPageService {
       
             return market;
           } catch (error) {
-            console.error(`Error fetching market with ID ${marketId}: ${error}`);
             throw error;
           }
     }
@@ -32,7 +31,6 @@ class MarketPageService {
     
         return storedPrices;
       } catch (error) {
-        console.error(`Error fetching price history for market ${marketId}: ${error}`);
         throw error;
       }
     }

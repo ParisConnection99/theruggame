@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabaseClient';
+import { errorLog } from '@/utils/ErrorLog';
 
-export const listenToMarkets = (onMarketUpdate) => {
+export const listenToMarkets = async (onMarketUpdate) => {
     try {
         const subscription = supabase
             .channel('markets-realtime')
@@ -8,7 +9,7 @@ export const listenToMarkets = (onMarketUpdate) => {
                 console.log('Market Update:', payload);
 
                 // I think This is how I am getting the latest market update
-                if(payload.eventType === 'INSERT') {
+                if (payload.eventType === 'INSERT') {
                     console.log(`New Market has been created.`);
                     onMarketUpdate({
                         payload: payload.new,
@@ -16,7 +17,7 @@ export const listenToMarkets = (onMarketUpdate) => {
                     });
                 }
 
-                if(payload.eventType === 'UPDATE') {
+                if (payload.eventType === 'UPDATE') {
                     if (payload.new.total_pump_amount !== payload.old.total_pump_amount ||
                         payload.new.total_rug_amount !== payload.old.total_rug_amount) {
                         console.log(`Pump vs. Rug Split Updated: Pump ${payload.new.total_pump_amount} SOL | Rug ${payload.new.total_rug_amount} SOL`);
@@ -25,7 +26,7 @@ export const listenToMarkets = (onMarketUpdate) => {
                             type: 'PUMP VS RUG SPLIT UPDATE'
                         });
                     }
-    
+
                     if (payload.new.status !== payload.old.status || payload.new.phase !== payload.old.phase) {
                         console.log(`Market Status Updated: ${payload.new.status} - ${payload.new.phase}`);
                         onMarketUpdate({
@@ -42,13 +43,17 @@ export const listenToMarkets = (onMarketUpdate) => {
                         });
                     }
                 }
-                
+
             })
             .subscribe();
 
         return subscription;
     } catch (error) {
-        console.error('Error setting up market listener:', error);
+        await errorLog("MARKET_LISTENER_ERROR",
+            error.message || 'Error in market realtime service',
+            error.stack || "no stack trace available",
+            "MARKET_LISTENER",
+            "SERIOUS");
         return null;
     }
 };
