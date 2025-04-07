@@ -97,7 +97,7 @@ class ExpiryService {
         error_type: 'PROCESSING_MARKET_CUTOFF_ERROR',
         error_message: error.message,
         stack_trace: error.stack || "no stack available",
-        wallet_ca: bet.wallet_ca || "no wallet available",
+        wallet_ca: "no wallet available",
         ip: "",
         request_data: "",
         source_location: "MARKET_EXPIRY_SERVICE",
