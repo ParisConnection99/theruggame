@@ -1,7 +1,7 @@
 'use client';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import UsernameChangePopup from '@/components/UsernameChangePopup';
 import CashoutModal from '@/components/CashoutModal';
