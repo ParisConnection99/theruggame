@@ -775,7 +775,7 @@ class MatchingFunnel {
 
             // Call the RPC function to create match and update market statistics
             console.log(`Calling RPC to create match and update market statistics for market ${marketId}`);
-            const rpcResult = await this.db.query(
+            const rpcResult = await this.db.pool.query(
                 `SELECT * FROM create_match_and_update_market($1, $2, $3, $4, $5, $6)`,
                 [unit1.betId, unit2.betId, marketId, matchAmount, pumpOdds, rugOdds]
             );
