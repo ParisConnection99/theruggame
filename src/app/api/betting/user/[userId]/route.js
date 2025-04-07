@@ -58,7 +58,7 @@ export async function GET(request, { params }) {
 
     console.log('Fetched the bets.. fetching matches.');
 
-    const matches = await serviceRepo.getBetMatches.fetchMatchesWithId(betIds);
+    const matches = await serviceRepo.betMatchesService.fetchMatchesWithId(betIds);
 
     const betsWithMatches = bets.map(bet => {
       const betMatches = matches.filter(match =>
