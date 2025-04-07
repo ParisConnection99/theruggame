@@ -54,7 +54,27 @@ export async function GET(request, { params }) {
     // Fetch bets for the user
     const bets = await serviceRepo.bettingService.fetchBetsBy(userId);
 
-    return new Response(JSON.stringify(bets), {
+    const betIds = bets.map(bet => bet.id);
+
+    console.log('Fetched the bets.. fetching matches.');
+
+    const matches = await serviceRepo.getBetMatches.fetchMatchesWithId(betIds);
+
+    const betsWithMatches = bets.map(bet => {
+      const betMatches = matches.filter(match =>
+          match.bet1_id === bet.id || match.bet2_id === bet.id
+      );
+
+      return {
+          ...bet,
+          matches: betMatches
+      };
+  });
+
+  console.log(`Fetched bet with matches: ${JSON.stringify(betsWithMatches, null, 2)}`);
+
+
+    return new Response(JSON.stringify(betsWithMatches), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
