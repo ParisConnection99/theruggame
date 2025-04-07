@@ -108,7 +108,8 @@ class ServiceRepository {
       this.get('marketService'),
       this.get('statusUpdateService'),
       this.get('betUnitService'),
-      this.get('oddsService')
+      this.get('oddsService'),
+      this.get('errorService')
     ));
     
     // Final level dependent services
