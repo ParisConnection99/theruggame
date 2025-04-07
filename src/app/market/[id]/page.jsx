@@ -207,7 +207,7 @@ export default function MarketPage() {
               setIsBettingClosed(true);
             } else {
               await errorLog(
-                "MARKET_UPDATE_ERROR",
+                `MARKET_OUTCOME_ERROR: ${updatedMarket.payload.outcome}`,
                 'Error updating market',
                 "no stack trace available",
                 "MARKET",
