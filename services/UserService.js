@@ -93,6 +93,7 @@ class UserService {
      * @returns {Promise<Object>} Updated user object
      */
     async updateBalance(userId, amount) {
+        console.log(`Updating balance: userId: ${userId}, amount: ${amount}`);
         const { data, error } = await this.supabase.rpc(
             'update_user_balance', 
             { user_id_param: userId, amount_param: amount }
