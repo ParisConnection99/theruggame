@@ -1,5 +1,11 @@
 class BettingService {
-  constructor(config, matchingService, oddsService, supabase, betUnitService, db, marketService) {
+  constructor(config, matchingService,
+    oddsService,
+    supabase,
+    betUnitService,
+    db,
+    marketService,
+    errorService) {
     this.supabase = supabase;
     this.MINIMUM_BET = 0.05; // SOL
     this.MINIMUM_UNIT = 0.05; // Minimum matching unit
@@ -11,6 +17,7 @@ class BettingService {
     this.betUnitService = betUnitService;
     this.db = db;
     this.marketService = marketService;
+    this.errorService = errorService;
   }
 
   async placeBetFromTransfer(marketId, { userId, amount, betType, token_name }, amountToAddToBalance) {
@@ -59,7 +66,6 @@ class BettingService {
 
   // Place a new bet
   async placeBet(marketId, { userId, amount, betType, token_name }) {
-
     if (!marketId || !userId || !amount || !betType || !token_name) {
       throw new Error('Error processing Bet.');
     }
@@ -101,6 +107,7 @@ class BettingService {
 
   async createUnitsAndMatch(bet) {
     try {
+      throw new Error('Testing the error logging.');
       // Create bet units
       await this.betUnitService.createUnits(bet);
 
@@ -117,6 +124,16 @@ class BettingService {
       }
     } catch (error) {
       console.log(`Error creating bet units: ${error.message}`);
+      this.errorService.createError({
+        error_type: 'CREATING_UNITS_AND_MATCHING_ERROR',
+        error_message: error.message,
+        stack_trace: error.stack || "no stack available",
+        wallet_ca: bet.wallet_ca || "no wallet available",
+        ip: "",
+        request_data: "",
+        source_location: "BETTING_SERVICE",
+        severity: "SERIOUS",
+      })
       //throw new Error(`Error creating Bet units: ${error.message}`); // this shouldnt throw because the bet is already placed
     }
   }

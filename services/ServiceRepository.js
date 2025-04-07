@@ -117,7 +117,8 @@ class ServiceRepository {
       this.get('supabase'),
       this.get('betUnitService'),
       this.get('db'),
-      this.get('marketService')
+      this.get('marketService'),
+      this.get('errorService')
     ));
 
     this.initialized = true;
