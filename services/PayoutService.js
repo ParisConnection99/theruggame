@@ -248,22 +248,104 @@ class PayoutService {
      * @returns {Promise<void>}
      * @private
      */
+    // async handleUserBalanceUpdates(winners) {
+    //     // Group wins by userId to minimize database calls
+    //     // const winsByUser = winners.reduce((acc, bet) => {
+    //     //     const userId = bet.user_id;
+    //     //     // Fix: ensure we're using the correct property names
+    //     //     const matchedAmount = bet.matched_amount || 0;
+    //     //     const oddsLocked = bet.odds_locked || 1;
+    //     //     const winAmount = matchedAmount * oddsLocked;
+
+    //     //     if (!acc[userId]) {
+    //     //         acc[userId] = 0;
+    //     //     }
+    //     //     acc[userId] += winAmount;
+    //     //     return acc;
+    //     // }, {});
+    //     const winsByUser = winners.reduce((acc, bet) => {
+    //         const userId = bet.user_id;
+    //         const betType = bet.bet_type; // Get the bet type (PUMP or RUG)
+    //         const matchedAmount = bet.matched_amount || 0;
+            
+    //         // Find all matches for this bet
+    //         const betMatches = matches.filter(match => 
+    //             match.bet1_id === bet.id || match.bet2_id === bet.id
+    //         );
+            
+    //         // Calculate accumulated win amount based on the bet type and match odds
+    //         let totalWinAmount = 0;
+            
+    //         betMatches.forEach(match => {
+    //             // Determine which odds to use based on bet type
+    //             const oddsToUse = betType === 'PUMP' ? match.pump_odds : match.rug_odds;
+                
+    //             // Determine the amount for this specific match
+    //             let matchAmount;
+    //             if (match.bet1_id === bet.id) {
+    //                 // This bet is bet1 in the match
+    //                 matchAmount = match.amount;
+    //             } else {
+    //                 // This bet is bet2 in the match
+    //                 matchAmount = match.amount;
+    //             }
+                
+    //             // Calculate win amount for this match
+    //             const winAmountForMatch = matchAmount * oddsToUse;
+    //             totalWinAmount += winAmountForMatch;
+    //         });
+            
+    //         if (!acc[userId]) {
+    //             acc[userId] = 0;
+    //         }
+    //         acc[userId] += totalWinAmount;
+    //         return acc;
+    //     }, {});
+
+    //     // Process each user's total winnings
+    //     const updatePromises = Object.entries(winsByUser).map(async ([userId, totalWinAmount]) => {
+    //         try {
+    //             await this.userService.updateBalance(userId, totalWinAmount);
+    //             console.log(`Updated balance for user ${userId}: +${totalWinAmount}`);
+    //         } catch (error) {
+    //             console.error(`Error updating balance for user ${userId}: ${error.message}`);
+    //             throw error; // Re-throw to be caught by the caller
+    //         }
+    //     });
+
+    //     await Promise.all(updatePromises);
+    // }
     async handleUserBalanceUpdates(winners) {
         // Group wins by userId to minimize database calls
         const winsByUser = winners.reduce((acc, bet) => {
             const userId = bet.user_id;
-            // Fix: ensure we're using the correct property names
-            const matchedAmount = bet.matched_amount || 0;
-            const oddsLocked = bet.odds_locked || 1;
-            const winAmount = matchedAmount * oddsLocked;
-
+            const betType = bet.bet_type; // Get the bet type (PUMP or RUG)
+            
+            // Use the matches already attached to the bet
+            const betMatches = bet.matches || [];
+            
+            // Calculate accumulated win amount based on the bet type and match odds
+            let totalWinAmount = 0;
+            
+            betMatches.forEach(match => {
+                // Determine which odds to use based on bet type
+                const oddsToUse = betType === 'PUMP' ? match.pump_odds : match.rug_odds;
+                
+                // Determine the amount for this specific match
+                const matchAmount = match.amount;
+                
+                // Calculate win amount for this match
+                const winAmountForMatch = matchAmount * oddsToUse;
+                totalWinAmount += winAmountForMatch;
+            });
+            
             if (!acc[userId]) {
                 acc[userId] = 0;
             }
-            acc[userId] += winAmount;
+            acc[userId] += totalWinAmount;
             return acc;
         }, {});
-
+        
         // Process each user's total winnings
         const updatePromises = Object.entries(winsByUser).map(async ([userId, totalWinAmount]) => {
             try {
@@ -274,7 +356,7 @@ class PayoutService {
                 throw error; // Re-throw to be caught by the caller
             }
         });
-
+        
         await Promise.all(updatePromises);
     }
 
