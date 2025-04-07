@@ -624,7 +624,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* --- List Of Pending Bets --- */}
-                    {/* <div className="mt-6 w-full max-w-md">
+                    <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Pending Bets</h3>
                         {pendingBets.length > 0 ? (
                             <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
@@ -673,7 +673,9 @@ export default function ProfilePage() {
                                 <p className="text-gray-400">No pending bets</p>
                             </div>
                         )}
-                    </div> */}
+                    </div>
+
+                    {/* --- List Of Bets --- */}
                     <div className="mt-6 w-full max-w-md">
                         <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
                         {betsLoading ? (
@@ -808,153 +810,6 @@ export default function ProfilePage() {
                                                                         <span className="text-gray-400">Status:</span>
                                                                         <span className="ml-2 font-medium">
                                                                             {bet.status || 'PENDING'}
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                            </React.Fragment>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <div className="text-center py-4 bg-gray-800 rounded-lg">
-                                <p className="text-gray-400">No bet history</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* --- List Of Bets --- */}
-                    <div className="mt-6 w-full max-w-md">
-                        <h3 className="text-l font-bold mb-2 text-center">Bet History</h3>
-                        {betsLoading ? (
-                            <div className="bg-gray-800 rounded-lg p-3 animate-pulse">
-                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-                                <div className="h-4 bg-gray-700 rounded w-full mb-2"></div>
-                                <div className="h-4 bg-gray-700 rounded w-full"></div>
-                            </div>
-                        ) : bets.length > 0 ? (
-                            <div className="bg-gray-800 rounded-lg p-3 w-full overflow-x-auto">
-                                <table className="w-full table-fixed">
-                                    <thead>
-                                        <tr className="text-sm text-gray-400">
-                                            <th className="w-[10%] p-1 text-center"></th>
-                                            <th className="w-[25%] p-1 text-left" title="Name">🏷️</th>
-                                            <th className="w-[25%] p-1 text-left" title="Result">🎯</th>
-                                            <th className="w-[30%] p-1 text-left" title="Profit">📈</th>
-                                            <th className="w-[10%] p-1 text-center" title="Share">📤</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {bets.map((bet) => (
-                                            <React.Fragment key={bet.id}>
-                                                <tr className="text-sm border-t border-gray-700">
-                                                    <td className="p-1 text-center">
-                                                        <button
-                                                            onClick={() => {
-                                                                setExpandedBets(prev => ({
-                                                                    ...prev,
-                                                                    [bet.id]: !prev[bet.id]
-                                                                }));
-                                                            }}
-                                                            className="text-gray-400 hover:text-white focus:outline-none"
-                                                        >
-                                                            {expandedBets[bet.id] ? '▼' : '▶'}
-                                                        </button>
-                                                    </td>
-                                                    <td className="p-1 truncate">
-                                                        {bet.token_name || 'Unknown'}
-                                                    </td>
-                                                    <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
-                                                            ? 'text-green-500'
-                                                            : bet.status === 'LOST'
-                                                                ? 'text-red-500'
-                                                                : ''
-                                                        }`}>
-                                                        {bet.status === 'WON' || bet.status === 'LOST' || bet.status === 'REFUNDED'
-                                                            ? bet.status
-                                                            : bet.status || 'PENDING'}
-                                                    </td>
-                                                    <td className={`p-1 truncate ${bet.status === 'WON' || bet.status === 'REFUNDED'
-                                                            ? 'text-green-500'
-                                                            : bet.status === 'LOST'
-                                                                ? 'text-red-500'
-                                                                : ''
-                                                        }`}>
-                                                        {bet.status === 'WON'
-                                                            ? `+${formatSol(bet.matched_amount)} SOL`
-                                                            : bet.status === 'LOST'
-                                                                ? `-${formatSol(bet.matched_amount)} SOL`
-                                                                : bet.status === 'REFUNDED'
-                                                                    ? `+${formatSol(bet.refund_amount)} SOL`
-                                                                    : ''}
-                                                    </td>
-                                                    <td className="p-1 text-center">
-                                                        {(bet.status === 'WON' || bet.status === 'LOST') &&
-                                                            <span
-                                                                className="cursor-pointer hover:opacity-75"
-                                                                title="Share bet result"
-                                                                onClick={() => handleBetShare(bet)}
-                                                            >
-                                                                📋
-                                                            </span>
-                                                        }
-                                                    </td>
-                                                </tr>
-
-                                                {/* Expanded details row */}
-                                                {expandedBets[bet.id] && (
-                                                    <tr>
-                                                        <td colSpan="6" className="p-0">
-                                                            <div className="bg-gray-700 p-3 text-sm rounded mx-2 mb-2">
-                                                                <div className="grid grid-cols-2 gap-2 mb-2">
-                                                                    <div>
-                                                                        <span className="text-gray-400">Date:</span>
-                                                                        <span className="ml-2 font-medium">
-                                                                            {new Date(bet.created_at).toLocaleDateString()}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div>
-                                                                        <span className="text-gray-400">Matched amount:</span>
-                                                                        <span className="ml-2 font-medium">
-                                                                            {formatSol(bet.matched_amount)} SOL
-                                                                        </span>
-                                                                    </div>
-
-                                                                    {bet.refund_amount > 0 && (
-                                                                        <div>
-                                                                            <span className="text-gray-400">Refunded amount:</span>
-                                                                            <span className="ml-2 font-medium text-green-500">
-                                                                                {formatSol(bet.refund_amount)} SOL
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {bet.status === 'WON' && (
-                                                                        <div>
-                                                                            <span className="text-gray-400">Payout:</span>
-                                                                            <span className="ml-2 font-medium text-green-500">
-                                                                                {formatSol(calculateWinAmount(bet))} SOL
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    {(bet.status === 'PENDING' || bet.status === 'ACTIVE') && (
-                                                                        <div>
-                                                                            <span className="text-gray-400">Potential win:</span>
-                                                                            <span className="ml-2 font-medium">
-                                                                                {formatSol(calculateWinAmount(bet))} SOL
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div>
-                                                                        <span className="text-gray-400">Bet type:</span>
-                                                                        <span className="ml-2 font-medium">
-                                                                            {bet.bet_type}
                                                                         </span>
                                                                     </div>
                                                                 </div>
