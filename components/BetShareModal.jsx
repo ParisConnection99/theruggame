@@ -45,8 +45,8 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
 
   // Format SOL amounts consistently
   const formatSol = (amount) => {
-    return parseFloat(amount).toFixed(4);
-  };
+    return parseFloat(amount).toFixed(2);
+ };
 
   // Format the market name as in MarketCard
   const tokenNameNoSpaces = bet.token_name ? bet.token_name.replace(/\s+/g, "") : "";
