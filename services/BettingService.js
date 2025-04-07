@@ -128,7 +128,7 @@ class BettingService {
         request_data: "",
         source_location: "BETTING_SERVICE",
         severity: "SERIOUS",
-      })
+      });
       //throw new Error(`Error creating Bet units: ${error.message}`); // this shouldnt throw because the bet is already placed
     }
   }

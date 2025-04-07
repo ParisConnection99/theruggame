@@ -1,10 +1,11 @@
 class ExpiryService {
-  constructor(supabase, refundService, db, marketResolveService, payoutService) {
+  constructor(supabase, refundService, db, marketResolveService, payoutService, errorService) {
     this.supabase = supabase;
     this.refundService = refundService;
     this.db = db;
     this.marketResolveService = marketResolveService;
     this.payoutService = payoutService;
+    this.errorService = errorService;
   }
 
   setMarketCreationService(marketCreationService) {
@@ -92,7 +93,16 @@ class ExpiryService {
 
       return bets;
     } catch (error) {
-      console.error('Error processing cutoff:', error.message);
+      this.errorService.createError({
+        error_type: 'PROCESSING_MARKET_CUTOFF_ERROR',
+        error_message: error.message,
+        stack_trace: error.stack || "no stack available",
+        wallet_ca: bet.wallet_ca || "no wallet available",
+        ip: "",
+        request_data: "",
+        source_location: "MARKET_EXPIRY_SERVICE",
+        severity: "SERIOUS",
+      });
       throw error;
     }
   }
@@ -138,7 +148,16 @@ class ExpiryService {
         }
       }
     } catch (error) {
-      console.error('Error processing bet expiry:', error);
+      this.errorService.createError({
+        error_type: 'PROCESSING_BET_EXPIRY_ERROR',
+        error_message: error.message,
+        stack_trace: error.stack || "no stack available",
+        wallet_ca: bet.wallet_ca || "no wallet available",
+        ip: "",
+        request_data: "",
+        source_location: "MARKET_EXPIRY_SERVICE",
+        severity: "SERIOUS",
+      });
       throw error;
     }
   }
@@ -147,8 +166,6 @@ class ExpiryService {
     if (!marketId) {
       throw new Error('Error processing Market: missing required parameters');
     }
-
-    console.log(`Before fetching market in checkPhase.`);
 
     // Initial market fetch
     const { data: market, error: fetchError } = await this.supabase
@@ -164,8 +181,6 @@ class ExpiryService {
     if (!market) {
       throw new Error(`Market not found with ID: ${marketId}`);
     }
-
-    console.log(`Fetched market: ${market.id}`);
 
     try {
       const currentPhase = this.calculateMarketPhase(
@@ -208,7 +223,16 @@ class ExpiryService {
         }
       }
     } catch (error) {
-      console.error(`Error checking phase for market ${marketId}:`, error);
+      this.errorService.createError({
+        error_type: 'CHECKING_MARKET_PHASE_ERROR',
+        error_message: `Error checking phase for market ${marketId}: ${error.message || "no message"}`,
+        stack_trace: error.stack || "no stack available",
+        wallet_ca: "no wallet available",
+        ip: "",
+        request_data: "",
+        source_location: "MARKET_EXPIRY_SERVICE",
+        severity: "SERIOUS",
+      });
     }
   }
 
@@ -227,18 +251,25 @@ class ExpiryService {
       // Set the market status / phase to resolve
       const marketResult = await this.marketResolveService.resolveMarket(market);
 
-      console.log(`Market Result: ${JSON.stringify(marketResult, null, 2)}`);
-
       // Handle the payouts + bet status update
       await this.payoutService.handleMarketResolution(market.id, marketResult.result);
 
-      console.log('Payouts resolved time to update market to settled. ');
       // Update the market status to settles
       await this.settledStatusUpdate(market.id, parseFloat(marketResult.price), marketResult.result);
 
       return marketResult;
 
     } catch (error) {
+      this.errorService.createError({
+        error_type: 'PROCESS_MARKET_RESOLVE_ERROR',
+        error_message: error.message || `error processing market resolve for ${market.id}`,
+        stack_trace: error.stack || "no stack available",
+        wallet_ca: "no wallet available",
+        ip: "",
+        request_data: "",
+        source_location: "MARKET_EXPIRY_SERVICE",
+        severity: "SERIOUS",
+      });
       /*
       - what should we be doing here is there going to be retries
       */
@@ -289,7 +320,16 @@ class ExpiryService {
       return data[0]; // Return the updated market
 
     } catch (error) {
-      console.error(error);
+      this.errorService.createError({
+        error_type: 'SETTLED_STATE_ERROR',
+        error_message: error.message || `error updating market status: ${marketId}`,
+        stack_trace: error.stack || "no stack available",
+        wallet_ca: "no wallet available",
+        ip: "",
+        request_data: "",
+        source_location: "MARKET_EXPIRY_SERVICE",
+        severity: "SERIOUS",
+      });
       throw new Error(`Error updating Market: ${error.message}`);
     }
   }

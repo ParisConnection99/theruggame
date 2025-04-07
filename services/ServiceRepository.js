@@ -80,6 +80,7 @@ class ServiceRepository {
       this.get('db'),
       this.get('marketResolveService'),
       this.get('payoutService'),
+      this.get('errorService')
     ));
     
     // Third level dependent services
