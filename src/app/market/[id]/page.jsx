@@ -504,7 +504,7 @@ export default function MarketPage() {
           inputRef.current.value = "";
         }
 
-       showToast('Your bet has been placed', 'success');
+        showToast('Your bet has been placed', 'success');
       } else {
         const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
@@ -514,7 +514,7 @@ export default function MarketPage() {
         let userPublicKey;
 
         if (isMobileDevice) {
-  
+
           userPublicKey = authUser?.uid;
 
           if (!userPublicKey) {
@@ -911,7 +911,14 @@ export default function MarketPage() {
                   {potentialReturn.amount.toFixed(2)} SOL ({potentialReturn.percentage.toFixed(0)}%)
                 </span>
               </p>
+
+              {/* Disclaimer */}
+              <p className="mt-2 text-amber-400 text-xs flex items-center">
+                <span className="mr-1">⚠️</span>
+                <span>Odds may change if bets are partially matched</span>
+              </p>
             </div>
+
 
             {/* Place Trade Button */}
             <button
@@ -975,6 +982,6 @@ export default function MarketPage() {
           </p>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
