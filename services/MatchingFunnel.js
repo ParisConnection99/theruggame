@@ -1102,3 +1102,5 @@ class MatchingFunnel {
         }
     }
 }
+
+module.exports = MatchingFunnel;

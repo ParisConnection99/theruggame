@@ -1,8 +1,5 @@
 "use server";
 
-import { logInfo, logError } from '@/utils/logger';
-
-const APP_URL = "https://theruggame.fun";
 
 export async function handleAddingActivityLog(logData, token) {
     // Validate logData
