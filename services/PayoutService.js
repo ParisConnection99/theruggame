@@ -111,9 +111,18 @@ class PayoutService {
 
         console.log(`Processing market resolution: Market ${marketId}, Result: ${result}`);
 
+        // const { data: bets, error } = await this.supabase
+        //     .from('bets')
+        //     .select('*')
+        //     .eq('market_id', marketId)
+        //     .in('status', ['PARTIALLY_MATCHED', 'MATCHED']);
         const { data: bets, error } = await this.supabase
             .from('bets')
-            .select('*')
+            .select(`
+        *,
+        matches!matches_bet1_id_fkey(*),
+        matches!matches_bet2_id_fkey(*)
+        `)
             .eq('market_id', marketId)
             .in('status', ['PARTIALLY_MATCHED', 'MATCHED']);
 
@@ -127,11 +136,29 @@ class PayoutService {
             return;
         }
 
+        const betsWithMatches = bets.map(bet => {
+            // Combine matches from both relationships
+            const allMatches = [
+                ...(bet.matches_as_bet1 || []),
+                ...(bet.matches_as_bet2 || [])
+            ];
+            
+            return {
+                ...bet,
+                matches: allMatches,
+                // Remove the separate arrays to clean up the object
+                matches_as_bet1: undefined,
+                matches_as_bet2: undefined
+            };
+        });
+        
+        console.log(`Found ${bets.length} bets with a total of ${betsWithMatches.reduce((sum, bet) => sum + bet.matches.length, 0)} matches`);
+
         try {
             if (result === 'HOUSE') {
                 await this.processHouseWin(bets);
             } else {
-                await this.processRegularWin(bets, result);
+                await this.processRegularWin(betsWithMatches, result);
             }
             console.log(`Successfully processed resolution for market ${marketId}`);
         } catch (error) {
@@ -149,13 +176,13 @@ class PayoutService {
      */
     async processRegularWin(bets, result) {
         const { winners, losers } = this.splitBetsByResult(bets, result);
-        
+
         // Use Promise.all for better parallel processing
         await Promise.all([
             this.updateBetStatus(winners, 'WON'),
             this.updateBetStatus(losers, 'LOST')
         ]);
-        
+
         await this.handleUserBalanceUpdates(winners);
     }
 
@@ -194,21 +221,21 @@ class PayoutService {
      */
     async updateBetStatus(bets, status) {
         if (!bets.length) return;
-        
+
         // Create an array of bet IDs
         const betIds = bets.map(bet => bet.id);
-        
+
         // Batch update all bets with the same status in one query
         const { error } = await this.supabase
             .from('bets')
             .update({ status })
             .in('id', betIds);
-            
+
         if (error) {
             console.error(`Error batch updating bet statuses: ${error.message}`);
             throw new Error(`Failed to update bet statuses: ${error.message}`);
         }
-        
+
         console.log(`Updated ${betIds.length} bets to status: ${status}`);
     }
 
@@ -226,14 +253,14 @@ class PayoutService {
             const matchedAmount = bet.matched_amount || 0;
             const oddsLocked = bet.odds_locked || 1;
             const winAmount = matchedAmount * oddsLocked;
-            
+
             if (!acc[userId]) {
                 acc[userId] = 0;
             }
             acc[userId] += winAmount;
             return acc;
         }, {});
-        
+
         // Process each user's total winnings
         const updatePromises = Object.entries(winsByUser).map(async ([userId, totalWinAmount]) => {
             try {
@@ -244,7 +271,7 @@ class PayoutService {
                 throw error; // Re-throw to be caught by the caller
             }
         });
-        
+
         await Promise.all(updatePromises);
     }
 
@@ -273,7 +300,7 @@ class PayoutService {
         }
 
         await this.updateBetStatus(bets, 'CANCELED');
-        
+
         // Process refunds
         const refundPromises = bets.map(async (bet) => {
             try {
@@ -286,7 +313,7 @@ class PayoutService {
                 console.error(`Error processing refund: ${error.message}`);
             }
         });
-        
+
         await Promise.all(refundPromises);
     }
 }
