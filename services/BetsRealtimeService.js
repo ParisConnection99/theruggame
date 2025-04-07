@@ -1,12 +1,13 @@
 import { supabase } from '@/lib/supabaseClient';
+import { errorLog } from '@/utils/ErrorLog';
 
-export const listenToBets = (walletAddress, onBetUpdate) => {
+export const listenToBets = async (walletAddress, onBetUpdate) => {
     try {
         const subscription = supabase
             .channel(`wallet-${walletAddress}-pending-bets`)
-            .on('postgres_changes', { 
-                event: '*', 
-                schema: 'public', 
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
                 table: 'pending_bets',
                 filter: `wallet_ca=eq.${walletAddress}`  // Using wallet_ca as the filter
             }, (payload) => {
@@ -32,7 +33,11 @@ export const listenToBets = (walletAddress, onBetUpdate) => {
 
         return subscription;
     } catch (error) {
-        console.error(`Error setting up pending bet listener for wallet ${walletAddress}:`, error);
+        await errorLog("PENDING_BETS_LISTENER_ERROR",
+            error.message || 'Error object with empty message',
+            error.stack || "no stack trace available",
+            "PENDING_BETS_LISTENER",
+            "SERIOUS");
         return null;
     }
 };

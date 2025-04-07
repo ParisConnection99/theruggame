@@ -71,7 +71,6 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
         setIsGenerating(false);
       });
     } catch (error) {
-      console.error("Error generating image:", error);
       await errorLog("RESULT_SHARE_IMAGE_ERROR",
         error.message || 'Error object with empty message',
         error.stack || "no stack trace available",
