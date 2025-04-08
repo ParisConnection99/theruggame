@@ -41,7 +41,7 @@ class OddsService {
 
     const endTime = new Date(market.end_time);
     const currentTime = new Date();
-    const timeRemaining = Math.max(0, endTime.getTime() - currentTime.getTime());
+    const timeRemaining = Math.max(0, (endTime.getTime() - currentTime.getTime()) / 1000);
 
     return this.calculateOdds(market.total_matched_pump, market.total_matched_rug, timeRemaining);
   }
