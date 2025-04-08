@@ -11,7 +11,6 @@ export async function POST(request) {
         try {
 
             if (errorMessage === 'Transaction was rejected by user') {
-                console.log('Deleting pending bet in mobile route.');
                 await serviceRepo.pendingBetsService.removePendingBetById(id);
                 // Remove pedding bet
             } else {

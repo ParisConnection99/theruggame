@@ -75,11 +75,8 @@ function CallbackContent() {
           "SERIOUS");
 
         if (error.message.includes('(4001)') || error.message.includes('user rejected')) {
-          // Handle user rejection
-          logInfo('User rejected the transaction', {});
           error.message = 'Transaction was rejected by user';
         } else {
-          // Handle other errors
           error.message = error.message || 'Error processing market callback'
         }
 
