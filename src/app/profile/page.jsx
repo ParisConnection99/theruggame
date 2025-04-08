@@ -737,7 +737,7 @@ export default function ProfilePage() {
                                                             : bet.status === 'LOST'
                                                                 ? `-${formatSol(bet.matched_amount)} SOL`
                                                                 : bet.status === 'REFUNDED'
-                                                                    ? `+${formatSol(bet.refund_amount)} SOL`
+                                                                    ? `${formatSol(bet.refund_amount)} SOL`
                                                                     : ''}
                                                     </td>
                                                     <td className="p-1 text-center">
