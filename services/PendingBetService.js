@@ -103,6 +103,20 @@ class PendingBetsService {
 
         if (error) throw error;
     }
+
+    async removePendingBetById(id) {
+        const { error } = await this.supabase
+            .from(this.tableName)
+            .delete()
+            .eq('id', id);
+        
+        if (error) {
+            console.error('Error removing pending bet:', error);
+            throw error;
+        }
+        
+        return { success: true };
+    }
 }
 
 module.exports = PendingBetsService;

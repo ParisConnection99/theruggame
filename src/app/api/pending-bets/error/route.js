@@ -40,9 +40,18 @@ export async function POST(request) {
         }
 
         const body = await request.json();
+        const id = body.id;
+        const errorMessage = body.errorMessage;
 
         try {
-            await serviceRepo.pendingBetsService.updateStatusWithId(body.id, 'error');
+            if (errorMessage === 'Transaction was rejected by user') {
+                console.log('Delete pending bet: ', id);
+                await serviceRepo.pendingBetsService.removePendingBetById(id);
+                // Remove pedding bet
+            } else {
+                await serviceRepo.pendingBetsService.updateStatusWithId(id, 'error');
+            }
+            
         } catch (error) {
             throw error;
         }

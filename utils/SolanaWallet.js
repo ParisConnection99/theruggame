@@ -171,7 +171,8 @@ export async function transferSOL(
         "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
-        id
+        id,
+        errorMessage
       }),
     });
 
