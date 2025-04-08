@@ -50,6 +50,7 @@ export async function POST(request) {
             });
         }
 
+        console.log(`Fetched data in route: id: ${id}, ${type}`);
 
         try {
 
@@ -61,6 +62,7 @@ export async function POST(request) {
             });
 
         } catch (error) {
+            console.error(`Error fetching current odds: ${error.message}`);
             throw error;
         }
 
