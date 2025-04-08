@@ -47,6 +47,8 @@ class OddsService {
   }
 
   calculateOdds(pumpAmount, rugAmount, timeRemaining) {
+
+    console.log(`Calculate odds called: pump amount: ${pumpAmount}, rug amount: ${rugAmount}, timeRemaining: ${timeRemaining}`);
     const totalPool = pumpAmount + rugAmount;
 
     if (totalPool === 0) {
@@ -70,6 +72,8 @@ class OddsService {
     const MAX_ODDS = this.config.maxOdds || 5.0;
     pumpOdds = Math.min(pumpOdds, MAX_ODDS);
     rugOdds = Math.min(rugOdds, MAX_ODDS);
+
+    console.log(`Pump odds: ${pumpOdds}, rugOdds: ${rugOdds}`);
 
     return { pumpOdds, rugOdds };
   }
