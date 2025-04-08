@@ -101,13 +101,8 @@ export default function MarketPage() {
         }
 
         const data = await response.json();
-        const { marketData, priceHistoryData } = data;
-
-        logInfo('Fetched data', {
-          data: data
-        });
-
-        //const marketData = await marketPageService.fetchMarketWith(id);
+        const marketData = data.market;
+        const priceHistoryData = data.priceHistory;
 
         if (marketData) {
           setMarket(marketData);
