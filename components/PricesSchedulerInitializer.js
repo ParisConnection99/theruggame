@@ -35,6 +35,7 @@
 //   });
 // }
 // services/priceSchedulerService.js
+'use client';
 import { useEffect } from 'react';
 import { startPriceScheduler, stopPriceScheduler } from '@/services/PricesScheduler';
 
