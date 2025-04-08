@@ -68,6 +68,8 @@ class OddsService {
     let pumpOdds = 2.1 + (pumpRatio * timeFactor * 0.1);
     let rugOdds = 2.1 + (rugRatio * timeFactor * 0.1);
 
+    console.log(`Odds uncapped: Pump ${pumpOdds}, rugOdds: ${rugOdds}`);
+
     // Use configurable max odds
     const MAX_ODDS = this.config.maxOdds || 5.0;
     pumpOdds = Math.min(pumpOdds, MAX_ODDS);
