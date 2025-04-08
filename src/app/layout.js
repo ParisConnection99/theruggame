@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'react-toastify/dist/ReactToastify.css';
-import React from "react";
+import React, { useEffect } from "react";
 import ClientProviders from '@/components/ClientProviders';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
