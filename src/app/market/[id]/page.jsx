@@ -5,12 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import MarketPageService from '@/services/MarketPageService';
-import { supabase } from '@/lib/supabaseClient';
 import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { checkSufficientBalance, placeBet, checkBalance } from '@/utils/SolanaWallet.js';
+import { placeBet, checkBalance } from '@/utils/SolanaWallet.js';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
 import { useAnalytics } from '@/components/FirebaseProvider';
@@ -20,7 +18,6 @@ import { errorLog } from '@/utils/ErrorLog';
 import { showToast } from '@/components/CustomToast';
 import { logInfo, logError } from '@/utils/logger';
 
-const marketPageService = new MarketPageService(supabase);
 
 export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
@@ -106,9 +103,6 @@ export default function MarketPage() {
 
         if (marketData) {
           setMarket(marketData);
-
-          // Fetch price history for charts
-          //const priceHistoryData = await marketPageService.fetchPriceHistory(id);
           setPriceHistory(priceHistoryData);
 
           // Set initial price using the scheduler's function
