@@ -10,7 +10,7 @@ import ActivityBanner from '@/components/ActivityBanner';
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
 import { Analytics } from '@vercel/analytics/next';
 import { ToastContainer } from 'react-toastify';
-import { initializePriceScheduler, checkSchedulerStatus } from '@/services/priceSchedulerService';
+import { initializePriceScheduler, checkSchedulerStatus } from '@/services/PricesSchedulerInitializer';
 
 
 const geistSans = Geist({
@@ -45,7 +45,7 @@ export default function RootLayout({ children }) {
       console.log('🧹 App layout unmounting...');
     };
   }, []);
-  
+
   return (
     <html lang="en">
       <head>
