@@ -1,7 +1,6 @@
-// /api/markets/market/[marketId]/route.js
+// /api/markets/market/[marketId]/price-history/route.js
 
 import { serviceRepo } from '@/services/ServiceRepository';
-
 
 export async function GET(request, { params }) {
     try {
@@ -15,16 +14,16 @@ export async function GET(request, { params }) {
             });
         }
 
-        const market = await serviceRepo.marketService.getMarket(marketId);
         const priceHistory = await serviceRepo.marketService.fetchPriceHistory(marketId);
-        return new Response(JSON.stringify({ market: market, priceHistory: priceHistory}), {
+        return new Response(JSON.stringify(priceHistory), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });
+
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
         });
     }
 }

@@ -100,11 +100,11 @@ export default function MarketPage() {
           throw new Error(errorData.error);
         }
 
-        const marketData = await response.json();
+        const data = await response.json();
+        const { marketData, priceHistoryData } = data;
 
-        logInfo('Fetched market', {
-          market: marketData,
-          component: 'Header'
+        logInfo('Fetched data', {
+          data: data
         });
 
         //const marketData = await marketPageService.fetchMarketWith(id);
@@ -113,7 +113,7 @@ export default function MarketPage() {
           setMarket(marketData);
 
           // Fetch price history for charts
-          const priceHistoryData = await marketPageService.fetchPriceHistory(id);
+          //const priceHistoryData = await marketPageService.fetchPriceHistory(id);
           setPriceHistory(priceHistoryData);
 
           // Set initial price using the scheduler's function
