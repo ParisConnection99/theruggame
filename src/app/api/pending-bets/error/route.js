@@ -45,7 +45,6 @@ export async function POST(request) {
 
         try {
             if (errorMessage === 'Transaction was rejected by user') {
-                console.log('Delete pending bet: ', id);
                 await serviceRepo.pendingBetsService.removePendingBetById(id);
                 // Remove pedding bet
             } else {

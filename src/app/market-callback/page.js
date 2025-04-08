@@ -74,24 +74,35 @@ function CallbackContent() {
           "MARKET-CALLBACK",
           "SERIOUS");
 
-
-          window.dispatchEvent(new CustomEvent('market-callback-event', {
-            detail: { isConnected: true }
-          }));
-  
-          await fetch('/api/pending-bets/error/mobile', {
-            method: 'POST',
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              id
-            }),
+        if (errorMessage.includes('User rejected')) {
+          logInfo('Transaction rejected by the user', {
+            component: 'Market callback'
           });
+          
+          errorMessage = 'Transaction was rejected by user';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Transaction confirmation timed out. Please check Solana Explorer for status.';
+        }
 
-          await new Promise((resolve) => setTimeout(resolve, 200));
 
-          localStorage.removeItem('bp_id');
+        window.dispatchEvent(new CustomEvent('market-callback-event', {
+          detail: { isConnected: true }
+        }));
+
+        await fetch('/api/pending-bets/error/mobile', {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id,
+            errorMessage
+          }),
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
+        localStorage.removeItem('bp_id');
         // Redirect back to the market page with error parameter
         const errorMessage = error.message || 'Unknown error processing transaction';
         router.push(`/market/${marketId}?error=Critical}`);
