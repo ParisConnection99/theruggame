@@ -56,7 +56,7 @@ export async function POST(request) {
 
             const currentOdds = await serviceRepo.oddsService.getCurrentOdds(id, type);
 
-            return new Reponse(JSON.stringify(currentOdds), {
+            return new Response(JSON.stringify(currentOdds), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' },
             });
