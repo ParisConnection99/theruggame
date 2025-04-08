@@ -90,7 +90,24 @@ export default function MarketPage() {
       try {
         setLoading(true);
 
-        const marketData = await marketPageService.fetchMarketWith(id);
+        const response = await fetch(`/api/markets/market/${id}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json'},
+        });
+
+       if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error);
+        }
+
+        const marketData = await response.json();
+
+        logInfo('Fetched market', {
+          market: marketData,
+          component: 'Header'
+        });
+
+        //const marketData = await marketPageService.fetchMarketWith(id);
 
         if (marketData) {
           setMarket(marketData);
