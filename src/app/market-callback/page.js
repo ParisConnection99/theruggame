@@ -74,14 +74,13 @@ function CallbackContent() {
           "MARKET-CALLBACK",
           "SERIOUS");
 
-        if (errorMessage.includes('User rejected')) {
-          logInfo('Transaction rejected by the user', {
-            component: 'Market callback'
-          });
-          
-          errorMessage = 'Transaction was rejected by user';
-        } else if (error.message.includes('timeout')) {
-          errorMessage = 'Transaction confirmation timed out. Please check Solana Explorer for status.';
+        if (error.message.includes('(4001)') || error.message.includes('user rejected')) {
+          // Handle user rejection
+          logInfo('User rejected the transaction', {});
+          error.message = 'Transaction was rejected by user';
+        } else {
+          // Handle other errors
+          error.message = error.message || 'Error processing market callback'
         }
 
 
@@ -96,7 +95,7 @@ function CallbackContent() {
           },
           body: JSON.stringify({
             id,
-            errorMessage
+            errorMessage: error.message
           }),
         });
 
