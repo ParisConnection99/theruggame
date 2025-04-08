@@ -2,27 +2,74 @@
 import { supabase } from '@/lib/supabaseClient';
 
 let lastPrices = {}; // Store last known prices to avoid redundant updates
+let activeMarketCache = []; // Store active markets in memory
+let marketListener; // Reference to the realtime listener
 let schedulerInterval = 5000; // Default interval: 5 seconds
 let scheduler; // Reference to the interval function
 const REALTIME_THRESHOLD = 0.0001; // 0.01% threshold for realtime updates
 const DATABASE_THRESHOLD = 0.005; // 0.5% threshold for database updates
 
 // Function to fetch active token addresses from the database
-const getActiveMarkets = async () => {
+// const getActiveMarkets = async () => {
+//     try {
+//         const { data, error } = await supabase
+//             .from('markets')
+//             .select('id, token_address')
+//             .eq('phase', 'BETTING') 
+//             .limit(10); // Ensure only 10 markets max
+
+//         if (error) throw error;
+
+//         return data;
+//     } catch (error) {
+//         console.error('❌ Error fetching active markets:', error);
+//         return [];
+//     }
+// };
+
+// Function to fetch and cache active markets from the database
+const refreshMarketCache = async () => {
     try {
+        console.log('🔄 Refreshing market cache...');
         const { data, error } = await supabase
             .from('markets')
             .select('id, token_address')
-            .eq('phase', 'BETTING') 
-            .limit(10); // Ensure only 10 markets max
+            .eq('phase', 'BETTING')
+            .limit(10);
 
         if (error) throw error;
 
+        activeMarketCache = data;
+        console.log(`✅ Market cache refreshed with ${data.length} active markets`);
         return data;
     } catch (error) {
-        console.error('❌ Error fetching active markets:', error);
+        console.error('❌ Error refreshing market cache:', error);
         return [];
     }
+};
+
+// Function to set up market update listener
+const setupMarketListener = () => {
+    console.log('📡 Setting up market update listener...');
+    marketListener = supabase
+        .channel('market-updates')
+        .on('postgres_changes', 
+            { 
+                event: 'UPDATE', 
+                schema: 'public', 
+                table: 'market_update_signal' 
+            }, 
+            handleMarketUpdate)
+        .subscribe((status) => {
+            console.log(`Market listener status: ${status}`);
+        });
+};
+
+
+// Handler for market update events
+const handleMarketUpdate = async (payload) => {
+    console.log('🔔 Market update detected:', payload);
+    await refreshMarketCache();
 };
 
 // Function to get current price for a single token
@@ -119,30 +166,6 @@ const updatePriceHistory = async (marketId, tokenAddress, price, liquidity) => {
 };
 
 // Function to push price updates via Supabase Realtime API (without saving to database)
-// const pushPriceUpdates = async (realtimeUpdates, databaseUpdates) => {
-//     // Process realtime updates (just broadcast, no DB write)
-//     for (const { marketId, tokenAddress, price, liquidity } of realtimeUpdates) {
-//         await supabase
-//             .channel('realtime_prices')
-//             .send({
-//                 type: 'broadcast',
-//                 event: 'price_update',
-//                 payload: { 
-//                     token_address: tokenAddress,
-//                     current_price: price, 
-//                     liquidity: liquidity,
-//                     updated_at: new Date().toISOString() 
-//                 }
-//             });
-//     }
-    
-//     // Process database updates (write to DB)
-//     for (const { marketId, tokenAddress, price, liquidity } of databaseUpdates) {
-//         await updatePriceHistory(marketId, tokenAddress, price, liquidity);
-//     }
-// };
-
-// Replace the pushPriceUpdates function in your PricesScheduler.js:
 
 // Function to push price updates via Supabase Realtime API
 const pushPriceUpdates = async (realtimeUpdates, databaseUpdates) => {
@@ -203,25 +226,28 @@ const pushPriceUpdates = async (realtimeUpdates, databaseUpdates) => {
 };
 
 // Function to start the price scheduler
-export const startPriceScheduler = () => {
+export const startPriceScheduler = async () => {
     if (scheduler) {
         console.log('⚠️ Scheduler is already running.');
         return;
     }
 
+    // Initial market cache population
+    await refreshMarketCache();
+    
+    // Setup market update listener
+    setupMarketListener();
+
     console.log('🚀 Price Scheduler Started!');
 
     scheduler = setInterval(async () => {
-        console.log('🔄 Fetching active markets...');
-        const activeMarkets = await getActiveMarkets();
-
-        if (activeMarkets.length === 0) {
+        if (activeMarketCache.length === 0) {
             console.log('⚠️ No active markets found. Skipping this cycle.');
             return;
         }
 
         console.log('📡 Fetching prices from DexScreener...');
-        const tokenAddresses = activeMarkets.map(market => market.token_address);
+        const tokenAddresses = activeMarketCache.map(market => market.token_address);
         const newPrices = await fetchPricesFromDexScreener(tokenAddresses);
 
         if (!newPrices || newPrices.length === 0) {
@@ -240,7 +266,7 @@ export const startPriceScheduler = () => {
         // Process each price update
         for (const { tokenAddress, price, liquidity } of newPrices) {
             // Find corresponding market
-            const market = activeMarkets.find(m => m.token_address === tokenAddress);
+            const market = activeMarketCache.find(m => m.token_address === tokenAddress);
             if (!market) continue;
 
             // Calculate percentage change if we have a previous price
@@ -292,6 +318,12 @@ export const stopPriceScheduler = () => {
         return;
     }
 
+    // Clean up the listener when stopping
+    if (marketListener) {
+        marketListener.unsubscribe();
+        marketListener = null;
+    }
+
     clearInterval(scheduler);
     scheduler = null;
     console.log('🛑 Price Scheduler Stopped.');
@@ -312,3 +344,85 @@ export const setSchedulerInterval = (newInterval) => {
         startPriceScheduler();
     }
 };
+
+// export const startPriceScheduler = () => {
+//     if (scheduler) {
+//         console.log('⚠️ Scheduler is already running.');
+//         return;
+//     }
+
+//     console.log('🚀 Price Scheduler Started!');
+
+//     scheduler = setInterval(async () => {
+//         console.log('🔄 Fetching active markets...');
+//         const activeMarkets = await getActiveMarkets();
+
+//         if (activeMarkets.length === 0) {
+//             console.log('⚠️ No active markets found. Skipping this cycle.');
+//             return;
+//         }
+
+//         console.log('📡 Fetching prices from DexScreener...');
+//         const tokenAddresses = activeMarkets.map(market => market.token_address);
+//         const newPrices = await fetchPricesFromDexScreener(tokenAddresses);
+
+//         if (!newPrices || newPrices.length === 0) {
+//             console.log('⚠️ No price updates received. Skipping...');
+//             return;
+//         }
+
+//         console.log(`📈 New Prices: ${JSON.stringify(newPrices, null, 2)}`);
+
+//         const size = Object.keys(lastPrices).length;
+//         console.log(`Last prices size: ${size}`);
+
+//         const realtimeUpdates = [];
+//         const databaseUpdates = [];
+
+//         // Process each price update
+//         for (const { tokenAddress, price, liquidity } of newPrices) {
+//             // Find corresponding market
+//             const market = activeMarkets.find(m => m.token_address === tokenAddress);
+//             if (!market) continue;
+
+//             // Calculate percentage change if we have a previous price
+//             const previousPrice = lastPrices[tokenAddress]?.price;
+//             const percentChange = previousPrice 
+//                 ? Math.abs(price - previousPrice) / previousPrice 
+//                 : 1; // If no previous price, treat as significant change (100%)
+            
+//             // For realtime updates - use lower threshold (0.01%)
+//             if (!previousPrice || percentChange > REALTIME_THRESHOLD) {
+//                 realtimeUpdates.push({
+//                     marketId: market.id,
+//                     tokenAddress,
+//                     price,
+//                     liquidity
+//                 });
+//             }
+            
+//             // For database updates - use higher threshold (0.5%)
+//             // Also save if this is the first price we've seen (no previous price)
+//             if (!previousPrice || percentChange > DATABASE_THRESHOLD) {
+//                 databaseUpdates.push({
+//                     marketId: market.id,
+//                     tokenAddress,
+//                     price,
+//                     liquidity
+//                 });
+//             }
+            
+//             // Always update the cached price regardless of thresholds
+//             lastPrices[tokenAddress] = { price, liquidity };
+//             console.log(`Cache updated for ${tokenAddress}: ${price}`);
+//         }
+
+//         // Log update counts
+//         if (realtimeUpdates.length > 0 || databaseUpdates.length > 0) {
+//             console.log(`🚀 Pushing ${realtimeUpdates.length} realtime updates and ${databaseUpdates.length} database updates...`);
+//             await pushPriceUpdates(realtimeUpdates, databaseUpdates);
+//         } else {
+//             console.log('⚠️ No significant price changes. Skipping all updates.');
+//         }
+//     }, schedulerInterval);
+// };

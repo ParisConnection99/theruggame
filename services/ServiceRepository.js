@@ -20,6 +20,7 @@ const ActivityLogService = require('./ActivityLogService');
 const PendingBetsService = require('./PendingBetService');
 const ErrorService = require('./ErrorService');
 const BetMatchesService = require('./BetMatchesService');
+const MarketSignalService = require('./MarketSignalService');
 const dbConfig = require('@/utils/db-config');
 
 
@@ -45,6 +46,7 @@ class ServiceRepository {
     this.register('userService', new UserService(this.get('supabase')));
     this.register('oddsService', new OddsService(this.get('supabase')));
     this.register('betMatchesService', new BetMatchesService(this.get('supabase')));
+    this.register('marketSignalService', new MarketSignalService(this.get('supabase')));
     this.register('statusUpdateService', new StatusUpdateService(this.get('db')));
     this.register('betUnitService', new BetUnitService(
       this.get('db'), 
@@ -158,6 +160,7 @@ class ServiceRepository {
   get pendingBetsService() { return this.get('pendingBetsService'); }
   get errorService() { return this.get('errorService'); }
   get betMatchesService() { return this.get('betMatchesService'); }
+  get marketSignalService() { return this.get('marketSignalService'); }
 }
 
 // Create and export a singleton instance

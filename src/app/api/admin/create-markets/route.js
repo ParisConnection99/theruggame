@@ -15,7 +15,13 @@ export async function POST(request) {
       }
       
       const token = await serviceRepo.marketCreationService.fetchMarkets();
-      return new Response(JSON.stringify(token), {
+      // Signal Market creation
+      const result = await serviceRepo.marketSignalService.signalMarketCreation();
+
+      return new Response(JSON.stringify({
+        token: token,
+        marketSignalResult: result
+      }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
       });
