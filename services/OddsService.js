@@ -41,7 +41,8 @@ class OddsService {
 
     const endTime = new Date(market.end_time);
     const currentTime = new Date();
-    const timeRemaining = Math.max(0, (endTime.getTime() - currentTime.getTime()) / 1000);
+    const timeRemaining = Math.max(0, endTime.getTime() - currentTime.getTime());
+    //const timeRemaining = Math.max(0, (endTime.getTime() - currentTime.getTime()) / 1000);
 
     return this.calculateOdds(market.total_matched_pump, market.total_matched_rug, timeRemaining);
   }
@@ -86,40 +87,6 @@ class OddsService {
   
     return { pumpOdds, rugOdds };
   }
-
-  // calculateOdds(pumpAmount, rugAmount, timeRemaining) {
-
-  //   console.log(`Calculate odds called: pump amount: ${pumpAmount}, rug amount: ${rugAmount}, timeRemaining: ${timeRemaining}`);
-  //   const totalPool = pumpAmount + rugAmount;
-
-  //   if (totalPool === 0) {
-  //     return { pumpOdds: 2.0, rugOdds: 2.0 };
-  //   }
-
-  //   const pumpRatio = rugAmount / pumpAmount;
-  //   const rugRatio = pumpAmount / rugAmount;
-
-  //   // Use configurable max market duration
-  //   const normalizedTime = timeRemaining / this.config.maxMarketDuration;
-
-  //   // More aggressive time factor calculation
-  //   const timeFactor = Math.pow(1 - normalizedTime, 2) + 0.1;
-
-  //   // Adjust base odds calculation to be more precise
-  //   let pumpOdds = 2.1 + (pumpRatio * timeFactor * 0.1);
-  //   let rugOdds = 2.1 + (rugRatio * timeFactor * 0.1);
-
-  //   console.log(`Odds uncapped: Pump ${pumpOdds}, rugOdds: ${rugOdds}`);
-
-  //   // Use configurable max odds
-  //   const MAX_ODDS = this.config.maxOdds || 5.0;
-  //   pumpOdds = Math.min(pumpOdds, MAX_ODDS);
-  //   rugOdds = Math.min(rugOdds, MAX_ODDS);
-
-  //   console.log(`Pump odds: ${pumpOdds}, rugOdds: ${rugOdds}`);
-
-  //   return { pumpOdds, rugOdds };
-  // }
 
   // Getter for current configuration
   getConfig() {
