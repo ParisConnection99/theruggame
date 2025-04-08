@@ -10,7 +10,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
 import { Analytics } from '@vercel/analytics/next';
 import { ToastContainer } from 'react-toastify';
-import PriceSchedulerInitializer from '@/components/PriceSchedulerInitializer';
+import PriceSchedulerInitializer from '@/components/PricesSchedulerInitializer';
 
 
 const geistSans = Geist({
