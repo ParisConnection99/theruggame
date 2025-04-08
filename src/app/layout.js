@@ -10,6 +10,7 @@ import ActivityBanner from '@/components/ActivityBanner';
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
 import { Analytics } from '@vercel/analytics/next';
 import { ToastContainer } from 'react-toastify';
+import { initializePriceScheduler, checkSchedulerStatus } from '@/services/priceSchedulerService';
 
 
 const geistSans = Geist({
@@ -23,6 +24,28 @@ const geistMono = Geist_Mono({
 });
 
 export default function RootLayout({ children }) {
+  useEffect(() => {
+    console.log('🔄 App layout mounted, initializing services...');
+    
+    // Initialize the price scheduler
+    initializePriceScheduler();
+    
+    // Check status after a delay to make sure it started
+    setTimeout(() => {
+      const isRunning = checkSchedulerStatus();
+      console.log(`⏱️ Scheduler status check: ${isRunning ? 'Running' : 'Not running'}`);
+      
+      if (!isRunning) {
+        console.log('🔄 Attempting to restart scheduler...');
+        initializePriceScheduler();
+      }
+    }, 5000);
+    
+    return () => {
+      console.log('🧹 App layout unmounting...');
+    };
+  }, []);
+  
   return (
     <html lang="en">
       <head>

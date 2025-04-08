@@ -217,21 +217,105 @@ const MarketChart = ({
   }, [initialPriceHistory, marketStartTime, startingPrice, tokenAddress]);
 
   // Subscribe to real-time price updates
-  useEffect(() => {
-    if (!tokenAddress || !seriesRef.current) return;
+  // useEffect(() => {
+  //   if (!tokenAddress || !seriesRef.current) return;
 
-    console.log(`📈 Setting up price updates subscription for token: ${tokenAddress}`);
+  //   console.log(`📈 Setting up price updates subscription for token: ${tokenAddress}`);
     
+  //   // Subscribe to price updates for this specific token
+  //   const priceChannel = supabase
+  //     .channel('realtime_prices')
+  //     .on('broadcast', { event: 'price_update' }, (payload) => {
+  //       console.log(`📊 Received price update:`, payload.payload);
+        
+  //       // Check if this update is for our token
+  //       if (payload.payload.token_address === tokenAddress) {
+  //         const newPrice = parseFloat(payload.payload.current_price);
+  //         const currentTime = new Date(payload.payload.updated_at).getTime() / 1000;
+          
+  //         console.log(`🔄 Updating chart with new price: ${newPrice} at time: ${new Date(currentTime * 1000).toLocaleTimeString()}`);
+          
+  //         if (onPriceUpdate) {
+  //           onPriceUpdate({
+  //             price: newPrice,
+  //             liquidity: payload.payload.liquidity,
+  //             timestamp: payload.payload.updated_at
+  //           }); 
+  //         }
+  //         // Add new price point
+  //         const newPoint = { time: currentTime, value: newPrice };
+          
+  //         try {
+  //           // Update series with the new point
+  //           seriesRef.current.update(newPoint);
+  //           console.log(`✅ Chart updated successfully`);
+            
+  //           // Update current price display
+  //           setCurrentPrice(newPrice);
+            
+  //           // Update legend with new price
+  //           if (legendRef.current) {
+  //             const symbolName = `${tokenAddress.substring(0, 6)}...${tokenAddress.substring(tokenAddress.length - 4)}`;
+  //             legendRef.current.innerHTML = `${symbolName} <strong>${newPrice.toFixed(8)}</strong>`;
+  //           }
+            
+  //           // Update price data state
+  //           setPriceData(prevData => [...prevData, newPoint]);
+  //         } catch (error) {
+  //           console.error(`❌ Error updating chart:`, error);
+  //         }
+  //       } else {
+  //           console.log(`Token address is different.`)
+  //       }
+  //     })
+  //     .subscribe();
+
+  //   // Cleanup subscription when component unmounts
+  //   return () => {
+  //     supabase.removeChannel(priceChannel);
+  //   };
+  // }, [tokenAddress, onPriceUpdate]);
+
+  // Replace your existing price update subscription in MarketChart.js
+
+// Subscribe to real-time price updates
+useEffect(() => {
+  if (!tokenAddress || !seriesRef.current) return;
+
+  console.log(`📈 Setting up price updates subscription for token: ${tokenAddress}`);
+  
+  // First, test the channel connection
+  console.log(`🧪 Testing Supabase realtime connection...`);
+  
+  try {
     // Subscribe to price updates for this specific token
     const priceChannel = supabase
       .channel('realtime_prices')
       .on('broadcast', { event: 'price_update' }, (payload) => {
-        console.log(`📊 Received price update:`, payload.payload);
+        console.log(`📊 Received ANY price update:`, payload);
+        
+        // Check if payload exists
+        if (!payload || !payload.payload) {
+          console.error('❌ Invalid payload structure:', payload);
+          return;
+        }
+        
+        // Token address check
+        const receivedTokenAddress = payload.payload.token_address;
+        console.log(`🔍 Comparing token addresses - Received: ${receivedTokenAddress}, Expected: ${tokenAddress}`);
+        
+        // Case-insensitive comparison for token addresses (common blockchain issue)
+        const isMatch = receivedTokenAddress && 
+                        tokenAddress && 
+                        receivedTokenAddress.toLowerCase() === tokenAddress.toLowerCase();
+        
+        console.log(`🔄 Token address match: ${isMatch}`);
         
         // Check if this update is for our token
-        if (payload.payload.token_address === tokenAddress) {
+        if (isMatch) {
           const newPrice = parseFloat(payload.payload.current_price);
-          const currentTime = new Date(payload.payload.updated_at).getTime() / 1000;
+          const timestamp = payload.payload.updated_at || new Date().toISOString();
+          const currentTime = new Date(timestamp).getTime() / 1000;
           
           console.log(`🔄 Updating chart with new price: ${newPrice} at time: ${new Date(currentTime * 1000).toLocaleTimeString()}`);
           
@@ -239,16 +323,17 @@ const MarketChart = ({
             onPriceUpdate({
               price: newPrice,
               liquidity: payload.payload.liquidity,
-              timestamp: payload.payload.updated_at
+              timestamp: timestamp
             }); 
           }
+          
           // Add new price point
           const newPoint = { time: currentTime, value: newPrice };
           
           try {
             // Update series with the new point
             seriesRef.current.update(newPoint);
-            console.log(`✅ Chart updated successfully`);
+            console.log(`✅ Chart updated successfully with new point:`, newPoint);
             
             // Update current price display
             setCurrentPrice(newPrice);
@@ -257,6 +342,7 @@ const MarketChart = ({
             if (legendRef.current) {
               const symbolName = `${tokenAddress.substring(0, 6)}...${tokenAddress.substring(tokenAddress.length - 4)}`;
               legendRef.current.innerHTML = `${symbolName} <strong>${newPrice.toFixed(8)}</strong>`;
+              console.log(`✅ Legend updated with new price: ${newPrice.toFixed(8)}`);
             }
             
             // Update price data state
@@ -265,16 +351,39 @@ const MarketChart = ({
             console.error(`❌ Error updating chart:`, error);
           }
         } else {
-            console.log(`Token address is different.`)
+          console.log(`⚠️ Update is for a different token, ignoring`);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log(`📡 Channel subscription status:`, status);
+      });
+
+    console.log(`📢 Successfully subscribed to 'realtime_prices' channel for token: ${tokenAddress}`);
+    
+    // Send a test broadcast after 5 seconds to verify the connection
+    setTimeout(() => {
+      console.log(`🧪 Sending test broadcast to self (diagnostic only)...`);
+      try {
+        supabase.channel('realtime_prices').send({
+          type: 'broadcast',
+          event: 'test_event',
+          payload: { message: 'This is a test broadcast', timestamp: new Date().toISOString() }
+        });
+        console.log(`✅ Test broadcast sent successfully`);
+      } catch (error) {
+        console.error(`❌ Error sending test broadcast:`, error);
+      }
+    }, 5000);
 
     // Cleanup subscription when component unmounts
     return () => {
+      console.log(`🧹 Cleaning up realtime subscription for token: ${tokenAddress}`);
       supabase.removeChannel(priceChannel);
     };
-  }, [tokenAddress, onPriceUpdate]);
+  } catch (error) {
+    console.error(`❌ Error setting up realtime subscription:`, error);
+  }
+}, [tokenAddress, onPriceUpdate]);
 
   return (
     <div className="relative bg-gray-800 rounded-md p-4 h-60">

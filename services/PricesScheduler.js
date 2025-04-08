@@ -119,27 +119,87 @@ const updatePriceHistory = async (marketId, tokenAddress, price, liquidity) => {
 };
 
 // Function to push price updates via Supabase Realtime API (without saving to database)
+// const pushPriceUpdates = async (realtimeUpdates, databaseUpdates) => {
+//     // Process realtime updates (just broadcast, no DB write)
+//     for (const { marketId, tokenAddress, price, liquidity } of realtimeUpdates) {
+//         await supabase
+//             .channel('realtime_prices')
+//             .send({
+//                 type: 'broadcast',
+//                 event: 'price_update',
+//                 payload: { 
+//                     token_address: tokenAddress,
+//                     current_price: price, 
+//                     liquidity: liquidity,
+//                     updated_at: new Date().toISOString() 
+//                 }
+//             });
+//     }
+    
+//     // Process database updates (write to DB)
+//     for (const { marketId, tokenAddress, price, liquidity } of databaseUpdates) {
+//         await updatePriceHistory(marketId, tokenAddress, price, liquidity);
+//     }
+// };
+
+// Replace the pushPriceUpdates function in your PricesScheduler.js:
+
+// Function to push price updates via Supabase Realtime API
 const pushPriceUpdates = async (realtimeUpdates, databaseUpdates) => {
+    console.log(`🚀 Beginning to process ${realtimeUpdates.length} realtime updates and ${databaseUpdates.length} database updates...`);
+    
     // Process realtime updates (just broadcast, no DB write)
     for (const { marketId, tokenAddress, price, liquidity } of realtimeUpdates) {
-        await supabase
-            .channel('realtime_prices')
-            .send({
-                type: 'broadcast',
-                event: 'price_update',
-                payload: { 
-                    token_address: tokenAddress,
-                    current_price: price, 
-                    liquidity: liquidity,
-                    updated_at: new Date().toISOString() 
-                }
-            });
+        try {
+            console.log(`📡 Broadcasting price update for token ${tokenAddress}: $${price}`);
+            
+            const payload = { 
+                token_address: tokenAddress,
+                current_price: price, 
+                liquidity: liquidity,
+                updated_at: new Date().toISOString() 
+            };
+            
+            console.log(`📦 Broadcast payload: ${JSON.stringify(payload)}`);
+            
+            const result = await supabase
+                .channel('realtime_prices')
+                .send({
+                    type: 'broadcast',
+                    event: 'price_update',
+                    payload: payload
+                });
+                
+            console.log(`📊 Broadcast result: ${JSON.stringify(result)}`);
+            
+            if (!result) {
+                console.error(`❌ Broadcast failed for ${tokenAddress}: No result returned`);
+            } else if (result.error) {
+                console.error(`❌ Broadcast error for ${tokenAddress}: ${result.error.message}`);
+            } else {
+                console.log(`✅ Successfully broadcast price update for ${tokenAddress}`);
+            }
+        } catch (error) {
+            console.error(`❌ Error broadcasting price for ${tokenAddress}: ${error.message}`);
+        }
     }
     
     // Process database updates (write to DB)
     for (const { marketId, tokenAddress, price, liquidity } of databaseUpdates) {
-        await updatePriceHistory(marketId, tokenAddress, price, liquidity);
+        try {
+            console.log(`💾 Saving price update to database for market ${marketId}: $${price}`);
+            const result = await updatePriceHistory(marketId, tokenAddress, price, liquidity);
+            if (result) {
+                console.log(`✅ Database update successful for market ${marketId}`);
+            } else {
+                console.error(`❌ Database update failed for market ${marketId}`);
+            }
+        } catch (error) {
+            console.error(`❌ Error in database update for market ${marketId}: ${error.message}`);
+        }
     }
+    
+    console.log(`🏁 Finished processing all price updates`);
 };
 
 // Function to start the price scheduler
