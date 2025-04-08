@@ -1,16 +1,16 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'react-toastify/dist/ReactToastify.css';
-import React, { useEffect } from "react";
+import '@solana/wallet-adapter-react-ui/styles.css';
+import React from "react";
 import ClientProviders from '@/components/ClientProviders';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import '@solana/wallet-adapter-react-ui/styles.css';
 import ActivityBanner from '@/components/ActivityBanner';
+import { Geist, Geist_Mono } from "next/font/google";
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'; // Adjust path as needed
 import { Analytics } from '@vercel/analytics/next';
 import { ToastContainer } from 'react-toastify';
-import { initializePriceScheduler, checkSchedulerStatus } from '@/services/PricesSchedulerInitializer';
+import PriceSchedulerInitializer from '@/components/PriceSchedulerInitializer';
 
 
 const geistSans = Geist({
@@ -24,28 +24,6 @@ const geistMono = Geist_Mono({
 });
 
 export default function RootLayout({ children }) {
-  useEffect(() => {
-    console.log('🔄 App layout mounted, initializing services...');
-    
-    // Initialize the price scheduler
-    initializePriceScheduler();
-    
-    // Check status after a delay to make sure it started
-    setTimeout(() => {
-      const isRunning = checkSchedulerStatus();
-      console.log(`⏱️ Scheduler status check: ${isRunning ? 'Running' : 'Not running'}`);
-      
-      if (!isRunning) {
-        console.log('🔄 Attempting to restart scheduler...');
-        initializePriceScheduler();
-      }
-    }, 5000);
-    
-    return () => {
-      console.log('🧹 App layout unmounting...');
-    };
-  }, []);
-
   return (
     <html lang="en">
       <head>
@@ -68,6 +46,7 @@ export default function RootLayout({ children }) {
           <ClientProviders>
             <ActivityBanner />
             <Header />
+            <PriceSchedulerInitializer />
             {children}
             <Analytics />
             <ToastContainer />
