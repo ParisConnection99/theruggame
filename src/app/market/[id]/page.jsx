@@ -11,7 +11,6 @@ import { listenToMarkets } from '@/services/MarketRealtimeService';
 import { useAuth } from '@/components/FirebaseProvider';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { checkSufficientBalance, placeBet, checkBalance } from '@/utils/SolanaWallet.js';
-import OddsService from '@/services/OddsService';
 import { getTokenPrice } from '@/services/PricesScheduler';
 import MarketChart from '@/components/MarketChart';
 import { useAnalytics } from '@/components/FirebaseProvider';
@@ -22,7 +21,6 @@ import { showToast } from '@/components/CustomToast';
 import { logInfo, logError } from '@/utils/logger';
 
 const marketPageService = new MarketPageService(supabase);
-const oddsService = new OddsService(supabase);
 
 export default function MarketPage() {
   const pathname = usePathname(); // Get the dynamic market ID from the URL
@@ -360,12 +358,6 @@ export default function MarketPage() {
 
     if (amount > 0 && market?.id) {
       try {
-        // Get current odds based on selection
-        // const currentOdds = await oddsService.getCurrentOdds(
-        //   market.id,
-        //   isPumpActive ? 'PUMP' : 'RUG'
-        // );
-
         const oddsResponse = await fetch('/api/market-page/odds', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
