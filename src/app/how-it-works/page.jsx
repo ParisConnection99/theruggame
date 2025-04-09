@@ -78,7 +78,7 @@ export default function HowItWorksPage() {
 
       <h2 className="text-xl font-semibold mt-6 mb-2">🔄 Partial Bet Matching</h2>
       
-      <p className="mb-2 text-center">
+      <p className="mb-2 text-center mt-5">
         When you place a bet, it might not get fully matched right away. Here's how our partial matching works:
       </p>
       
