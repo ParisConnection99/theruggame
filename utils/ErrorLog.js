@@ -4,7 +4,6 @@ import { logInfo, logError } from '@/utils/logger';
 
 export async function errorLog(type, message, stackTrace, location, severity, key = "") {
     if (!type || !message || !stackTrace || !location || !severity) {
-        logInfo('Missing parameters error logs.');
         return;
     }
 

@@ -109,9 +109,6 @@ function CallbackContent() {
     try {
       processCallback();
     } catch (error) {
-      logInfo('call back error', {
-        err: error.message
-      });
       router.push(`/market/${marketId}?error=Critical+callback+error`);
     }
   }, [searchParams, router]);

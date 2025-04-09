@@ -220,11 +220,6 @@ export async function placeBet(
     // Check balance (works for both mobile and web)
     let hasEnough;
 
-    logInfo('Amount to add', {
-      component: 'Solana wallet',
-      amount: amountToAdd
-    });
-
     try {
       const { isEnough, solBalance } = await checkBalance(publicKeyToCheck, amountToAdd);
       hasEnough = isEnough;

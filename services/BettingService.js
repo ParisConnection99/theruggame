@@ -9,7 +9,7 @@ class BettingService {
     this.supabase = supabase;
     this.MINIMUM_BET = 0.05; // SOL
     this.MINIMUM_UNIT = 0.05; // Minimum matching unit
-    this.PLATFORM_FEE = config.platformFee || 0.02; // 1%
+    this.PLATFORM_FEE = config.platformFee || 0.02; // 2%
 
     // Initialize sub-services
     this.matchingService = matchingService;

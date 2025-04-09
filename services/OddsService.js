@@ -4,7 +4,7 @@ class OddsService {
 
     // Default configuration
     this.config = {
-      maxMarketDuration: 7,
+      maxMarketDuration: 20,
       maxOdds: 5.0,
       ...config
     };
