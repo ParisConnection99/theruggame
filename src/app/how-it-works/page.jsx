@@ -78,7 +78,7 @@ export default function HowItWorksPage() {
 
       <h2 className="text-xl font-semibold mt-6 mb-2">🔄 Partial Bet Matching</h2>
       
-      <p className="mb-2">
+      <p className="mb-2 text-center">
         When you place a bet, it might not get fully matched right away. Here's how our partial matching works:
       </p>
       
@@ -89,7 +89,7 @@ export default function HowItWorksPage() {
         <li><strong>Real-time Updates:</strong> You'll see how much of your bet is matched and current odds right in your bet history</li>
       </ul>
       
-      <p className="mb-4">
+      <p className="mb-4 text-center">
         For example: If you bet 100 SOL on PUMP, but only 75 SOL gets matched with RUG bets, you'll play with 75 SOL at the odds at time of match, and the other 25 SOL will be returned.
       </p>
 
