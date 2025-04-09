@@ -251,6 +251,10 @@ export const startPriceScheduler = async () => {
     // activeMarketCache = activeMarketCache.filter(market => {
     //     return new Date(market.end_time) < now;
     // });
+
+    activeMarketCache = activeMarketCache.filter(market => {
+        return new Date(market.end_time) >= now;
+    });
     
     // Log if markets were removed due to expiration
     if (initialCount !== activeMarketCache.length) {
