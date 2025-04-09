@@ -15,7 +15,7 @@ const refreshMarketCache = async () => {
         console.log('🔄 Refreshing market cache...');
         const { data, error } = await supabase
             .from('markets')
-            .select('id, token_address')
+            .select('id, token_address, end_time')
             .eq('phase', 'BETTING')
             .limit(10);
 
