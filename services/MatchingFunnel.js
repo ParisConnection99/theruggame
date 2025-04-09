@@ -11,7 +11,7 @@ class MatchingFunnel {
         // Configuration with defaults
         this.BATCH_SIZE = config.batchSize || 50;
         this.LOCK_TIMEOUT = config.lockTimeout || 5000;
-        this.MIN_MATCH_SIZE = config.minMatchSize || 0.1;
+        this.MIN_MATCH_SIZE = config.minMatchSize || 0.08;
         this.RECHECK_INTERVALS = config.recheckIntervals || [1, 5, 15, 30, 60];
         this.MARKET_MATCHING_CUTOFF_PERCENT = config.marketMatchingCutoffPercent || 0.5;
     }
