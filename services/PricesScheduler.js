@@ -241,6 +241,20 @@ export const startPriceScheduler = async () => {
     console.log('🚀 Price Scheduler Started!');
 
     scheduler = setInterval(async () => {
+        const now = new Date();
+    const initialCount = activeMarketCache.length;
+    
+    // Filter out expired markets from the cache
+    activeMarketCache = activeMarketCache.filter(market => {
+        return new Date(market.end_time) > now;
+    });
+    
+    // Log if markets were removed due to expiration
+    if (initialCount !== activeMarketCache.length) {
+        console.log(`🕒 Removed ${initialCount - activeMarketCache.length} expired markets from cache`);
+    }
+
+
         if (activeMarketCache.length === 0) {
             console.log('⚠️ No active markets found. Skipping this cycle.');
             return;
