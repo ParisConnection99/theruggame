@@ -248,9 +248,9 @@ export const startPriceScheduler = async () => {
     console.log('Active Market cache: ', initialCount);
     
     // Filter out expired markets from the cache
-    activeMarketCache = activeMarketCache.filter(market => {
-        return new Date(market.end_time) < now;
-    });
+    // activeMarketCache = activeMarketCache.filter(market => {
+    //     return new Date(market.end_time) < now;
+    // });
     
     // Log if markets were removed due to expiration
     if (initialCount !== activeMarketCache.length) {
