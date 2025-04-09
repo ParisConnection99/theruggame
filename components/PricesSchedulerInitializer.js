@@ -70,11 +70,30 @@ export default function PricesSchedulerInitializer() {
 }
 
 // Initialize the price scheduler when the window loads
-export function initializePriceScheduler() {
+export async function initializePriceScheduler() {
   // Only initialize in the browser environment
   if (typeof window === 'undefined') {
     console.log('🔶 Not in browser environment, skipping scheduler initialization');
     return;
+  }
+
+  try {
+    const timestamp = new Date().getTime();
+    const res = await fetch(`/api/check-maintenance?t=${timestamp}`, {
+      cache: 'no-store'
+    });
+    const { isMaintenance, endTimestamp } = await res.json();
+
+    if (isMaintenance) {
+      console.log('🛠️ Maintenance mode active, price scheduler stopped...');
+      if (endTimestamp) {
+        console.log(`⏱️ Maintenance scheduled to end at: ${new Date(endTimestamp).toLocaleString()}`);
+      }
+      return;
+    }
+  } catch (error) {
+    console.error('❌ Error checking maintenance mode:', error);
+    // Continue execution - fail open in case of error checking maintenance
   }
 
   console.log('🔍 Price scheduler initialization requested...');
