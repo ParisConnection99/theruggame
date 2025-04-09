@@ -9,24 +9,6 @@ let scheduler; // Reference to the interval function
 const REALTIME_THRESHOLD = 0.0001; // 0.01% threshold for realtime updates
 const DATABASE_THRESHOLD = 0.005; // 0.5% threshold for database updates
 
-// Function to fetch active token addresses from the database
-// const getActiveMarkets = async () => {
-//     try {
-//         const { data, error } = await supabase
-//             .from('markets')
-//             .select('id, token_address')
-//             .eq('phase', 'BETTING') 
-//             .limit(10); // Ensure only 10 markets max
-
-//         if (error) throw error;
-
-//         return data;
-//     } catch (error) {
-//         console.error('❌ Error fetching active markets:', error);
-//         return [];
-//     }
-// };
-
 // Function to fetch and cache active markets from the database
 const refreshMarketCache = async () => {
     try {
@@ -248,10 +230,6 @@ export const startPriceScheduler = async () => {
     console.log('Active Market cache: ', initialCount);
     
     // Filter out expired markets from the cache
-    // activeMarketCache = activeMarketCache.filter(market => {
-    //     return new Date(market.end_time) < now;
-    // });
-
     activeMarketCache = activeMarketCache.filter(market => {
         return new Date(market.end_time) >= now;
     });
