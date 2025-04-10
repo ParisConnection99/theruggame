@@ -5,7 +5,8 @@ import { serviceRepo } from '@/services/ServiceRepository';
 
 export async function GET({ params }) {
     try {
-        const marketId = await params.marketId;
+        params = await params;
+        const marketId = params.marketId;
 
         if (!marketId) {
             return new Response(JSON.stringify({ error: 'Market ID is required' }), {
