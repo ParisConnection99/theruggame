@@ -1,7 +1,7 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 
 
-export async function GET(request, { params }) {
+export async function GET() {
     try {
 
         const markets = await serviceRepo.marketService.getActiveMarkets();
