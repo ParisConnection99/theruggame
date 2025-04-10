@@ -1,7 +1,6 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 import { verifyBetTransaction } from '@/utils/SolanaTransactionChecker';
 import PhantomConnect from '@/utils/PhantomConnect';
-import admin from 'firebase-admin';
 import EncryptionService from '@/lib/EncryptionService';
 
 const key = process.env.ENCRYPTION_KEY;
@@ -9,23 +8,6 @@ const iv = process.env.ENCRYPTION_IV;
 const phantomConnect = new PhantomConnect();
 const encryptionService = new EncryptionService(key, iv);
 
-
-// Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-    try {
-        const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: privateKey,
-            }),
-        });
-        console.log("Firebase Admin initialized successfully");
-    } catch (error) {
-        console.error("Firebase Admin initialization error:");
-    }
-}
 
 export async function POST(request) {
     try {
