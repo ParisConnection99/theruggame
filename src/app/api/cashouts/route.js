@@ -25,7 +25,7 @@ export const config = {
 };
 
 
-export async function GET(request) {
+export async function GET() {
   try {
     // You might want to add admin authentication here
     const cashouts = await serviceRepo.cashoutService.fetchCashouts();
