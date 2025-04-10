@@ -3,7 +3,7 @@
 import { serviceRepo } from '@/services/ServiceRepository';
 
 
-export async function GET({ params }) {
+export async function GET(request, { params }) {
     try {
         params = await params;
         const marketId = params.marketId;
