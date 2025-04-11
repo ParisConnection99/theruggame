@@ -44,7 +44,7 @@ async function getTransactionWithRetry(signature, maxRetries = 5) {
 }
 
 export async function verifyBetTransaction(signature) {
-  const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
+  const SITE_WALLET_ADDRESS = 'FbhQc9Ri9spE17wnavuuuY1dGDwErAGyTYGJUTwsFvv1';
 
   try {
     // 1. Fetch Parsed Transaction

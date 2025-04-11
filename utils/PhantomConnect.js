@@ -14,7 +14,7 @@ global.Buffer = global.Buffer || Buffer;
 const QUICKNODE_RPC_ENDPOINT = process.env.QUICKNODE_RPC_ENDPOINT || 
   "https://few-dry-firefly.solana-mainnet.quiknode.pro/b33411d44f2ef89fb9aa9e2f929b6541debb9fc6/";
 
-const SITE_WALLET_ADDRESS = 'A4nnzkNwsmW9SKh2m5a69vsqXmj18KoRMv1nXhiLGruU';
+const SITE_WALLET_ADDRESS = 'FbhQc9Ri9spE17wnavuuuY1dGDwErAGyTYGJUTwsFvv1';
 const APP_URL = "https://theruggame.fun";
 
 const key = process.env.ENCRYPTION_KEY; // 32 characters (256 bits)
