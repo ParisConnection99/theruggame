@@ -47,7 +47,7 @@ export default function Home() {
   
     const now = new Date().getTime();
     
-    // Find market with highest score based on total wagered and time remaining
+    // Find market with highest score based on status, total wagered, and time remaining
     const newFeaturedMarket = marketsList.reduce((featured, current) => {
       // Calculate total amount wagered for each market
       const featuredTotal = (featured.total_pump_amount || 0) + (featured.total_rug_amount || 0);
@@ -59,12 +59,15 @@ export default function Home() {
       const currentTimeRemaining = current.end_time ? 
         Math.max(0, (new Date(current.end_time).getTime() - now) / (1000 * 60)) : 0;
       
-      // Scoring formula: combines total wagered with time factor
-      // You can adjust the timeWeight value to control how much the time factor influences the score
+      // Add status factor - prioritize "OPEN" or "MATCHING" status
+      const featuredStatusBoost = (featured.status === "OPEN" || featured.status === "MATCHING") ? 2 : 1;
+      const currentStatusBoost = (current.status === "OPEN" || current.status === "MATCHING") ? 2 : 1;
+      
+      // Scoring formula: combines status, total wagered and time factor
       const timeWeight = 0.05; // Adjusted for minutes instead of days
       
-      const featuredScore = featuredTotal * (1 + (featuredTimeRemaining * timeWeight));
-      const currentScore = currentTotal * (1 + (currentTimeRemaining * timeWeight));
+      const featuredScore = featuredTotal * (1 + (featuredTimeRemaining * timeWeight)) * featuredStatusBoost;
+      const currentScore = currentTotal * (1 + (currentTimeRemaining * timeWeight)) * currentStatusBoost;
       
       return currentScore > featuredScore ? current : featured;
     }, marketsList[0]);
