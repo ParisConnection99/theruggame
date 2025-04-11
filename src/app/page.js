@@ -28,20 +28,50 @@ export default function Home() {
 
 
   // Helper function defined outside of any useEffect
+  // const updateFeaturedMarket = (marketsList) => {
+  //   if (!marketsList || marketsList.length === 0) return;
+
+  //   // Find market with highest total amount wagered
+  //   const newFeaturedMarket = marketsList.reduce((featured, current) => {
+  //     const featuredTotal = (featured.total_pump_amount || 0) + (featured.total_rug_amount || 0);
+  //     const currentTotal = (current.total_pump_amount || 0) + (current.total_rug_amount || 0);
+
+  //     return currentTotal > featuredTotal ? current : featured;
+  //   }, marketsList[0]);
+
+  //   setFeaturedMarket(newFeaturedMarket);
+  // };
+
   const updateFeaturedMarket = (marketsList) => {
     if (!marketsList || marketsList.length === 0) return;
-
-    // Find market with highest total amount wagered
+  
+    const now = new Date().getTime();
+    
+    // Find market with highest score based on total wagered and time remaining
     const newFeaturedMarket = marketsList.reduce((featured, current) => {
+      // Calculate total amount wagered for each market
       const featuredTotal = (featured.total_pump_amount || 0) + (featured.total_rug_amount || 0);
       const currentTotal = (current.total_pump_amount || 0) + (current.total_rug_amount || 0);
-
-      return currentTotal > featuredTotal ? current : featured;
+      
+      // Calculate time remaining for each market (in days)
+      const featuredTimeRemaining = featured.end_time ? 
+        Math.max(0, (new Date(featured.end_time).getTime() - now) / (1000 * 60 * 60 * 24)) : 0;
+      const currentTimeRemaining = current.end_time ? 
+        Math.max(0, (new Date(current.end_time).getTime() - now) / (1000 * 60 * 60 * 24)) : 0;
+      
+      // Scoring formula: combines total wagered with time factor
+      // You can adjust the timeWeight value to control how much the time factor influences the score
+      const timeWeight = 0.25; // Increase this to give more importance to time remaining
+      
+      const featuredScore = featuredTotal * (1 + (featuredTimeRemaining * timeWeight));
+      const currentScore = currentTotal * (1 + (currentTimeRemaining * timeWeight));
+      
+      return currentScore > featuredScore ? current : featured;
     }, marketsList[0]);
-
+  
     setFeaturedMarket(newFeaturedMarket);
   };
-
+  
   useEffect(() => {
     const welcomePopup = localStorage.getItem('welcome_popup');
 
