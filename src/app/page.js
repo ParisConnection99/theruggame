@@ -53,15 +53,15 @@ export default function Home() {
       const featuredTotal = (featured.total_pump_amount || 0) + (featured.total_rug_amount || 0);
       const currentTotal = (current.total_pump_amount || 0) + (current.total_rug_amount || 0);
       
-      // Calculate time remaining for each market (in days)
+      // Calculate time remaining for each market (in minutes)
       const featuredTimeRemaining = featured.end_time ? 
-        Math.max(0, (new Date(featured.end_time).getTime() - now) / (1000 * 60 * 60 * 24)) : 0;
+        Math.max(0, (new Date(featured.end_time).getTime() - now) / (1000 * 60)) : 0;
       const currentTimeRemaining = current.end_time ? 
-        Math.max(0, (new Date(current.end_time).getTime() - now) / (1000 * 60 * 60 * 24)) : 0;
+        Math.max(0, (new Date(current.end_time).getTime() - now) / (1000 * 60)) : 0;
       
       // Scoring formula: combines total wagered with time factor
       // You can adjust the timeWeight value to control how much the time factor influences the score
-      const timeWeight = 0.25; // Increase this to give more importance to time remaining
+      const timeWeight = 0.05; // Adjusted for minutes instead of days
       
       const featuredScore = featuredTotal * (1 + (featuredTimeRemaining * timeWeight));
       const currentScore = currentTotal * (1 + (currentTimeRemaining * timeWeight));
@@ -71,7 +71,7 @@ export default function Home() {
   
     setFeaturedMarket(newFeaturedMarket);
   };
-  
+
   useEffect(() => {
     const welcomePopup = localStorage.getItem('welcome_popup');
 
