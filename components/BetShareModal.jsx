@@ -110,7 +110,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: "url('/images/morfeus.webp')",
+              backgroundImage: "url('/images/matrix_background.webp')",
               filter: "brightness(0.7)"
             }}
           />
@@ -119,7 +119,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
           <div className="relative z-10 h-full flex flex-col p-6">
             <div className="flex justify-between items-start">
               <div>
-                <div className="text-purple-400 text-lg font-bold">
+                <div className="text-white text-lg font-bold">
                   THE RUG GAME
                 </div>
                 <div className="text-sm mt-1">
