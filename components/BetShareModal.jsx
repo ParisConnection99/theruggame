@@ -264,9 +264,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-black rounded-lg p-6 max-w-md w-full" style={{ 
-        border: bet.status === 'WON' ? `3px solid ${winGreenColor}` : '3px solid transparent'
-      }}>
+      <div className="bg-gray-900 rounded-lg p-6 max-w-md w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-bold text-white">Share Your Bet Outcome</h3>
           <button
@@ -284,7 +282,7 @@ const BetShareModal = ({ isOpen, onClose, bet }) => {
           style={{
             height: "400px", 
             backgroundColor: "black",
-            border: bet.status === 'WON' ? `3px solid ${winGreenColor}` : '3px solid transparent'
+            border: bet.status === 'WON' ? `3px solid ${winGreenColor}` : '3px solid rgb(248, 113, 113)' // text-red-400 equivalent
           }}
         >
           {/* Background Image with overlay */}
