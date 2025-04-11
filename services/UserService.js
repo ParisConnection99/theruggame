@@ -200,6 +200,22 @@ class UserService {
         if (error) throw error;
         return true;
     }
+
+    async fetchUserCount() {
+        try {
+            // Option 1: Count all records (more efficient)
+            const { count, error } = await this.supabase
+                .from(this.tableName)
+                .select('*', { count: 'exact', head: true })
+            
+            if (error) throw error;
+            
+            return count;
+        } catch (error) {
+            console.error('Error fetching user count:', error.message);
+            throw error;
+        }
+    }
 }
 
 module.exports = UserService;
