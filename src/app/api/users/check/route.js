@@ -49,6 +49,8 @@ export async function POST(request) {
         // Extract UID from the token
         const uid = decodedToken.uid;
 
+        console.log(`Key: ${key}`);
+
         // Fetch user data securely
         const user = await serviceRepo.userService.getUserByWallet(uid);
         const doesUserExist = user != null;
@@ -57,8 +59,8 @@ export async function POST(request) {
             try {
                 const username = getDefaultUsername(uid);
                 await serviceRepo.userService.createUser({
-                    uid,
-                    username,
+                    wallet_ca: uid,
+                    username: username,
                     profile_pic: "",
                 });
             } catch (error) {
