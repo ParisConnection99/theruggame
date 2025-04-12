@@ -62,7 +62,7 @@ export async function POST(request) {
                     profile_pic: "",
                 });
             } catch (error) {
-                return new Response(JSON.stringify({ error: 'Failed to create user' }), {
+                return new Response(JSON.stringify({ error: `Failed to create user - error: ${error.message}` }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' },
                 });
