@@ -65,27 +65,11 @@ class MarketResolveService {
             throw new Error('Missing liquidity data for market evaluation');
         }
 
+        console.log(`Resolution Data - Initial: ${JSON.stringify(initialData)}, finalData: ${JSON.stringify(finalData)}`);
+
         const result = await this.evaluateMarketOutcome(initialData, finalData);
 
         return { result: result, price: finalData.price };
-    }
-
-    async fetchBets(marketId) {
-        if (!marketId) {
-            throw new Error('Error processing MarketId.');
-        }
-
-        const { data: bets, error } = await this.supabase
-            .from('bets')
-            .select('id, status, amount, refund_amount')
-            .eq('market_id', marketId)
-            .in('status', ['PARTIALLY_MATCHED', 'MATCHED']);
-
-        if (error) {
-            throw new Error(`Database error: ${error.message}`);
-        }
-
-        return bets;
     }
 
     async evaluateMarketOutcome(initialData, finalData, midwayData) {
@@ -155,6 +139,24 @@ class MarketResolveService {
         } catch (error) {
             throw new Error(`Error evaluating market: ${error.message}`);
         }
+    }
+
+    async fetchBets(marketId) {
+        if (!marketId) {
+            throw new Error('Error processing MarketId.');
+        }
+
+        const { data: bets, error } = await this.supabase
+            .from('bets')
+            .select('id, status, amount, refund_amount')
+            .eq('market_id', marketId)
+            .in('status', ['PARTIALLY_MATCHED', 'MATCHED']);
+
+        if (error) {
+            throw new Error(`Database error: ${error.message}`);
+        }
+
+        return bets;
     }
 }
 
