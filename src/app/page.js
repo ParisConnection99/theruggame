@@ -678,11 +678,11 @@ export default function Home() {
       <main>
         {showPopup && <WelcomePopup onClose={onWelcomePopupClose} />}
 
-        {/* Extra space at the top of the page */}
-        <div className="h-16"></div>
+        {/* Extra space at the top of the page - only visible on desktop */}
+        <div className="hidden md:block h-16"></div>
 
-        {/* Search Bar - Added above Featured Market with more space */}
-        <div className="w-full px-4 mt-8 mb-6">
+        {/* Search Bar - Added above Featured Market with appropriate spacing */}
+        <div className="w-full px-4 md:mt-8 mt-2 mb-6">
           <div className="max-w-md mx-auto">
             <div className="relative">
               <input
@@ -690,8 +690,16 @@ export default function Home() {
                 placeholder="Search by token address or name..."
                 value={searchTerm}
                 onChange={handleSearch}
-                className="w-full px-4 py-3 pl-10 pr-10 text-sm text-white bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 border-box"
-                style={{ boxSizing: 'border-box', maxWidth: '100%' }}
+                className="w-full px-4 py-3 pl-10 pr-10 text-sm text-white bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                style={{ 
+                  boxSizing: 'border-box', 
+                  maxWidth: '100%',
+                  fontSize: '16px', /* Prevents iOS zoom on focus */
+                  WebkitTextSizeAdjust: '100%',
+                  WebkitTapHighlightColor: 'rgba(0,0,0,0)',
+                  transform: 'translateZ(0)', /* Forces hardware acceleration */
+                  touchAction: 'manipulation'
+                }}
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg 
