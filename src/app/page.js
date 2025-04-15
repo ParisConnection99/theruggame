@@ -679,7 +679,7 @@ export default function Home() {
         {showPopup && <WelcomePopup onClose={onWelcomePopupClose} />}
 
         {/* Search Bar - Added above Featured Market */}
-        <div className="w-full p-4 mt-4">
+        <div className="w-full px-4 mt-4">
           <div className="max-w-md mx-auto">
             <div className="relative">
               <input
@@ -687,7 +687,8 @@ export default function Home() {
                 placeholder="Search by token address or name..."
                 value={searchTerm}
                 onChange={handleSearch}
-                className="w-full px-4 py-2 pl-10 pr-4 text-sm text-white bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full px-4 py-2 pl-10 pr-10 text-sm text-white bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 box-border"
+                style={{ maxWidth: '100%' }}
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg 
