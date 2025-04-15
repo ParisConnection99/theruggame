@@ -622,6 +622,13 @@ export default function Home() {
     setVisibleMarkets(6); // Reset visible markets when searching
   };
 
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission
+    // Blur the input to close the keyboard on mobile
+    document.activeElement.blur();
+  };
+
   let interval;
 
   const startCountdown = (endDate) => {
@@ -684,7 +691,7 @@ export default function Home() {
         {/* Search Bar - Added above Featured Market with appropriate spacing */}
         <div className="w-full px-4 md:mt-8 mt-2 mb-6">
           <div className="max-w-md mx-auto">
-            <div className="relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
               <input
                 type="text"
                 placeholder="Search by token address or name..."
@@ -700,6 +707,7 @@ export default function Home() {
                   transform: 'translateZ(0)', /* Forces hardware acceleration */
                   touchAction: 'manipulation'
                 }}
+                enterKeyHint="search"
               />
               <div className="absolute inset-y-0 left-0 flex items-center pl-3">
                 <svg 
@@ -716,6 +724,7 @@ export default function Home() {
               </div>
               {searchTerm && (
                 <button
+                  type="button"
                   onClick={() => setSearchTerm('')}
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-white"
                 >
@@ -732,7 +741,8 @@ export default function Home() {
                   </svg>
                 </button>
               )}
-            </div>
+              <button type="submit" className="hidden">Search</button>
+            </form>
           </div>
         </div>
 
